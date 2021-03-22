@@ -7,8 +7,8 @@ import java.nio.file.Paths
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "narmesteleder"),
-    val clientId: String = getFileAsString("/var/run/secrets/AZURE_CLIENT"),
-    val clientSecret: String = getFileAsString("/var/run/secrets/AZURE_CLIENT_SECRET"),
+    val clientId: String = getFileAsString("AZURE_APP_CLIENT_ID"),
+    val clientSecret: String = getFileAsString("AZURE_APP_CLIENT_SECRET"),
     val databaseUsername: String = getEnvVar("NAIS_DATABASE_USERNAME"),
     val databasePassword: String = getEnvVar("NAIS_DATABASE_PASSWORD"),
     val dbHost: String = getEnvVar("NAIS_DATABASE_HOST"),
