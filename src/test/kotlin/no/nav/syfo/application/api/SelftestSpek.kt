@@ -1,4 +1,4 @@
-package no.nav.syfo
+package no.nav.syfo.application.api
 
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -7,7 +7,6 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.api.registerNaisApi
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe

@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import no.nav.syfo.kafka.KafkaCredentials
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -9,12 +10,24 @@ data class Environment(
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "narmesteleder"),
     val clientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
+    val jwkKeysUrl: String = getEnvVar("AZURE_OPENID_CONFIG_JWKS_URI"),
+    val jwtIssuer: String = getEnvVar("AZURE_OPENID_CONFIG_ISSUER"),
     val databaseUsername: String = getEnvVar("NAIS_DATABASE_USERNAME"),
     val databasePassword: String = getEnvVar("NAIS_DATABASE_PASSWORD"),
     val dbHost: String = getEnvVar("NAIS_DATABASE_HOST"),
     val dbPort: String = getEnvVar("NAIS_DATABASE_PORT"),
-    val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE")
+    val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE"),
+    val stsUrl: String = getEnvVar("SECURITYTOKENSERVICE_URL"),
+    val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH")
 )
+
+data class VaultSecrets(
+    val serviceuserUsername: String = getFileAsString("/var/run/secrets/NARMESTELEDER_USERNAME"),
+    val serviceuserPassword: String = getFileAsString("/var/run/secrets/NARMESTELEDER_PASSWORD")
+) : KafkaCredentials {
+    override val kafkaUsername: String = serviceuserUsername
+    override val kafkaPassword: String = serviceuserPassword
+}
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")

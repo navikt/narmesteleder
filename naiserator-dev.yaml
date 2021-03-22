@@ -78,3 +78,8 @@ spec:
         - application: sykmeldinger-backend
           namespace: default
           cluster: dev-fss
+  env:
+    - name: SECURITYTOKENSERVICE_URL
+      value: https://api-gw-q1.oera.no/security-token-service/rest/v1/sts/token
+    - name: PDL_GRAPHQL_PATH
+      value: https://api-gw-q1.oera.no/pdl-api/graphql
