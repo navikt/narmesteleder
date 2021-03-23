@@ -29,9 +29,9 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
+import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.client.StsOidcClient
-import no.nav.syfo.forskuttering.ForskutteringsClient
 import no.nav.syfo.forskuttering.registrerForskutteringApi
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederClient
@@ -73,6 +73,8 @@ fun createApplicationEngine(
             }
         }
 
+        val database = Database(env)
+
         val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
             install(JsonFeature) {
                 serializer = JacksonSerializer {
@@ -96,8 +98,6 @@ fun createApplicationEngine(
         )
         val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient)
 
-        val forskutteringsClient =
-            ForskutteringsClient("servicestranglerUrl", "servicestranglerId", httpClient)
         val narmesteLederClient =
             NarmesteLederClient("servicestranglerUrl", "servicestranglerId", httpClient)
         val utvidetNarmesteLederService = UtvidetNarmesteLederService(narmesteLederClient, pdlPersonService)
@@ -105,7 +105,7 @@ fun createApplicationEngine(
         routing {
             registerNaisApi(applicationState)
             authenticate {
-                registrerForskutteringApi(forskutteringsClient)
+                registrerForskutteringApi(database)
                 registrerNarmesteLederApi(narmesteLederClient, utvidetNarmesteLederService)
             }
         }

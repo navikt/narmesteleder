@@ -19,7 +19,11 @@ data class Environment(
     val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE"),
     val stsUrl: String = getEnvVar("SECURITYTOKENSERVICE_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH")
-)
+) {
+    fun jdbcUrl(): String {
+        return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
+    }
+}
 
 data class VaultSecrets(
     val serviceuserUsername: String = getFileAsString("/var/run/secrets/NARMESTELEDER_USERNAME"),
