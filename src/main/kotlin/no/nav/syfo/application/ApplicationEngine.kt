@@ -34,7 +34,6 @@ import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.forskuttering.registrerForskutteringApi
 import no.nav.syfo.log
-import no.nav.syfo.narmesteleder.NarmesteLederClient
 import no.nav.syfo.narmesteleder.UtvidetNarmesteLederService
 import no.nav.syfo.narmesteleder.registrerNarmesteLederApi
 import no.nav.syfo.pdl.client.PdlClient
@@ -97,16 +96,13 @@ fun createApplicationEngine(
             PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
         )
         val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient)
-
-        val narmesteLederClient =
-            NarmesteLederClient("servicestranglerUrl", "servicestranglerId", httpClient)
-        val utvidetNarmesteLederService = UtvidetNarmesteLederService(narmesteLederClient, pdlPersonService)
+        val utvidetNarmesteLederService = UtvidetNarmesteLederService(database, pdlPersonService)
 
         routing {
             registerNaisApi(applicationState)
             authenticate {
                 registrerForskutteringApi(database)
-                registrerNarmesteLederApi(narmesteLederClient, utvidetNarmesteLederService)
+                registrerNarmesteLederApi(database, utvidetNarmesteLederService)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

@@ -17,6 +17,8 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 object ForskutteringApiSpek : Spek({
     val fnr = "12345678910"
@@ -44,7 +46,7 @@ object ForskutteringApiSpek : Spek({
             it("Returnerer JA hvis arbeidsgiver forskutterer") {
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = true)
                 with(
-                    handleRequest(HttpMethod.Get, "/narmesteleder/arbeidsgiverForskutterer?orgnummer=$orgnummer") {
+                    handleRequest(HttpMethod.Get, "/arbeidsgiverForskutterer?orgnummer=$orgnummer") {
                         addHeader("fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
@@ -65,7 +67,7 @@ object ForskutteringApiSpek : Spek({
             it("Returnerer NEI hvis arbeidsgiver ikke forskutterer") {
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = false)
                 with(
-                    handleRequest(HttpMethod.Get, "/narmesteleder/arbeidsgiverForskutterer?orgnummer=$orgnummer") {
+                    handleRequest(HttpMethod.Get, "/arbeidsgiverForskutterer?orgnummer=$orgnummer") {
                         addHeader("fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
@@ -86,7 +88,48 @@ object ForskutteringApiSpek : Spek({
             it("Returnerer UKJENT hvis vi ikke vet om arbeidsgiver forskutterer") {
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = null)
                 with(
-                    handleRequest(HttpMethod.Get, "/narmesteleder/arbeidsgiverForskutterer?orgnummer=$orgnummer") {
+                    handleRequest(HttpMethod.Get, "/arbeidsgiverForskutterer?orgnummer=$orgnummer") {
+                        addHeader("fnr", fnr)
+                        addHeader(
+                            HttpHeaders.Authorization,
+                            "Bearer ${
+                            generateJWT(
+                                "syfosmaltinn",
+                                "narmesteleder",
+                                subject = "123",
+                                issuer = env.jwtIssuer
+                            )
+                            }"
+                        )
+                    }
+                ) {
+                    response.content?.shouldBeEqualTo("{\"forskuttering\":\"UKJENT\"}")
+                }
+            }
+            it("Returnerer UKJENT hvis brukerikke har noen nærmeste leder") {
+                with(
+                    handleRequest(HttpMethod.Get, "/arbeidsgiverForskutterer?orgnummer=$orgnummer") {
+                        addHeader("fnr", fnr)
+                        addHeader(
+                            HttpHeaders.Authorization,
+                            "Bearer ${
+                            generateJWT(
+                                "syfosmaltinn",
+                                "narmesteleder",
+                                subject = "123",
+                                issuer = env.jwtIssuer
+                            )
+                            }"
+                        )
+                    }
+                ) {
+                    response.content?.shouldBeEqualTo("{\"forskuttering\":\"UKJENT\"}")
+                }
+            }
+            it("Returnerer UKJENT hvis nærmeste leder ikke er aktiv") {
+                testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = true, aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(2))
+                with(
+                    handleRequest(HttpMethod.Get, "/arbeidsgiverForskutterer?orgnummer=$orgnummer") {
                         addHeader("fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
@@ -119,7 +162,7 @@ object ForskutteringApiSpek : Spek({
             }
             it("Returnerer feilmelding hvis fnr mangler") {
                 with(
-                    handleRequest(HttpMethod.Get, "/narmesteleder/arbeidsgiverForskutterer?orgnummer=333") {
+                    handleRequest(HttpMethod.Get, "/arbeidsgiverForskutterer?orgnummer=333") {
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -139,7 +182,7 @@ object ForskutteringApiSpek : Spek({
             }
             it("Returnerer feilmelding hvis orgnummer mangler") {
                 with(
-                    handleRequest(HttpMethod.Get, "/narmesteleder/arbeidsgiverForskutterer") {
+                    handleRequest(HttpMethod.Get, "/arbeidsgiverForskutterer") {
                         addHeader("fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
@@ -160,7 +203,7 @@ object ForskutteringApiSpek : Spek({
             }
             it("Feil audience gir feilmelding") {
                 with(
-                    handleRequest(HttpMethod.Get, "/narmesteleder/arbeidsgiverForskutterer?orgnummer=333") {
+                    handleRequest(HttpMethod.Get, "/arbeidsgiverForskutterer?orgnummer=333") {
                         addHeader("fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,

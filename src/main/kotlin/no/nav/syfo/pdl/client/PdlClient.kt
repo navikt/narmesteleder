@@ -17,8 +17,8 @@ class PdlClient(
     private val temaHeader = "TEMA"
     private val tema = "SYM"
 
-    suspend fun getPersoner(aktorIds: List<String>, stsToken: String): GetPersonResponse {
-        val getPersonRequest = GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(identer = aktorIds))
+    suspend fun getPersoner(fnrs: List<String>, stsToken: String): GetPersonResponse {
+        val getPersonRequest = GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(identer = fnrs))
         return httpClient.post(basePath) {
             body = getPersonRequest
             header(HttpHeaders.Authorization, "Bearer $stsToken")

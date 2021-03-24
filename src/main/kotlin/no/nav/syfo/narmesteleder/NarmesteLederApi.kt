@@ -6,67 +6,69 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.syfo.application.db.DatabaseInterface
+import no.nav.syfo.db.finnAktiveNarmestelederkoblinger
+import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
+import no.nav.syfo.db.finnNarmestelederForSykmeldt
 import no.nav.syfo.log
 import org.slf4j.MDC
 
 @KtorExperimentalAPI
 fun Route.registrerNarmesteLederApi(
-    narmesteLederClient: NarmesteLederClient,
+    database: DatabaseInterface,
     utvidetNarmesteLederService: UtvidetNarmesteLederService
 ) {
-    get("/narmesteleder/narmesteLeder/{narmesteLederAktorId}") {
+    get("/aktiveNarmestelederKoblinger") {
+        val callId = MDC.get("Nav-Callid")
         try {
-            val narmesteLederAktorId: String = call.parameters["narmesteLederAktorId"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("NarmesteLederAktorId mangler")
+            val narmesteLederFnr: String = call.request.headers["narmesteLederFnr"]?.takeIf { it.isNotEmpty() }
+                ?: throw IllegalArgumentException("NarmesteLederFnr mangler")
 
-            log.info("Mottatt forespørsel om nærmeste leder-relasjoner for leder {}", narmesteLederAktorId)
-
-            call.respond(narmesteLederClient.hentNarmesteLederFraSyfoserviceStrangler(narmesteLederAktorId))
+            call.respond(database.finnAktiveNarmestelederkoblinger(narmesteLederFnr))
         } catch (e: IllegalArgumentException) {
-            log.warn("Kan ikke hente nærmeste leder: {}", e.message)
+            log.warn("Kan ikke hente nærmeste leder: {}, {}", e.message, callId)
             call.respond(HttpStatusCode.BadRequest, e.message ?: "Kan ikke hente nærmeste leder")
         }
     }
 
-    get("/narmesteleder/sykmeldt/{sykmeldtAktorId}") {
+    get("/narmestelederForSykmeldt") {
+        val callId = MDC.get("Nav-Callid")
         try {
-            val sykmeldtAktorId: String = call.parameters["sykmeldtAktorId"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("sykmeldtAktorId mangler")
+            val sykmeldtFnr: String = call.request.headers["sykmeldtFnr"]?.takeIf { it.isNotEmpty() }
+                ?: throw IllegalArgumentException("sykmeldtFnr mangler")
             val orgnummer: String = call.request.queryParameters["orgnummer"]?.takeIf { it.isNotEmpty() }
                 ?: throw NotImplementedError("Spørring uten orgnummer er ikke implementert")
 
-            val narmesteLederRelasjon =
-                narmesteLederClient.hentNarmesteLederForSykmeldtFraSyfoserviceStrangler(sykmeldtAktorId, orgnummer)
+            val narmesteLederRelasjon = database.finnNarmestelederForSykmeldt(sykmeldtFnr, orgnummer)
             call.respond(mapOf("narmesteLederRelasjon" to narmesteLederRelasjon))
         } catch (e: IllegalArgumentException) {
-            log.warn("Kan ikke hente nærmeste leder da aktørid mangler: {}", e.message)
+            log.warn("Kan ikke hente nærmeste leder da fnr mangler: {}, {}", e.message, callId)
             call.respond(HttpStatusCode.BadRequest, e.message!!)
         } catch (e: NotImplementedError) {
-            log.info("Spørring uten orgnummer er ikke implementert", e.message)
+            log.info("Spørring uten orgnummer er ikke implementert {}, {}", e.message, callId)
             call.respond(HttpStatusCode.BadRequest, e.message!!)
         }
     }
 
-    get("/narmesteleder/sykmeldt/{sykmeldtAktorId}/narmesteledere") {
+    get("/alleNarmesteledereForSykmeldt") {
+        val callId = MDC.get("Nav-Callid")
         try {
-            val sykmeldtAktorId: String = call.parameters["sykmeldtAktorId"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("sykmeldtAktorId mangler")
+            val sykmeldtFnr: String = call.request.headers["sykmeldtFnr"]?.takeIf { it.isNotEmpty() }
+                ?: throw IllegalArgumentException("sykmeldtFnr mangler")
 
             if (call.request.queryParameters["utvidet"] == "ja") {
-                val callId = MDC.get("Nav-Callid")
                 call.respond(
                     utvidetNarmesteLederService.hentNarmesteledereMedNavn(
-                        sykmeldtAktorId = sykmeldtAktorId,
+                        sykmeldtFnr = sykmeldtFnr,
                         callId = callId
                     )
                 )
             } else {
-                val narmesteLederRelasjoner =
-                    narmesteLederClient.hentNarmesteLedereForSykmeldtFraSyfoserviceStrangler(sykmeldtAktorId)
+                val narmesteLederRelasjoner = database.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
                 call.respond(narmesteLederRelasjoner)
             }
         } catch (e: IllegalArgumentException) {
-            log.warn("Kan ikke hente nærmeste ledere da aktørid mangler: {}", e.message)
+            log.warn("Kan ikke hente nærmeste ledere da fnr mangler: {}, {}", e.message, callId)
             call.respond(HttpStatusCode.BadRequest, e.message!!)
         }
     }

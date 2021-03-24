@@ -15,9 +15,10 @@ import io.mockk.mockk
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.service.PdlPersonService
-import no.nav.syfo.testutils.HttpClientTest
-import no.nav.syfo.testutils.ResponseData
+import no.nav.syfo.testutils.TestDB
+import no.nav.syfo.testutils.dropData
 import no.nav.syfo.testutils.generateJWT
+import no.nav.syfo.testutils.lagreNarmesteleder
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
@@ -25,21 +26,27 @@ import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
-const val sykmeldtAktorId = "aktorId"
-const val aktorIdLeder = "123"
+const val sykmeldtFnr = "fnr"
+const val fnrLeder = "123"
 
 @KtorExperimentalAPI
 class NarmesteLederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
-    val httpClient = HttpClientTest()
-    httpClient.responseData = ResponseData(HttpStatusCode.NotFound, "")
-
-    val narmesteLederClient = NarmesteLederClient("url", "12345", httpClient.httpClient)
-    val utvidetNarmesteLederService = UtvidetNarmesteLederService(narmesteLederClient, pdlPersonService)
+    val testDb = TestDB()
+    val utvidetNarmesteLederService = UtvidetNarmesteLederService(testDb, pdlPersonService)
 
     beforeEachTest {
         clearMocks(pdlPersonService)
+        testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true)
+    }
+    afterEachTest {
+        testDb.connection.dropData()
+    }
+    afterGroup {
+        testDb.stop()
     }
 
     describe("API for å hente alle den sykmeldtes nærmeste ledere") {
@@ -48,13 +55,13 @@ class NarmesteLederApiKtTest : Spek({
             val env = setUpAuth()
             application.routing {
                 authenticate {
-                    registrerNarmesteLederApi(narmesteLederClient, utvidetNarmesteLederService)
+                    registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
                 }
             }
             it("Returnerer nærmeste ledere") {
-                httpClient.respond(narmestelederResponse())
                 with(
-                    handleRequest(HttpMethod.Get, "/narmesteleder/sykmeldt/$sykmeldtAktorId/narmesteledere") {
+                    handleRequest(HttpMethod.Get, "/alleNarmesteledereForSykmeldt") {
+                        addHeader("sykmeldtFnr", sykmeldtFnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -69,24 +76,75 @@ class NarmesteLederApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!) shouldBeEqualTo listOf(
-                        narmesteLederRelasjon()
-                    )
+                    val narmesteLedere = objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
+                    narmesteLedere.size shouldBeEqualTo 1
+                    val narmesteLeder = narmesteLedere[0]
+                    erLike(narmesteLeder, forventetNarmesteLeder()) shouldBeEqualTo true
+                }
+            }
+            it("Returnerer inaktiv nærmeste leder") {
+                testDb.connection.lagreNarmesteleder(
+                    orgnummer = "orgnummer2", fnr = sykmeldtFnr, fnrNl = "fnrLeder2", arbeidsgiverForskutterer = true,
+                    aktivTom = OffsetDateTime.now(
+                        ZoneOffset.UTC
+                    ).minusDays(2)
+                )
+                with(
+                    handleRequest(HttpMethod.Get, "/alleNarmesteledereForSykmeldt") {
+                        addHeader("sykmeldtFnr", sykmeldtFnr)
+                        addHeader(
+                            HttpHeaders.Authorization,
+                            "Bearer ${
+                            generateJWT(
+                                "syfosmaltinn",
+                                "narmesteleder",
+                                subject = "123",
+                                issuer = env.jwtIssuer
+                            )
+                            }"
+                        )
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    val narmesteLedere = objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
+                    narmesteLedere.size shouldBeEqualTo 2
+                }
+            }
+            it("Returnerer tom liste hvis bruker ikke har noen nærmeste ledere") {
+                with(
+                    handleRequest(HttpMethod.Get, "/alleNarmesteledereForSykmeldt") {
+                        addHeader("sykmeldtFnr", "sykmeldtFnrUtenNl")
+                        addHeader(
+                            HttpHeaders.Authorization,
+                            "Bearer ${
+                            generateJWT(
+                                "syfosmaltinn",
+                                "narmesteleder",
+                                subject = "123",
+                                issuer = env.jwtIssuer
+                            )
+                            }"
+                        )
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    val narmesteLedere = objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
+                    narmesteLedere.size shouldBeEqualTo 0
                 }
             }
             it("Setter navn på lederne hvis utvidet == ja") {
                 coEvery { pdlPersonService.getPersonnavn(any(), any()) } returns mapOf(
                     Pair(
-                        aktorIdLeder,
+                        fnrLeder,
                         Navn("Fornavn", null, "Etternavn")
                     )
                 )
-                httpClient.respond(narmestelederResponse())
                 with(
                     handleRequest(
                         HttpMethod.Get,
-                        "/narmesteleder/sykmeldt/$sykmeldtAktorId/narmesteledere?utvidet=ja"
+                        "/alleNarmesteledereForSykmeldt?utvidet=ja"
                     ) {
+                        addHeader("sykmeldtFnr", sykmeldtFnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -101,9 +159,10 @@ class NarmesteLederApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!) shouldBeEqualTo listOf(
-                        narmesteLederRelasjon(navn = "Fornavn Etternavn")
-                    )
+                    val narmesteLedere = objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
+                    narmesteLedere.size shouldBeEqualTo 1
+                    val narmesteLeder = narmesteLedere[0]
+                    erLike(narmesteLeder, forventetNarmesteLeder(navn = "Fornavn Etternavn")) shouldBeEqualTo true
                 }
             }
         }
@@ -115,12 +174,12 @@ class NarmesteLederApiKtTest : Spek({
             val env = setUpAuth()
             application.routing {
                 authenticate {
-                    registrerNarmesteLederApi(narmesteLederClient, utvidetNarmesteLederService)
+                    registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
                 }
             }
-            it("Returnerer feilmelding hvis aktørid for den sykmeldte mangler") {
+            it("Returnerer feilmelding hvis fnr for den sykmeldte mangler") {
                 with(
-                    handleRequest(HttpMethod.Get, "/narmesteleder/sykmeldt/narmesteledere") {
+                    handleRequest(HttpMethod.Get, "/alleNarmesteledereForSykmeldt") {
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -140,7 +199,8 @@ class NarmesteLederApiKtTest : Spek({
             }
             it("Feil audience gir feilmelding") {
                 with(
-                    handleRequest(HttpMethod.Get, "/narmesteleder/sykmeldt/$sykmeldtAktorId/narmesteledere") {
+                    handleRequest(HttpMethod.Get, "/alleNarmesteledereForSykmeldt") {
+                        addHeader("sykmeldtFnr", sykmeldtFnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -161,31 +221,23 @@ class NarmesteLederApiKtTest : Spek({
     }
 })
 
-private fun narmestelederResponse(): List<NarmesteLeder> =
-    listOf(
-        NarmesteLeder(
-            aktorId = sykmeldtAktorId,
-            orgnummer = "orgnummer",
-            nlAktorId = aktorIdLeder,
-            nlTelefonnummer = null,
-            nlEpost = "epost@nav.no",
-            aktivFom = LocalDate.now().minusYears(1),
-            aktivTom = null,
-            agForskutterer = true
-        )
-    )
+private fun erLike(narmesteLederRelasjon1: NarmesteLederRelasjon, narmesteLederRelasjon2: NarmesteLederRelasjon): Boolean {
+    val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
+    return narmesteLederRelasjon1.copy(timestamp = timestamp) == narmesteLederRelasjon2.copy(timestamp = timestamp)
+}
 
-private fun narmesteLederRelasjon(navn: String? = null) =
+private fun forventetNarmesteLeder(navn: String? = null): NarmesteLederRelasjon =
     NarmesteLederRelasjon(
-        aktorId = sykmeldtAktorId,
+        fnr = sykmeldtFnr,
         orgnummer = "orgnummer",
-        narmesteLederAktorId = aktorIdLeder,
-        narmesteLederTelefonnummer = null,
+        narmesteLederFnr = fnrLeder,
+        narmesteLederTelefonnummer = "90909090",
         narmesteLederEpost = "epost@nav.no",
         aktivFom = LocalDate.now().minusYears(1),
         aktivTom = null,
         arbeidsgiverForskutterer = true,
         skrivetilgang = true,
         tilganger = listOf(Tilgang.SYKMELDING, Tilgang.SYKEPENGESOKNAD, Tilgang.MOTE, Tilgang.OPPFOLGINGSPLAN),
-        navn = navn
+        navn = navn,
+        timestamp = OffsetDateTime.now(ZoneOffset.UTC)
     )

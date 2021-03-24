@@ -1,18 +1,20 @@
 package no.nav.syfo.narmesteleder
 
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 data class NarmesteLederRelasjon(
-    val aktorId: String,
+    val fnr: String,
     val orgnummer: String,
-    val narmesteLederAktorId: String,
-    val narmesteLederTelefonnummer: String?,
-    val narmesteLederEpost: String?,
+    val narmesteLederFnr: String,
+    val narmesteLederTelefonnummer: String,
+    val narmesteLederEpost: String,
     val aktivFom: LocalDate,
     val aktivTom: LocalDate?,
     val arbeidsgiverForskutterer: Boolean?,
-    val skrivetilgang: Boolean,
-    val tilganger: List<Tilgang>,
+    val skrivetilgang: Boolean = true,
+    val tilganger: List<Tilgang> = listOf(Tilgang.SYKMELDING, Tilgang.SYKEPENGESOKNAD, Tilgang.MOTE, Tilgang.OPPFOLGINGSPLAN),
+    val timestamp: OffsetDateTime,
     val navn: String? = null
 )
 
