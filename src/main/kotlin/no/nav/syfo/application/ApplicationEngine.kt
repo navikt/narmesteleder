@@ -88,11 +88,13 @@ fun createApplicationEngine(
         val stsOidcClient = StsOidcClient(
             username = vaultSecrets.serviceuserUsername,
             password = vaultSecrets.serviceuserPassword,
-            stsUrl = env.stsUrl
+            stsUrl = env.stsUrl,
+            apiKey = env.stsApiKey
         )
         val pdlClient = PdlClient(
             httpClient,
             env.pdlGraphqlPath,
+            env.pdlApiKey,
             PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
         )
         val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient)

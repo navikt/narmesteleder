@@ -43,6 +43,8 @@ spec:
       memory: 2Gi
   vault:
     enabled: false
+  envFrom:
+    - secret: narmesteleder-secret
   ingresses:
     - "https://narmesteleder.intern.nav.no"
   webproxy: false

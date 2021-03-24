@@ -17,6 +17,8 @@ data class Environment(
     val dbHost: String = getEnvVar("NAIS_DATABASE_HOST"),
     val dbPort: String = getEnvVar("NAIS_DATABASE_PORT"),
     val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE"),
+    val pdlApiKey: String = getEnvVar("PDL_API_KEY"),
+    val stsApiKey: String? = getEnvVar("STS_API_KEY"),
     val stsUrl: String = getEnvVar("SECURITYTOKENSERVICE_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH")
 ) {
@@ -26,8 +28,8 @@ data class Environment(
 }
 
 data class VaultSecrets(
-    val serviceuserUsername: String = getFileAsString("/var/run/secrets/NARMESTELEDER_USERNAME"),
-    val serviceuserPassword: String = getFileAsString("/var/run/secrets/NARMESTELEDER_PASSWORD")
+    val serviceuserUsername: String = getEnvVar("SERVICEUSER_USERNAME"),
+    val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD")
 ) : KafkaCredentials {
     override val kafkaUsername: String = serviceuserUsername
     override val kafkaPassword: String = serviceuserPassword

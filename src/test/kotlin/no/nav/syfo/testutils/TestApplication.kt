@@ -58,7 +58,9 @@ fun TestApplicationEngine.setUpAuth(): Environment {
         databasePassword = "",
         dbHost = "",
         dbPort = "",
-        dbName = ""
+        dbName = "",
+        stsApiKey = "key",
+        pdlApiKey = "key"
     )
 
     val path = "src/test/resources/jwkset.json"
