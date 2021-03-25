@@ -29,6 +29,7 @@ plugins {
     id("com.diffplug.spotless") version "5.8.2"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("org.hidetake.swagger.generator") version "2.18.1" apply true
+    jacoco
 }
 
 val githubUser: String by project
@@ -107,6 +108,14 @@ swaggerSources {
     }
 }
 
+tasks.jacocoTestReport {
+    reports {
+        xml.isEnabled = true
+        html.isEnabled = true
+    }
+}
+
+
 tasks {
     withType<Jar> {
         manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
@@ -125,6 +134,13 @@ tasks {
         outputDir = File(buildDir.path + "/resources/main/api")
     }
 
+    withType<JacocoReport> {
+        classDirectories.setFrom(
+                sourceSets.main.get().output.asFileTree.matching {
+                    exclude()
+                }
+        )
+    }
     withType<ShadowJar> {
         transform(ServiceFileTransformer::class.java) {
             setPath("META-INF/cxf")
