@@ -49,6 +49,7 @@ fun TestApplicationEngine.setUpTestApplication() {
 fun TestApplicationEngine.setUpAuth(): Environment {
     val env = Environment(
         clientId = "narmesteleder",
+        cluster = "dev",
         clientSecret = "secret",
         jwkKeysUrl = "keys",
         jwtIssuer = "issuer",

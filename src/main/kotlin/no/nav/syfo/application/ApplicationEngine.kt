@@ -29,6 +29,7 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
+import no.nav.syfo.application.api.setupSwaggerDocApi
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.client.StsOidcClient
@@ -102,6 +103,9 @@ fun createApplicationEngine(
 
         routing {
             registerNaisApi(applicationState)
+            if (env.cluster == "dev-gcp") {
+                setupSwaggerDocApi()
+            }
             authenticate {
                 registrerForskutteringApi(database)
                 registrerNarmesteLederApi(database, utvidetNarmesteLederService)
