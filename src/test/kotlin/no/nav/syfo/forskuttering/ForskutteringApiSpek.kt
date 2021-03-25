@@ -47,7 +47,7 @@ object ForskutteringApiSpek : Spek({
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = true)
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
-                        addHeader("fnr", fnr)
+                        addHeader("Sykmeldt-Fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -68,7 +68,7 @@ object ForskutteringApiSpek : Spek({
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = false)
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
-                        addHeader("fnr", fnr)
+                        addHeader("Sykmeldt-Fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -89,7 +89,7 @@ object ForskutteringApiSpek : Spek({
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = null)
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
-                        addHeader("fnr", fnr)
+                        addHeader("Sykmeldt-Fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -109,7 +109,7 @@ object ForskutteringApiSpek : Spek({
             it("Returnerer UKJENT hvis brukerikke har noen nærmeste leder") {
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
-                        addHeader("fnr", fnr)
+                        addHeader("Sykmeldt-Fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -130,7 +130,7 @@ object ForskutteringApiSpek : Spek({
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = true, aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(2))
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
-                        addHeader("fnr", fnr)
+                        addHeader("Sykmeldt-Fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -183,7 +183,7 @@ object ForskutteringApiSpek : Spek({
             it("Returnerer feilmelding hvis orgnummer mangler") {
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer") {
-                        addHeader("fnr", fnr)
+                        addHeader("Sykmeldt-Fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -204,7 +204,7 @@ object ForskutteringApiSpek : Spek({
             it("Feil audience gir feilmelding") {
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=333") {
-                        addHeader("fnr", fnr)
+                        addHeader("Sykmeldt-Fnr", fnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${

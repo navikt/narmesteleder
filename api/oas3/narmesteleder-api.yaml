@@ -17,11 +17,7 @@ paths:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/Orgnummer'
-        - in: header
-            name: fnr
-            schema:
-              $ref: '#/components/schemas/Fodselsnummer'
-            required: true
+        - $ref: '#/components/parameters/SykmeldtFnr'
       responses:
         '200':
           $ref: '#/components/responses/ForskutteringRespons'
@@ -40,11 +36,7 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - in: header
-            name: Narmeste-Leder-Fnr
-            schema:
-              $ref: '#/components/schemas/Fodselsnummer'
-            required: true
+        - $ref: '#/components/parameters/NarmesteLederFnr'
       responses:
         '200':
           $ref: '#/components/responses/NarmesteLederRelasjonListeResponse'
@@ -64,11 +56,7 @@ paths:
         - bearerAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/Orgnummer'
-        - in: header
-            name: Sykmeldt-Fnr
-            schema:
-              $ref: '#/components/schemas/Fodselsnummer'
-            required: true
+        - $ref: '#/components/parameters/SykmeldtFnr'
       responses:
         '200':
           $ref: '#/components/responses/NarmesteLederRelasjonResponse'
@@ -88,11 +76,7 @@ paths:
         - bearerAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/Utvidet'
-        - in: header
-            name: Sykmeldt-Fnr
-            schema:
-              $ref: '#/components/schemas/Fodselsnummer'
-            required: true
+        - $ref: '#/components/parameters/SykmeldtFnr'
       responses:
         '200':
           $ref: '#/components/responses/NarmesteLederRelasjonListeResponse'
@@ -135,6 +119,20 @@ components:
       schema:
         type: string
       example: '974600951'
+    SykmeldtFnr:
+      description: fnr for den sykmeldte
+      name: Sykmeldt-Fnr
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/Fodselsnummer'
+    NarmesteLederFnr:
+      description: fnr for nærmeste leder
+      name: Narmeste-Leder-Fnr
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/Fodselsnummer'
     Utvidet:
       description: ja eller nei for om navn på leder skal inkluderes i responsen
       name: utvidet

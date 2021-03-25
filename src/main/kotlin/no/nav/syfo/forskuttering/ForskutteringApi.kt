@@ -17,8 +17,8 @@ fun Route.registrerForskutteringApi(database: DatabaseInterface) {
         val callId = MDC.get("Nav-Callid")
         try {
             val queryParameters: Parameters = request.queryParameters
-            val fnr = request.headers["fnr"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("Fnr mangler")
+            val fnr = request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
+                ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
             val orgnummer: String = queryParameters["orgnummer"]?.takeIf { it.isNotEmpty() }
                 ?: throw IllegalArgumentException("Orgnummer mangler")
 
