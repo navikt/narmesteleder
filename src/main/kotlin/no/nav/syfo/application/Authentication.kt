@@ -28,7 +28,7 @@ fun Application.setupAuth(jwkProvider: JwkProvider, env: Environment) {
 }
 
 fun harTilgang(credentials: JWTCredential, clientId: String): Boolean {
-    val appid: String = credentials.payload.getClaim("appid").asString()
+    val appid: String = credentials.payload.getClaim("azp").asString()
     log.debug("authorization attempt for $appid")
     return credentials.payload.audience.contains(clientId)
 }
