@@ -60,8 +60,8 @@ class NarmesteLederApiKtTest : Spek({
             }
             it("Returnerer nærmeste ledere") {
                 with(
-                    handleRequest(HttpMethod.Get, "/alleNarmesteledereForSykmeldt") {
-                        addHeader("sykmeldtFnr", sykmeldtFnr)
+                    handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
+                        addHeader("Sykmeldt-Fnr", sykmeldtFnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -90,8 +90,8 @@ class NarmesteLederApiKtTest : Spek({
                     ).minusDays(2)
                 )
                 with(
-                    handleRequest(HttpMethod.Get, "/alleNarmesteledereForSykmeldt") {
-                        addHeader("sykmeldtFnr", sykmeldtFnr)
+                    handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
+                        addHeader("Sykmeldt-Fnr", sykmeldtFnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -112,8 +112,8 @@ class NarmesteLederApiKtTest : Spek({
             }
             it("Returnerer tom liste hvis bruker ikke har noen nærmeste ledere") {
                 with(
-                    handleRequest(HttpMethod.Get, "/alleNarmesteledereForSykmeldt") {
-                        addHeader("sykmeldtFnr", "sykmeldtFnrUtenNl")
+                    handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
+                        addHeader("Sykmeldt-Fnr", "sykmeldtFnrUtenNl")
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -142,9 +142,9 @@ class NarmesteLederApiKtTest : Spek({
                 with(
                     handleRequest(
                         HttpMethod.Get,
-                        "/alleNarmesteledereForSykmeldt?utvidet=ja"
+                        "/sykmeldt/narmesteledere?utvidet=ja"
                     ) {
-                        addHeader("sykmeldtFnr", sykmeldtFnr)
+                        addHeader("Sykmeldt-Fnr", sykmeldtFnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -179,7 +179,7 @@ class NarmesteLederApiKtTest : Spek({
             }
             it("Returnerer feilmelding hvis fnr for den sykmeldte mangler") {
                 with(
-                    handleRequest(HttpMethod.Get, "/alleNarmesteledereForSykmeldt") {
+                    handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
@@ -199,8 +199,8 @@ class NarmesteLederApiKtTest : Spek({
             }
             it("Feil audience gir feilmelding") {
                 with(
-                    handleRequest(HttpMethod.Get, "/alleNarmesteledereForSykmeldt") {
-                        addHeader("sykmeldtFnr", sykmeldtFnr)
+                    handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
+                        addHeader("Sykmeldt-Fnr", sykmeldtFnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${

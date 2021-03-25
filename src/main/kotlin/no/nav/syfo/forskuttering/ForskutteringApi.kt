@@ -12,7 +12,7 @@ import no.nav.syfo.log
 import org.slf4j.MDC
 
 fun Route.registrerForskutteringApi(database: DatabaseInterface) {
-    get("/arbeidsgiverForskutterer") {
+    get("/arbeidsgiver/forskutterer") {
         val request = call.request
         val callId = MDC.get("Nav-Callid")
         try {

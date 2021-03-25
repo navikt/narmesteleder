@@ -18,11 +18,11 @@ fun Route.registrerNarmesteLederApi(
     database: DatabaseInterface,
     utvidetNarmesteLederService: UtvidetNarmesteLederService
 ) {
-    get("/aktiveNarmestelederKoblinger") {
+    get("/leder/narmesteleder/aktive") {
         val callId = MDC.get("Nav-Callid")
         try {
-            val narmesteLederFnr: String = call.request.headers["narmesteLederFnr"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("NarmesteLederFnr mangler")
+            val narmesteLederFnr: String = call.request.headers["Narmeste-Leder-Fnr"]?.takeIf { it.isNotEmpty() }
+                ?: throw IllegalArgumentException("Narmeste-Leder-Fnr mangler")
 
             call.respond(database.finnAktiveNarmestelederkoblinger(narmesteLederFnr))
         } catch (e: IllegalArgumentException) {
@@ -31,11 +31,11 @@ fun Route.registrerNarmesteLederApi(
         }
     }
 
-    get("/narmestelederForSykmeldt") {
+    get("/sykmeldt/narmesteleder") {
         val callId = MDC.get("Nav-Callid")
         try {
-            val sykmeldtFnr: String = call.request.headers["sykmeldtFnr"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("sykmeldtFnr mangler")
+            val sykmeldtFnr: String = call.request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
+                ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
             val orgnummer: String = call.request.queryParameters["orgnummer"]?.takeIf { it.isNotEmpty() }
                 ?: throw NotImplementedError("Spørring uten orgnummer er ikke implementert")
 
@@ -50,11 +50,11 @@ fun Route.registrerNarmesteLederApi(
         }
     }
 
-    get("/alleNarmesteledereForSykmeldt") {
+    get("/sykmeldt/narmesteledere") {
         val callId = MDC.get("Nav-Callid")
         try {
-            val sykmeldtFnr: String = call.request.headers["sykmeldtFnr"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("sykmeldtFnr mangler")
+            val sykmeldtFnr: String = call.request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
+                ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
 
             if (call.request.queryParameters["utvidet"] == "ja") {
                 call.respond(
