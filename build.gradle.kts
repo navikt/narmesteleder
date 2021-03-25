@@ -23,10 +23,6 @@ val hikariVersion = "3.3.0"
 val postgresEmbeddedVersion = "0.13.1"
 val swaggerUiVersion = "3.10.0"
 
-tasks.withType<Jar> {
-    manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-}
-
 plugins {
     id("org.jmailen.kotlinter") version "3.3.0"
     kotlin("jvm") version "1.4.21"
@@ -34,11 +30,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("org.hidetake.swagger.generator") version "2.18.1" apply true
     jacoco
-}
-
-buildscript {
-    dependencies {
-    }
 }
 
 val githubUser: String by project
@@ -126,9 +117,13 @@ tasks.jacocoTestReport {
 
 
 tasks {
-
+    withType<Jar> {
+        manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
+    }
     create("printVersion") {
-        println(project.version)
+        doLast {
+            println(project.version)
+        }
     }
 
     withType<KotlinCompile> {
@@ -145,7 +140,6 @@ tasks {
                     exclude()
                 }
         )
-
     }
     withType<ShadowJar> {
         transform(ServiceFileTransformer::class.java) {
