@@ -11,7 +11,7 @@ import java.net.SocketException
 import java.sql.Connection
 import java.sql.ResultSet
 
-class Database(private val env: Environment, retries: Long = 30, sleepTime: Long = 1_000) :
+class Database(private val env: Environment, retries: Long = 30, sleepTime: Long = 5_000) :
     DatabaseInterface {
     private val dataSource: HikariDataSource
     override val connection: Connection
