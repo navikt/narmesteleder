@@ -32,7 +32,7 @@ paths:
       summary: returnerer liste av alle aktive NL-koblinger for angitt leder-fnr
       operationId: getNarmestelederRelasjonerForLeder
       tags:
-        - Narmesteleder
+        - Narmesteleder-leder
       security:
         - bearerAuth: []
       parameters:
@@ -51,7 +51,7 @@ paths:
       summary: returnerer aktiv nærmeste leder for angitt fnr og orgnummer
       operationId: getNarmestelederForSykmeldt
       tags:
-        - Narmesteleder
+        - Narmesteleder-sykmeldt
       security:
         - bearerAuth: [ ]
       parameters:
@@ -71,7 +71,7 @@ paths:
       summary: returnerer alle nærmeste leder-relasjoner for angitt fnr
       operationId: getNarmestelederForSykmeldt
       tags:
-        - Narmesteleder
+        - Narmesteleder-sykmeldt
       security:
         - bearerAuth: [ ]
       parameters:
