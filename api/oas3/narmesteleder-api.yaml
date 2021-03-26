@@ -1,0 +1,212 @@
+openapi: 3.0.0
+
+info:
+  title: Narmesteleder API
+  description: API for narmesteleder.
+  version: 1.0.0
+servers:
+  - url: 'https://narmesteleder.dev.nav.no'
+paths:
+  /arbeidsgiver/forskutterer:
+    get:
+      summary: returnerer hvorvidt arbeidsgiver forskutterer for angitt orgnummer og fnr
+      operationId: arbeidsgiverForskutterer
+      tags:
+        - Forskuttering
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Orgnummer'
+        - $ref: '#/components/parameters/SykmeldtFnr'
+      responses:
+        '200':
+          $ref: '#/components/responses/ForskutteringRespons'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /leder/narmesteleder/aktive:
+    get:
+      summary: returnerer liste av alle aktive NL-koblinger for angitt leder-fnr
+      operationId: getNarmestelederRelasjonerForLeder
+      tags:
+        - Narmesteleder-leder
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/NarmesteLederFnr'
+      responses:
+        '200':
+          $ref: '#/components/responses/NarmesteLederRelasjonListeResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /sykmeldt/narmesteleder:
+    get:
+      summary: returnerer aktiv nærmeste leder for angitt fnr og orgnummer
+      operationId: getNarmestelederForSykmeldt
+      tags:
+        - Narmesteleder-sykmeldt
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/Orgnummer'
+        - $ref: '#/components/parameters/SykmeldtFnr'
+      responses:
+        '200':
+          $ref: '#/components/responses/NarmesteLederRelasjonResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /sykmeldt/narmesteledere:
+    get:
+      summary: returnerer alle nærmeste leder-relasjoner for angitt fnr
+      operationId: getNarmestelederForSykmeldt
+      tags:
+        - Narmesteleder-sykmeldt
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/Utvidet'
+        - $ref: '#/components/parameters/SykmeldtFnr'
+      responses:
+        '200':
+          $ref: '#/components/responses/NarmesteLederRelasjonListeResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+components:
+  responses:
+    ForskutteringRespons:
+      description: "Forskuttering response"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Forskuttering'
+    NarmesteLederRelasjonListeResponse:
+      description: "NarmesteLeder response"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NarmesteLederRelasjon'
+    NarmesteLederRelasjonResponse:
+      description: "Arbeidsforhold response"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NarmesteLederRelasjon'
+
+  parameters:
+    Orgnummer:
+      description: Bedriftens orgnummer
+      name: orgnummer
+      in: query
+      required: true
+      schema:
+        type: string
+      example: '974600951'
+    SykmeldtFnr:
+      description: fnr for den sykmeldte
+      name: Sykmeldt-Fnr
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/Fodselsnummer'
+    NarmesteLederFnr:
+      description: fnr for nærmeste leder
+      name: Narmeste-Leder-Fnr
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/Fodselsnummer'
+    Utvidet:
+      description: ja eller nei for om navn på leder skal inkluderes i responsen
+      name: utvidet
+      in: query
+      required: false
+      schema:
+        type: string
+      example: 'ja'
+  schemas:
+    Date:
+      type: string
+      format: date
+    Timestamp:
+      type: string
+      format: 'date-time'
+    Fodselsnummer:
+      type: string
+      minLength: 11
+      maxLength: 11
+      example: '01234567891'
+    Tilgang:
+      type: string
+      enum: [SYKMELDING, SYKEPENGESOKNAD, MOTE, OPPFOLGINGSPLAN]
+    NarmesteLederRelasjon:
+      type: object
+      required:
+        - fnr
+        - orgnummer
+        - narmesteLederFnr
+        - narmesteLederTelefonnummer
+        - narmesteLederEpost
+        - aktivFom
+        - skrivetilgang
+        - tilganger
+        - timestamp
+      properties:
+        fnr:
+          $ref: '#/components/schemas/Fodselsnummer'
+        orgnummer:
+          type: string
+        narmesteLederFnr:
+          $ref: '#/components/schemas/Fodselsnummer'
+        narmesteLederTelefonnummer:
+          type: string
+        narmesteLederEpost:
+          type: string
+        aktivFom:
+          $ref: '#/components/schemas/Date'
+        aktivTom:
+          $ref: '#/components/schemas/Date'
+        arbeidsgiverForskutterer:
+          type: boolean
+        skrivetilgang:
+          type: boolean
+        tilganger:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tilgang'
+        timestamp:
+          $ref: '#/components/schemas/Timestamp'
+        navn:
+          type: string
+
+    Forskuttering:
+      type: string
+      enum: [JA,
+             NEI,
+             UKJENT]
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

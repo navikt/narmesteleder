@@ -7,20 +7,28 @@ metadata:
     team: teamsykmelding
 spec:
   image: {{ image }}
+  gcp:
+    sqlInstances:
+      - name: narmesteleder-db-instance
+        type: POSTGRES_12
+        diskSize: 10
+        databases:
+          - name: narmesteleder
+            envVarPrefix: NAIS_DATABASE
   replicas:
-    min: 2
+    min: 3
     max: 6
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
     path: /is_alive
-    initialDelay: 10
+    initialDelay: 30
     timeout: 5
     periodSeconds: 5
     failureThreshold: 30
   readiness:
     path: /is_ready
-    initialDelay: 30
+    initialDelay: 60
     periodSeconds: 5
     timeout: 5
   prometheus:
@@ -28,13 +36,52 @@ spec:
     path: /prometheus
   resources:
     limits:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 2560m
+      memory: 2Gi
     requests:
-      cpu: 400m
-      memory: 768Mi
+      cpu: 2048m
+      memory: 2Gi
   vault:
     enabled: false
+  envFrom:
+    - secret: narmesteleder-secret
   ingresses:
     - "https://narmesteleder.intern.nav.no"
-  webproxy: true
+  webproxy: false
+  azure:
+    application:
+      enabled: true
+      tenant: nav.no
+  accessPolicy:
+    inbound:
+      rules:
+        - application: syfoarbeidsgivertilgang
+          namespace: default
+          cluster: prod-fss
+        - application: syfosoknad
+          namespace: flex
+          cluster: prod-fss
+        - application: syfovarsel
+          namespace: default
+          cluster: prod-fss
+        - application: syfobrukertilgang
+          namespace: default
+          cluster: prod-fss
+        - application: syfomoteadmin
+          namespace: default
+          cluster: prod-fss
+        - application: syfooppfolgingsplanservice
+          namespace: default
+          cluster: prod-fss
+        - application: modiasyforest
+          namespace: default
+          cluster: prod-fss
+        - application: syfosmaltinn
+        - application: sykmeldinger-backend
+          namespace: default
+          cluster: prod-fss
+  env:
+    - name: SECURITYTOKENSERVICE_URL
+      value: https://api-gw.oera.no/security-token-service/rest/v1/sts/token
+    - name: PDL_GRAPHQL_PATH
+      value: https://api-gw.oera.no/pdl-api/graphql
