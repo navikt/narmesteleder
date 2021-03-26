@@ -28,6 +28,7 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.UUID
 
 const val sykmeldtFnr = "fnr"
 const val fnrLeder = "123"
@@ -223,11 +224,12 @@ class NarmesteLederApiKtTest : Spek({
 
 private fun erLike(narmesteLederRelasjon1: NarmesteLederRelasjon, narmesteLederRelasjon2: NarmesteLederRelasjon): Boolean {
     val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-    return narmesteLederRelasjon1.copy(timestamp = timestamp) == narmesteLederRelasjon2.copy(timestamp = timestamp)
+    return narmesteLederRelasjon1.copy(narmesteLederId = narmesteLederRelasjon2.narmesteLederId, timestamp = timestamp) == narmesteLederRelasjon2.copy(timestamp = timestamp)
 }
 
 private fun forventetNarmesteLeder(navn: String? = null): NarmesteLederRelasjon =
     NarmesteLederRelasjon(
+        narmesteLederId = UUID.randomUUID(),
         fnr = sykmeldtFnr,
         orgnummer = "orgnummer",
         narmesteLederFnr = fnrLeder,

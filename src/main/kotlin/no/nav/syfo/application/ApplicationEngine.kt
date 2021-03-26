@@ -26,6 +26,9 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
@@ -34,11 +37,19 @@ import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.forskuttering.registrerForskutteringApi
+import no.nav.syfo.kafka.aiven.KafkaUtils
+import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.UtvidetNarmesteLederService
+import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
+import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederResponseConsumerService
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
+import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
 import no.nav.syfo.narmesteleder.registrerNarmesteLederApi
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.service.PdlPersonService
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.serialization.StringDeserializer
 import java.util.UUID
 
 @KtorExperimentalAPI
@@ -101,6 +112,19 @@ fun createApplicationEngine(
         val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient)
         val utvidetNarmesteLederService = UtvidetNarmesteLederService(database, pdlPersonService)
 
+        val kafkaConsumer = KafkaConsumer(
+            KafkaUtils.getAivenKafkaConfig().toConsumerConfig("narmesteleder", JacksonKafkaDeserializer::class),
+            StringDeserializer(),
+            JacksonKafkaDeserializer(NlResponseKafkaMessage::class)
+        )
+        val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, database)
+        val narmesteLederResponseConsumerService = NarmesteLederResponseConsumerService(
+            kafkaConsumer,
+            applicationState,
+            env.nlResponseTopic,
+            oppdaterNarmesteLederService
+        )
+
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {
@@ -112,4 +136,20 @@ fun createApplicationEngine(
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
+
+        startBackgroundJob(applicationState) {
+            narmesteLederResponseConsumerService.startConsumer()
+        }
     }
+
+fun startBackgroundJob(applicationState: ApplicationState, block: suspend CoroutineScope.() -> Unit) {
+    GlobalScope.launch {
+        try {
+            block()
+        } catch (ex: Exception) {
+            log.error("Error in background task, restarting application")
+            applicationState.alive = false
+            applicationState.ready = false
+        }
+    }
+}

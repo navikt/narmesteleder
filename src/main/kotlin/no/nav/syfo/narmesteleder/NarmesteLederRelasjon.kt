@@ -2,8 +2,10 @@ package no.nav.syfo.narmesteleder
 
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.UUID
 
 data class NarmesteLederRelasjon(
+    val narmesteLederId: UUID,
     val fnr: String,
     val orgnummer: String,
     val narmesteLederFnr: String,
