@@ -20,7 +20,8 @@ data class Environment(
     val pdlApiKey: String = getEnvVar("PDL_API_KEY"),
     val stsApiKey: String? = getEnvVar("STS_API_KEY"),
     val stsUrl: String = getEnvVar("SECURITYTOKENSERVICE_URL"),
-    val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH")
+    val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
+    val nlResponseTopic: String = "teamsykmelding.syfo-nl-response"
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"

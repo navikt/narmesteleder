@@ -5,14 +5,19 @@ import no.nav.syfo.application.db.toList
 import no.nav.syfo.forskuttering.Forskuttering
 import no.nav.syfo.forskuttering.ForskutteringRespons
 import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
+import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
+import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.Timestamp
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.UUID
 
 fun DatabaseInterface.finnAktiveNarmestelederkoblinger(narmesteLederFnr: String): List<NarmesteLederRelasjon> {
     return connection.use { connection ->
         connection.prepareStatement(
             """
-           SELECT * from narmeste_leder where narmeste_leder_fnr = ? and aktiv_tom is null
+           SELECT * from narmeste_leder where narmeste_leder_fnr = ? and aktiv_tom is null;
         """
         ).use {
             it.setString(1, narmesteLederFnr)
@@ -25,7 +30,7 @@ fun DatabaseInterface.finnNarmestelederForSykmeldt(fnr: String, orgnummer: Strin
     return connection.use { connection ->
         connection.prepareStatement(
             """
-           SELECT * from narmeste_leder where bruker_fnr = ? and orgnummer = ? and aktiv_tom is null
+           SELECT * from narmeste_leder where bruker_fnr = ? and orgnummer = ? and aktiv_tom is null;
         """
         ).use {
             it.setString(1, fnr)
@@ -39,7 +44,7 @@ fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(fnr: String): List<Narme
     return connection.use { connection ->
         connection.prepareStatement(
             """
-           SELECT * from narmeste_leder where bruker_fnr = ?
+           SELECT * from narmeste_leder where bruker_fnr = ?;
         """
         ).use {
             it.setString(1, fnr)
@@ -48,11 +53,46 @@ fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(fnr: String): List<Narme
     }
 }
 
+fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(fnr: String, orgnummer: String): List<NarmesteLederRelasjon> {
+    return connection.use { connection ->
+        connection.prepareStatement(
+            """
+           SELECT * from narmeste_leder where bruker_fnr = ? and orgnummer = ?;
+        """
+        ).use {
+            it.setString(1, fnr)
+            it.setString(2, orgnummer)
+            it.executeQuery().toList { toNarmesteLederRelasjon() }
+        }
+    }
+}
+
+fun DatabaseInterface.deaktiverNarmesteLeder(narmesteLederId: UUID) {
+    connection.use { connection ->
+        connection.deaktiverNarmesteLeder(narmesteLederId)
+        connection.commit()
+    }
+}
+
+fun DatabaseInterface.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: NlResponse) {
+    connection.use { connection ->
+        connection.oppdaterNarmesteLeder(narmesteLederId, nlResponse)
+        connection.commit()
+    }
+}
+
+fun DatabaseInterface.lagreNarmesteLeder(nlResponse: NlResponse, aktivFom: OffsetDateTime) {
+    connection.use { connection ->
+        connection.lagreNarmesteleder(nlResponse, aktivFom)
+        connection.commit()
+    }
+}
+
 fun DatabaseInterface.finnForskuttering(fnr: String, orgnummer: String): ForskutteringRespons {
     return connection.use { connection ->
         connection.prepareStatement(
             """
-           SELECT arbeidsgiver_forskutterer from narmeste_leder where bruker_fnr = ? and orgnummer = ? and aktiv_tom is null
+           SELECT arbeidsgiver_forskutterer from narmeste_leder where bruker_fnr = ? and orgnummer = ? and aktiv_tom is null;
         """
         ).use {
             it.setString(1, fnr)
@@ -62,8 +102,68 @@ fun DatabaseInterface.finnForskuttering(fnr: String, orgnummer: String): Forskut
     }
 }
 
+private fun Connection.lagreNarmesteleder(nlResponse: NlResponse, aktivFom: OffsetDateTime) {
+    this.prepareStatement(
+        """
+                INSERT INTO narmeste_leder(
+                    orgnummer,
+                    bruker_fnr,
+                    narmeste_leder_fnr,
+                    narmeste_leder_telefonnummer,
+                    narmeste_leder_epost,
+                    arbeidsgiver_forskutterer,
+                    aktiv_fom,
+                    aktiv_tom,
+                    timestamp)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                 """
+    ).use {
+        it.setString(1, nlResponse.orgnummer)
+        it.setString(2, nlResponse.sykmeldt.fnr)
+        it.setString(3, nlResponse.leder.fnr)
+        it.setString(4, nlResponse.leder.mobil)
+        it.setString(5, nlResponse.leder.epost)
+        it.setObject(6, nlResponse.utbetalesLonn)
+        it.setTimestamp(7, Timestamp.from(aktivFom.toInstant()))
+        it.setObject(8, null)
+        it.setTimestamp(9, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+        it.execute()
+    }
+}
+
+private fun Connection.deaktiverNarmesteLeder(narmesteLederId: UUID) =
+    this.prepareStatement(
+        """
+            UPDATE narmeste_leder 
+                SET aktiv_tom = ?, timestamp = ?
+                WHERE narmeste_leder_id = ?;
+            """
+    ).use {
+        it.setTimestamp(1, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+        it.setTimestamp(2, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+        it.setObject(3, narmesteLederId)
+        it.execute()
+    }
+
+private fun Connection.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: NlResponse) =
+    this.prepareStatement(
+        """
+            UPDATE narmeste_leder 
+                SET narmeste_leder_telefonnummer = ?, narmeste_leder_epost = ?, arbeidsgiver_forskutterer = ?, aktiv_tom = null, timestamp = ?
+                WHERE narmeste_leder_id = ?;
+            """
+    ).use {
+        it.setString(1, nlResponse.leder.mobil)
+        it.setString(2, nlResponse.leder.epost)
+        it.setObject(3, nlResponse.utbetalesLonn)
+        it.setTimestamp(4, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+        it.setObject(5, narmesteLederId)
+        it.execute()
+    }
+
 private fun ResultSet.toNarmesteLederRelasjon(): NarmesteLederRelasjon =
     NarmesteLederRelasjon(
+        narmesteLederId = getObject("narmeste_leder_id", UUID::class.java),
         fnr = getString("bruker_fnr"),
         orgnummer = getString("orgnummer"),
         narmesteLederFnr = getString("narmeste_leder_fnr"),

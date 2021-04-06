@@ -48,6 +48,8 @@ spec:
   ingresses:
     - "https://narmesteleder.dev.nav.no"
   webproxy: false
+  kafka:
+    pool: nav-dev
   azure:
     application:
       enabled: true
@@ -86,3 +88,5 @@ spec:
       value: https://api-gw-q1.oera.no/security-token-service/rest/v1/sts/token
     - name: PDL_GRAPHQL_PATH
       value: https://api-gw-q1.oera.no/pdl-api/graphql
+    - name: KAFKA_CLIENT_ID
+      value: narmesteleder
