@@ -24,9 +24,9 @@ class OppdaterNarmesteLederService(
         val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
         val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
         val navnMap = pdlPersonService.getPersonnavn(listOf(sykmeldtFnr, nlFnr), callId)
-        if (!navnMap.containsKey(sykmeldtFnr) || !navnMap.containsKey(nlFnr)) {
-            log.error("Mottatt NL-skjema for bruker eller leder som ikke finnes i PDL $callId")
-            throw IllegalStateException("Mottatt NL-skjema for bruker eller leder som ikke finnes i PDL")
+        if (navnMap[sykmeldtFnr] == null || navnMap[nlFnr] == null) {
+            log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL $callId")
+            throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
         }
         val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
         deaktiverTidligereLedere(narmesteLedere, callId)
@@ -35,7 +35,7 @@ class OppdaterNarmesteLederService(
     }
 
     private fun deaktiverTidligereLedere(narmesteLedere: List<NarmesteLederRelasjon>, callId: String) {
-        log.info("Inaktiverer ${narmesteLedere.size} nærmeste ledere $callId")
+        log.info("Deaktiverer ${narmesteLedere.size} nærmeste ledere $callId")
         narmesteLedere.filter { it.aktivTom == null }
             .forEach { database.deaktiverNarmesteLeder(it.narmesteLederId) }
     }

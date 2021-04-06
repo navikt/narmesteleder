@@ -103,9 +103,8 @@ fun DatabaseInterface.finnForskuttering(fnr: String, orgnummer: String): Forskut
 }
 
 private fun Connection.lagreNarmesteleder(nlResponse: NlResponse, aktivFom: OffsetDateTime) {
-    use { connection ->
-        connection.prepareStatement(
-            """
+    this.prepareStatement(
+        """
                 INSERT INTO narmeste_leder(
                     orgnummer,
                     bruker_fnr,
@@ -118,18 +117,17 @@ private fun Connection.lagreNarmesteleder(nlResponse: NlResponse, aktivFom: Offs
                     timestamp)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
                  """
-        ).use {
-            it.setString(1, nlResponse.orgnummer)
-            it.setString(2, nlResponse.sykmeldt.fnr)
-            it.setString(3, nlResponse.leder.fnr)
-            it.setString(4, nlResponse.leder.mobil)
-            it.setString(5, nlResponse.leder.epost)
-            it.setObject(6, nlResponse.utbetalesLonn)
-            it.setTimestamp(7, Timestamp.from(aktivFom.toInstant()))
-            it.setObject(8, null)
-            it.setTimestamp(9, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
-            it.execute()
-        }
+    ).use {
+        it.setString(1, nlResponse.orgnummer)
+        it.setString(2, nlResponse.sykmeldt.fnr)
+        it.setString(3, nlResponse.leder.fnr)
+        it.setString(4, nlResponse.leder.mobil)
+        it.setString(5, nlResponse.leder.epost)
+        it.setObject(6, nlResponse.utbetalesLonn)
+        it.setTimestamp(7, Timestamp.from(aktivFom.toInstant()))
+        it.setObject(8, null)
+        it.setTimestamp(9, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+        it.execute()
     }
 }
 
@@ -137,7 +135,7 @@ private fun Connection.deaktiverNarmesteLeder(narmesteLederId: UUID) =
     this.prepareStatement(
         """
             UPDATE narmeste_leder 
-                SET aktiv_tom = ?, timestamp = ?, 
+                SET aktiv_tom = ?, timestamp = ?
                 WHERE narmeste_leder_id = ?;
             """
     ).use {
@@ -151,15 +149,15 @@ private fun Connection.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: 
     this.prepareStatement(
         """
             UPDATE narmeste_leder 
-                SET narmeste_leder_telefonnummer = ?, narmeste_leder_epost = ?, arbeidsgiver_forskutterer = ?, aktiv_tom = null, timestamp = ?, 
+                SET narmeste_leder_telefonnummer = ?, narmeste_leder_epost = ?, arbeidsgiver_forskutterer = ?, aktiv_tom = null, timestamp = ?
                 WHERE narmeste_leder_id = ?;
             """
     ).use {
         it.setString(1, nlResponse.leder.mobil)
         it.setString(2, nlResponse.leder.epost)
         it.setObject(3, nlResponse.utbetalesLonn)
-        it.setTimestamp(5, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
-        it.setObject(6, narmesteLederId)
+        it.setTimestamp(4, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+        it.setObject(5, narmesteLederId)
         it.execute()
     }
 
