@@ -42,7 +42,8 @@ fun Connection.lagreNarmesteleder(
     fnrNl: String,
     arbeidsgiverForskutterer: Boolean?,
     aktivFom: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
-    aktivTom: OffsetDateTime? = null
+    aktivTom: OffsetDateTime? = null,
+    timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
 ) {
     use { connection ->
         connection.prepareStatement(
@@ -68,7 +69,7 @@ fun Connection.lagreNarmesteleder(
             it.setObject(6, arbeidsgiverForskutterer)
             it.setTimestamp(7, Timestamp.from(aktivFom.toInstant()))
             it.setTimestamp(8, aktivTom?.let { Timestamp.from(aktivTom.toInstant()) })
-            it.setTimestamp(9, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+            it.setTimestamp(9, Timestamp.from(timestamp.toInstant()))
             it.execute()
         }
         connection.commit()

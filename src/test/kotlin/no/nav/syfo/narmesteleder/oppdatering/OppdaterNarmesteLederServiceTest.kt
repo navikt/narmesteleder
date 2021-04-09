@@ -19,6 +19,7 @@ import no.nav.syfo.testutils.lagreNarmesteleder
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
@@ -184,6 +185,121 @@ class OppdaterNarmesteLederServiceTest : Spek({
                 )
             )
 
+            assertFailsWith<IllegalStateException> {
+                runBlocking {
+                    oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+                }
+            }
+        }
+    }
+
+    describe("Migrering fra syfoservice") {
+        val aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+        val aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1)
+        it("Hvis det ikke finnes NL fra før skal mottatt NL legges inn as-is") {
+            val nlResponseKafkaMessage = NlResponseKafkaMessage(
+                KafkaMetadata(timestamp, "macgyver"),
+                NlResponse(
+                    orgnummer = "orgnummer", utbetalesLonn = true, leder = Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
+                    sykmeldt = Sykmeldt(sykmeldtFnr, "Syk Sykesen"), aktivFom = aktivFom
+                )
+            )
+            runBlocking {
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+            }
+
+            val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
+            nlListe.size shouldBeEqualTo 1
+            nlListe[0].aktivFom shouldBeEqualTo aktivFom.toLocalDate()
+            nlListe[0].aktivTom shouldBeEqualTo null
+        }
+        it("Hvis samme NL finnes fra før skal kun aktivFom oppdateres") {
+            testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(3))
+            val nlResponseKafkaMessage = NlResponseKafkaMessage(
+                KafkaMetadata(timestamp, "macgyver"),
+                NlResponse(
+                    orgnummer = "orgnummer", utbetalesLonn = true, leder = Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
+                    sykmeldt = Sykmeldt(sykmeldtFnr, "Syk Sykesen"), aktivFom = aktivFom
+                )
+            )
+            runBlocking {
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+            }
+
+            val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
+            nlListe.size shouldBeEqualTo 1
+            nlListe[0].aktivFom shouldBeEqualTo aktivFom.toLocalDate()
+        }
+        it("Hvis samme NL finnes fra før men har blitt deaktivert i SS skal aktivFom og aktivTom oppdateres") {
+            testDb.connection.lagreNarmesteleder(
+                orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(3),
+                timestamp = OffsetDateTime.of(LocalDate.of(2021, 4, 7).atStartOfDay(), ZoneOffset.UTC)
+            )
+            val nlResponseKafkaMessage = NlResponseKafkaMessage(
+                KafkaMetadata(timestamp, "macgyver"),
+                NlResponse(
+                    orgnummer = "orgnummer", utbetalesLonn = true, leder = Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
+                    sykmeldt = Sykmeldt(sykmeldtFnr, "Syk Sykesen"), aktivFom = aktivFom, aktivTom = aktivTom
+                )
+            )
+            runBlocking {
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+            }
+
+            val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
+            nlListe.size shouldBeEqualTo 1
+            nlListe[0].aktivFom shouldBeEqualTo aktivFom.toLocalDate()
+            nlListe[0].aktivTom shouldBeEqualTo aktivTom.toLocalDate()
+        }
+        it("Hvis samme NL finnes fra før og har blitt oppdatert i databasen etter at den ble deaktivert i SS skal ikke aktivTom oppdateres") {
+            testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(3))
+            val nlResponseKafkaMessage = NlResponseKafkaMessage(
+                KafkaMetadata(timestamp, "macgyver"),
+                NlResponse(
+                    orgnummer = "orgnummer", utbetalesLonn = true, leder = Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
+                    sykmeldt = Sykmeldt(sykmeldtFnr, "Syk Sykesen"), aktivFom = aktivFom, aktivTom = aktivTom
+                )
+            )
+            runBlocking {
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+            }
+
+            val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
+            nlListe.size shouldBeEqualTo 1
+            nlListe[0].aktivFom shouldBeEqualTo aktivFom.toLocalDate()
+            nlListe[0].aktivTom shouldBeEqualTo null
+        }
+        it("Hvis annen aktiv NL for samme orgnummer finnes fra før skal mottatt NL legges inn hvis den ikke lenger er aktiv") {
+            testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(3))
+            val nlResponseKafkaMessage = NlResponseKafkaMessage(
+                KafkaMetadata(timestamp, "macgyver"),
+                NlResponse(
+                    orgnummer = "orgnummer", utbetalesLonn = true, leder = Leder(fnrLeder2, "90909090", "epost2@nav.no", "Leder", "Ledersen"),
+                    sykmeldt = Sykmeldt(sykmeldtFnr, "Syk Sykesen"), aktivFom = aktivFom, aktivTom = aktivTom
+                )
+            )
+            runBlocking {
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+            }
+
+            val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
+            nlListe.size shouldBeEqualTo 2
+            val nl1 = nlListe.find { it.narmesteLederFnr == fnrLeder }
+            val nl2 = nlListe.find { it.narmesteLederFnr == fnrLeder2 }
+            nl1?.aktivFom shouldBeEqualTo OffsetDateTime.now(ZoneOffset.UTC).minusDays(3).toLocalDate()
+            nl1?.aktivTom shouldBeEqualTo null
+            nl2?.aktivFom shouldBeEqualTo aktivFom.toLocalDate()
+            nl2?.aktivTom shouldBeEqualTo aktivTom.toLocalDate()
+        }
+        it("Hvis annen aktiv NL for samme orgnummer finnes fra før skal det feile hvis mottatt NL også er aktiv") {
+            testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(3))
+            val nlResponseKafkaMessage = NlResponseKafkaMessage(
+                KafkaMetadata(timestamp, "macgyver"),
+                NlResponse(
+                    orgnummer = "orgnummer", utbetalesLonn = true, leder = Leder(fnrLeder2, "90909090", "epost2@nav.no", "Leder", "Ledersen"),
+                    sykmeldt = Sykmeldt(sykmeldtFnr, "Syk Sykesen"), aktivFom = aktivFom
+                )
+            )
             assertFailsWith<IllegalStateException> {
                 runBlocking {
                     oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)

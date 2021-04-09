@@ -5,11 +5,16 @@ import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.deaktiverNarmesteLeder
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.db.lagreNarmesteLeder
+import no.nav.syfo.db.oppdaterAktivFom
 import no.nav.syfo.db.oppdaterNarmesteLeder
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
+import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 import no.nav.syfo.pdl.service.PdlPersonService
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 @KtorExperimentalAPI
@@ -29,9 +34,54 @@ class OppdaterNarmesteLederService(
             throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
         }
         val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
-        deaktiverTidligereLedere(narmesteLedere, callId)
+        if (nlResponseKafkaMessage.kafkaMetadata.source == "macgyver") {
+            handterMigrertNarmesteLeder(narmesteLedere, nlResponseKafkaMessage, callId)
+        } else {
+            deaktiverTidligereLedere(narmesteLedere, callId)
+            createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
+        }
+    }
 
-        createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
+    // Scenarier:
+    // 1. Hvis vi ikke har registrert NL i databasen kan NL fra syfoservice legges inn as-is
+    // 2. Hvis vi har data om en NL i databasen vil denne være mer oppdatert enn det vi får fra migreringen slik at vi kun trenger å oppdatere aktivFom,
+    // bortsett fra hvis NL har blitt deaktivert i Syfoservice men står som aktiv her. Da må den deaktiveres også.
+    // 3. Man kan ikke ha mer enn en aktiv leder pr arbeidsforhold, så hvis vi får inn melding om annen leder der vi allerede har registrert en leder og begge er aktive
+    // må vi stoppe.
+    fun handterMigrertNarmesteLeder(narmesteLedere: List<NarmesteLederRelasjon>, nlResponseKafkaMessage: NlResponseKafkaMessage, callId: String) {
+        if (narmesteLedere.isEmpty()) {
+            database.lagreNarmesteLeder(nlResponseKafkaMessage.nlResponse, nlResponseKafkaMessage.kafkaMetadata.timestamp)
+            log.info("Lagret migrert NL for callId $callId")
+        } else {
+            val sammeNarmesteLeder = narmesteLedere.find { it.narmesteLederFnr == nlResponseKafkaMessage.nlResponse.leder.fnr }
+            if (sammeNarmesteLeder != null) {
+                database.oppdaterAktivFom(sammeNarmesteLeder.narmesteLederId, nlResponseKafkaMessage.nlResponse.aktivFom!!)
+                log.info("Oppdatert aktivFom for narmesteleder ${sammeNarmesteLeder.narmesteLederId}, callid $callId")
+                if (skalDeaktivereTidligereLederIfmMigrering(sammeNarmesteLeder, nlResponseKafkaMessage.nlResponse)) {
+                    database.deaktiverNarmesteLeder(
+                        sammeNarmesteLeder.narmesteLederId,
+                        nlResponseKafkaMessage.nlResponse.aktivTom
+                    )
+                    log.info("Deaktivert narmeste leder med id ${sammeNarmesteLeder.narmesteLederId} som har blitt deaktivert i syfoservice, $callId")
+                }
+            } else {
+                val andreAktiveNarmesteLedere = narmesteLedere.filter { it.narmesteLederFnr != nlResponseKafkaMessage.nlResponse.leder.fnr && it.aktivTom == null }
+                if (andreAktiveNarmesteLedere.isNotEmpty()) {
+                    if (nlResponseKafkaMessage.nlResponse.aktivTom != null) {
+                        database.lagreNarmesteLeder(nlResponseKafkaMessage.nlResponse, nlResponseKafkaMessage.kafkaMetadata.timestamp)
+                        log.info("Lagret migrert, tidligere NL for callId $callId")
+                    } else {
+                        log.error("Mottatt aktiv, migrert NL når det allerede finnes aktiv NL for arbeidsforholdet. NL-id ${andreAktiveNarmesteLedere.first().narmesteLederId}, callId: $callId")
+                        throw IllegalStateException("Mottatt aktiv, migrert NL når det allerede finnes NL for arbeidsforholdet")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun skalDeaktivereTidligereLederIfmMigrering(sammeNarmesteLeder: NarmesteLederRelasjon, nlResponse: NlResponse): Boolean {
+        return sammeNarmesteLeder.aktivTom == null && nlResponse.aktivTom != null &&
+            sammeNarmesteLeder.timestamp.isBefore(OffsetDateTime.of(LocalDate.of(2021, 4, 8).atStartOfDay(), ZoneOffset.UTC))
     }
 
     private fun deaktiverTidligereLedere(narmesteLedere: List<NarmesteLederRelasjon>, callId: String) {
