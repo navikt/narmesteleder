@@ -67,9 +67,9 @@ fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(fnr: String, orgnummer: 
     }
 }
 
-fun DatabaseInterface.deaktiverNarmesteLeder(narmesteLederId: UUID) {
+fun DatabaseInterface.deaktiverNarmesteLeder(narmesteLederId: UUID, aktivTom: OffsetDateTime) {
     connection.use { connection ->
-        connection.deaktiverNarmesteLeder(narmesteLederId)
+        connection.deaktiverNarmesteLeder(narmesteLederId, aktivTom)
         connection.commit()
     }
 }
@@ -131,7 +131,7 @@ private fun Connection.lagreNarmesteleder(nlResponse: NlResponse, aktivFom: Offs
     }
 }
 
-private fun Connection.deaktiverNarmesteLeder(narmesteLederId: UUID) =
+private fun Connection.deaktiverNarmesteLeder(narmesteLederId: UUID, aktivTom: OffsetDateTime) =
     this.prepareStatement(
         """
             UPDATE narmeste_leder 
@@ -139,7 +139,7 @@ private fun Connection.deaktiverNarmesteLeder(narmesteLederId: UUID) =
                 WHERE narmeste_leder_id = ?;
             """
     ).use {
-        it.setTimestamp(1, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+        it.setTimestamp(1, Timestamp.from(aktivTom.toInstant()))
         it.setTimestamp(2, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
         it.setObject(3, narmesteLederId)
         it.execute()

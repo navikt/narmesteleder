@@ -10,6 +10,8 @@ import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.pdl.service.PdlPersonService
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
 @KtorExperimentalAPI
@@ -20,28 +22,40 @@ class OppdaterNarmesteLederService(
 
     suspend fun handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage: NlResponseKafkaMessage) {
         val callId = UUID.randomUUID().toString()
-        val sykmeldtFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
-        val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
-        val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
-        val navnMap = pdlPersonService.getPersonnavn(listOf(sykmeldtFnr, nlFnr), callId)
-        if (navnMap[sykmeldtFnr] == null || navnMap[nlFnr] == null) {
-            log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL $callId")
-            throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
-        }
-        val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
-        deaktiverTidligereLedere(narmesteLedere, callId)
+        when {
+            nlResponseKafkaMessage.nlResponse != null -> {
+                val sykmeldtFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
+                val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
+                val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
+                val navnMap = pdlPersonService.getPersonnavn(listOf(sykmeldtFnr, nlFnr), callId)
+                if (navnMap[sykmeldtFnr] == null || navnMap[nlFnr] == null) {
+                    log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL $callId")
+                    throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
+                }
+                val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
+                deaktiverTidligereLedere(narmesteLedere, OffsetDateTime.now(ZoneOffset.UTC), callId)
 
-        createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
+                createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
+            }
+            nlResponseKafkaMessage.nlAvbrutt != null -> {
+                val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = nlResponseKafkaMessage.nlAvbrutt.sykmeldtFnr, orgnummer = nlResponseKafkaMessage.nlAvbrutt.orgnummer)
+                deaktiverTidligereLedere(narmesteLedere, nlResponseKafkaMessage.nlAvbrutt.aktivTom, callId)
+            }
+            else -> {
+                log.error("Har mottatt nl-response som ikke er ny eller avbrutt")
+                throw IllegalStateException("Har mottatt nl-response som ikke er ny eller avbrutt")
+            }
+        }
     }
 
-    private fun deaktiverTidligereLedere(narmesteLedere: List<NarmesteLederRelasjon>, callId: String) {
+    private fun deaktiverTidligereLedere(narmesteLedere: List<NarmesteLederRelasjon>, aktivTom: OffsetDateTime, callId: String) {
         log.info("Deaktiverer ${narmesteLedere.size} nærmeste ledere $callId")
         narmesteLedere.filter { it.aktivTom == null }
-            .forEach { database.deaktiverNarmesteLeder(it.narmesteLederId) }
+            .forEach { database.deaktiverNarmesteLeder(narmesteLederId = it.narmesteLederId, aktivTom = aktivTom) }
     }
 
     private fun createOrUpdateNL(ledere: List<NarmesteLederRelasjon>, nlResponseKafkaMessage: NlResponseKafkaMessage, callId: String) {
-        when (val eksisterendeLeder = getExistingLeder(ledere, nlResponseKafkaMessage.nlResponse.leder.fnr)) {
+        when (val eksisterendeLeder = getExistingLeder(ledere, nlResponseKafkaMessage.nlResponse!!.leder.fnr)) {
             null -> {
                 database.lagreNarmesteLeder(nlResponseKafkaMessage.nlResponse, nlResponseKafkaMessage.kafkaMetadata.timestamp)
                 log.info("Created new NL for callId $callId")
