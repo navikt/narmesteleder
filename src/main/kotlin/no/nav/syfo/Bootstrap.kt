@@ -24,14 +24,19 @@ import no.nav.syfo.application.db.Database
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
+import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
+import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederResponseConsumerService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
+import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.service.PdlPersonService
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -83,18 +88,27 @@ fun main() {
     )
     val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient)
 
-    val applicationEngine = createApplicationEngine(
-        env,
-        applicationState,
-        jwkProvider,
-        database,
-        pdlPersonService
-    )
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().toConsumerConfig("narmesteleder", JacksonKafkaDeserializer::class),
         StringDeserializer(),
         JacksonKafkaDeserializer(NlResponseKafkaMessage::class)
     )
+    val kafkaProducerNlResponse = KafkaProducer<String, NlResponseKafkaMessage>(
+        KafkaUtils
+            .getAivenKafkaConfig()
+            .toProducerConfig("narmesteleder-producer", JacksonKafkaSerializer::class, StringSerializer::class)
+    )
+    val nlResponseProducer = NLResponseProducer(kafkaProducerNlResponse, env.nlResponseTopic)
+
+    val applicationEngine = createApplicationEngine(
+        env,
+        applicationState,
+        jwkProvider,
+        database,
+        pdlPersonService,
+        nlResponseProducer
+    )
+
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, database)
     val narmesteLederResponseConsumerService = NarmesteLederResponseConsumerService(
         kafkaConsumer,

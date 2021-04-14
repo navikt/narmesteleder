@@ -28,7 +28,9 @@ import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.forskuttering.registrerForskutteringApi
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.UtvidetNarmesteLederService
+import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.registrerNarmesteLederApi
+import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApi
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.util.UUID
 
@@ -38,7 +40,8 @@ fun createApplicationEngine(
     applicationState: ApplicationState,
     jwkProvider: JwkProvider,
     database: Database,
-    pdlPersonService: PdlPersonService
+    pdlPersonService: PdlPersonService,
+    nlResponseProducer: NLResponseProducer
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -71,9 +74,12 @@ fun createApplicationEngine(
             if (env.cluster == "dev-gcp") {
                 setupSwaggerDocApi()
             }
-            authenticate {
+            authenticate("servicebruker") {
                 registrerForskutteringApi(database)
                 registrerNarmesteLederApi(database, utvidetNarmesteLederService)
+            }
+            authenticate("loginservice") {
+                registrerNarmesteLederUserApi(nlResponseProducer)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

@@ -21,7 +21,8 @@ data class Environment(
     val stsApiKey: String? = getEnvVar("STS_API_KEY"),
     val stsUrl: String = getEnvVar("SECURITYTOKENSERVICE_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
-    val nlResponseTopic: String = "teamsykmelding.syfo-nl-response"
+    val nlResponseTopic: String = "teamsykmelding.syfo-nl-response",
+    val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(",")
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"

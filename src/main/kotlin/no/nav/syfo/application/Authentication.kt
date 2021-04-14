@@ -14,12 +14,21 @@ import no.nav.syfo.log
 
 fun Application.setupAuth(jwkProvider: JwkProvider, env: Environment) {
     install(Authentication) {
-        jwt {
+        jwt("servicebruker") {
             verifier(jwkProvider, env.jwtIssuer)
             realm = "Narmesteleder"
             validate { credentials ->
                 when {
                     harTilgang(credentials, env.clientId) -> JWTPrincipal(credentials.payload)
+                    else -> unauthorized(credentials)
+                }
+            }
+        }
+        jwt(name = "loginservice") {
+            verifier(jwkProvider, env.jwtIssuer)
+            validate { credentials ->
+                when {
+                    hasLoginserviceIdportenClientIdAudience(credentials, env.loginserviceIdportenAudience) && erNiva4(credentials) -> JWTPrincipal(credentials.payload)
                     else -> unauthorized(credentials)
                 }
             }
@@ -40,4 +49,12 @@ fun unauthorized(credentials: JWTCredential): Principal? {
         StructuredArguments.keyValue("audience", credentials.payload.audience)
     )
     return null
+}
+
+fun hasLoginserviceIdportenClientIdAudience(credentials: JWTCredential, loginserviceIdportenClientId: List<String>): Boolean {
+    return loginserviceIdportenClientId.any { credentials.payload.audience.contains(it) }
+}
+
+fun erNiva4(credentials: JWTCredential): Boolean {
+    return "Level4" == credentials.payload.getClaim("acr").asString()
 }

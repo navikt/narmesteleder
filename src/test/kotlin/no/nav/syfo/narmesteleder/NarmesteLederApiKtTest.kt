@@ -55,7 +55,7 @@ class NarmesteLederApiKtTest : Spek({
             setUpTestApplication()
             val env = setUpAuth()
             application.routing {
-                authenticate {
+                authenticate("servicebruker") {
                     registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
                 }
             }
@@ -174,7 +174,7 @@ class NarmesteLederApiKtTest : Spek({
             setUpTestApplication()
             val env = setUpAuth()
             application.routing {
-                authenticate {
+                authenticate("servicebruker") {
                     registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
                 }
             }
