@@ -1,6 +1,7 @@
 package no.nav.syfo
 
 import com.auth0.jwk.JwkProviderBuilder
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -12,11 +13,13 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.request.get
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
@@ -24,14 +27,19 @@ import no.nav.syfo.application.db.Database
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
+import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
+import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederResponseConsumerService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
+import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.service.PdlPersonService
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -69,6 +77,13 @@ fun main() {
         }
     }
     val httpClient = HttpClient(Apache, config)
+
+    val wellKnown = getWellKnown(httpClient, env.loginserviceIdportenDiscoveryUrl)
+    val jwkProviderLoginservice = JwkProviderBuilder(URL(wellKnown.jwks_uri))
+        .cached(10, 24, TimeUnit.HOURS)
+        .rateLimited(10, 1, TimeUnit.MINUTES)
+        .build()
+
     val stsOidcClient = StsOidcClient(
         username = vaultSecrets.serviceuserUsername,
         password = vaultSecrets.serviceuserPassword,
@@ -83,18 +98,29 @@ fun main() {
     )
     val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient)
 
-    val applicationEngine = createApplicationEngine(
-        env,
-        applicationState,
-        jwkProvider,
-        database,
-        pdlPersonService
-    )
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().toConsumerConfig("narmesteleder", JacksonKafkaDeserializer::class),
         StringDeserializer(),
         JacksonKafkaDeserializer(NlResponseKafkaMessage::class)
     )
+    val kafkaProducerNlResponse = KafkaProducer<String, NlResponseKafkaMessage>(
+        KafkaUtils
+            .getAivenKafkaConfig()
+            .toProducerConfig("narmesteleder-producer", JacksonKafkaSerializer::class, StringSerializer::class)
+    )
+    val nlResponseProducer = NLResponseProducer(kafkaProducerNlResponse, env.nlResponseTopic)
+
+    val applicationEngine = createApplicationEngine(
+        env = env,
+        applicationState = applicationState,
+        jwkProvider = jwkProvider,
+        jwkProviderLoginservice = jwkProviderLoginservice,
+        loginserviceIssuer = wellKnown.issuer,
+        database = database,
+        pdlPersonService = pdlPersonService,
+        nlResponseProducer = nlResponseProducer
+    )
+
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, database)
     val narmesteLederResponseConsumerService = NarmesteLederResponseConsumerService(
         kafkaConsumer,
@@ -122,3 +148,14 @@ fun startBackgroundJob(applicationState: ApplicationState, block: suspend Corout
         }
     }
 }
+
+fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) =
+    runBlocking { httpClient.get<WellKnown>(wellKnownUrl) }
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WellKnown(
+    val authorization_endpoint: String,
+    val token_endpoint: String,
+    val jwks_uri: String,
+    val issuer: String
+)

@@ -39,7 +39,7 @@ object ForskutteringApiSpek : Spek({
             setUpTestApplication()
             val env = setUpAuth()
             application.routing {
-                authenticate {
+                authenticate("servicebruker") {
                     registrerForskutteringApi(testDb)
                 }
             }
@@ -156,7 +156,7 @@ object ForskutteringApiSpek : Spek({
             setUpTestApplication()
             val env = setUpAuth()
             application.routing {
-                authenticate {
+                authenticate("servicebruker") {
                     registrerForskutteringApi(testDb)
                 }
             }
