@@ -1,6 +1,7 @@
 package no.nav.syfo
 
 import com.auth0.jwk.JwkProviderBuilder
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -12,11 +13,13 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.request.get
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
@@ -74,6 +77,13 @@ fun main() {
         }
     }
     val httpClient = HttpClient(Apache, config)
+
+    val wellKnown = getWellKnown(httpClient, env.loginserviceIdportenDiscoveryUrl)
+    val jwkProviderLoginservice = JwkProviderBuilder(URL(wellKnown.jwks_uri))
+        .cached(10, 24, TimeUnit.HOURS)
+        .rateLimited(10, 1, TimeUnit.MINUTES)
+        .build()
+
     val stsOidcClient = StsOidcClient(
         username = vaultSecrets.serviceuserUsername,
         password = vaultSecrets.serviceuserPassword,
@@ -101,12 +111,14 @@ fun main() {
     val nlResponseProducer = NLResponseProducer(kafkaProducerNlResponse, env.nlResponseTopic)
 
     val applicationEngine = createApplicationEngine(
-        env,
-        applicationState,
-        jwkProvider,
-        database,
-        pdlPersonService,
-        nlResponseProducer
+        env = env,
+        applicationState = applicationState,
+        jwkProvider = jwkProvider,
+        jwkProviderLoginservice = jwkProviderLoginservice,
+        loginserviceIssuer = wellKnown.issuer,
+        database = database,
+        pdlPersonService = pdlPersonService,
+        nlResponseProducer = nlResponseProducer
     )
 
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, database)
@@ -136,3 +148,14 @@ fun startBackgroundJob(applicationState: ApplicationState, block: suspend Corout
         }
     }
 }
+
+fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) =
+    runBlocking { httpClient.get<WellKnown>(wellKnownUrl) }
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WellKnown(
+    val authorization_endpoint: String,
+    val token_endpoint: String,
+    val jwks_uri: String,
+    val issuer: String
+)

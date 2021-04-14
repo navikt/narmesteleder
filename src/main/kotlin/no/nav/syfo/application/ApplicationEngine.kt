@@ -39,6 +39,8 @@ fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
     jwkProvider: JwkProvider,
+    jwkProviderLoginservice: JwkProvider,
+    loginserviceIssuer: String,
     database: Database,
     pdlPersonService: PdlPersonService,
     nlResponseProducer: NLResponseProducer
@@ -52,7 +54,7 @@ fun createApplicationEngine(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-        setupAuth(jwkProvider, env)
+        setupAuth(jwkProvider = jwkProvider, jwkProviderLoginservice = jwkProviderLoginservice, env = env, loginserviceIssuer = loginserviceIssuer)
         install(CallLogging) {
             mdc("Nav-Callid") { call ->
                 call.request.queryParameters["Nav-Callid"] ?: UUID.randomUUID().toString()

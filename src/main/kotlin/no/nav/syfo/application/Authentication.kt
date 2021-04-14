@@ -12,7 +12,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.Environment
 import no.nav.syfo.log
 
-fun Application.setupAuth(jwkProvider: JwkProvider, env: Environment) {
+fun Application.setupAuth(jwkProvider: JwkProvider, jwkProviderLoginservice: JwkProvider, env: Environment, loginserviceIssuer: String) {
     install(Authentication) {
         jwt("servicebruker") {
             verifier(jwkProvider, env.jwtIssuer)
@@ -25,7 +25,7 @@ fun Application.setupAuth(jwkProvider: JwkProvider, env: Environment) {
             }
         }
         jwt(name = "loginservice") {
-            verifier(jwkProvider, env.jwtIssuer)
+            verifier(jwkProviderLoginservice, loginserviceIssuer)
             validate { credentials ->
                 when {
                     hasLoginserviceIdportenClientIdAudience(credentials, env.loginserviceIdportenAudience) && erNiva4(credentials) -> JWTPrincipal(credentials.payload)

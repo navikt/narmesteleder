@@ -22,6 +22,7 @@ data class Environment(
     val stsUrl: String = getEnvVar("SECURITYTOKENSERVICE_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val nlResponseTopic: String = "teamsykmelding.syfo-nl-response",
+    val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(",")
 ) {
     fun jdbcUrl(): String {
