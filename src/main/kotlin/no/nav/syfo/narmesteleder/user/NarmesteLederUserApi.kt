@@ -8,6 +8,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.syfo.application.metrics.DEAKTIVERT_AV_ANSATT_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.KafkaMetadata
@@ -41,6 +42,7 @@ fun Route.registrerNarmesteLederUserApi(
             )
         )
         log.info("Den ansatte har deaktivert NL-kobling for orgnummer $orgnummer")
+        DEAKTIVERT_AV_ANSATT_COUNTER.inc()
 
         call.respond(HttpStatusCode.OK)
     }
