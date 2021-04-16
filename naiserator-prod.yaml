@@ -90,3 +90,5 @@ spec:
       value: https://api-gw.oera.no/pdl-api/graphql
     - name: KAFKA_CLIENT_ID
       value: narmesteleder
+    - name: REGISTER_BASE_PATH
+      value: https://api-gw.oera.no

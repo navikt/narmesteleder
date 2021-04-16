@@ -5,3 +5,17 @@ data class Navn(
     val mellomnavn: String?,
     val etternavn: String
 )
+
+fun Navn.tilString(): String {
+    return if (mellomnavn.isNullOrEmpty()) {
+        capitalizeFirstLetter("$fornavn $etternavn")
+    } else {
+        capitalizeFirstLetter("$fornavn $mellomnavn $etternavn")
+    }
+}
+
+private fun capitalizeFirstLetter(string: String): String {
+    return string.toLowerCase()
+        .split(" ").joinToString(" ") { it.capitalize() }
+        .split("-").joinToString("-") { it.capitalize() }.trimEnd()
+}
