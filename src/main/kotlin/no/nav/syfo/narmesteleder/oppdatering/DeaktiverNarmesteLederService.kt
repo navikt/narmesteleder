@@ -11,7 +11,7 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequest
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequestKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.model.NlAvbrutt
-import no.nav.syfo.pdl.model.tilString
+import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -38,7 +38,7 @@ class DeaktiverNarmesteLederService(
                         sykmeldingId = null,
                         fnr = fnrSykmeldt,
                         orgnr = orgnummer,
-                        name = navn?.tilString() ?: throw RuntimeException("Fant ikke navn på ansatt i PDL $callId")
+                        name = navn?.toFormattedNameString() ?: throw RuntimeException("Fant ikke navn på ansatt i PDL $callId")
                     ),
                     metadata = NlKafkaMetadata(
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),

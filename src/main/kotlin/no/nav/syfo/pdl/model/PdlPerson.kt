@@ -6,7 +6,7 @@ data class Navn(
     val etternavn: String
 )
 
-fun Navn.tilString(): String {
+fun Navn.toFormattedNameString(): String {
     return if (mellomnavn.isNullOrEmpty()) {
         capitalizeFirstLetter("$fornavn $etternavn")
     } else {
