@@ -68,6 +68,8 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         pdlApiKey = "key",
         loginserviceIdportenDiscoveryUrl = "url",
         loginserviceIdportenAudience = audience,
+        registerBasePath = "http://register",
+        aaregApiKey = "key"
     )
 
     val mockJwkProvider = mockkClass(JwkProvider::class)

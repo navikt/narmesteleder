@@ -28,9 +28,13 @@ import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
+import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
+import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
+import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederResponseConsumerService
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequestKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
@@ -97,6 +101,8 @@ fun main() {
         PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
     )
     val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient)
+    val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath, env.aaregApiKey)
+    val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, stsOidcClient)
 
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().toConsumerConfig("narmesteleder", JacksonKafkaDeserializer::class),
@@ -106,9 +112,15 @@ fun main() {
     val kafkaProducerNlResponse = KafkaProducer<String, NlResponseKafkaMessage>(
         KafkaUtils
             .getAivenKafkaConfig()
-            .toProducerConfig("narmesteleder-producer", JacksonKafkaSerializer::class, StringSerializer::class)
+            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class)
     )
     val nlResponseProducer = NLResponseProducer(kafkaProducerNlResponse, env.nlResponseTopic)
+    val kafkaProducerNlRequest = KafkaProducer<String, NlRequestKafkaMessage>(
+        KafkaUtils
+            .getAivenKafkaConfig()
+            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class)
+    )
+    val nlRequestProducer = NLRequestProducer(kafkaProducerNlRequest, env.nlRequestTopic)
 
     val applicationEngine = createApplicationEngine(
         env = env,
@@ -118,7 +130,9 @@ fun main() {
         loginserviceIssuer = wellKnown.issuer,
         database = database,
         pdlPersonService = pdlPersonService,
-        nlResponseProducer = nlResponseProducer
+        nlResponseProducer = nlResponseProducer,
+        nlRequestProducer = nlRequestProducer,
+        arbeidsgiverService = arbeidsgiverService
     )
 
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, database)

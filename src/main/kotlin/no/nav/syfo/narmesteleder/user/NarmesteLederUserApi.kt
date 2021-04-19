@@ -3,44 +3,32 @@ package no.nav.syfo.narmesteleder.user
 import io.ktor.application.call
 import io.ktor.auth.authentication
 import io.ktor.auth.jwt.JWTPrincipal
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.syfo.application.metrics.DEAKTIVERT_AV_ANSATT_COUNTER
 import no.nav.syfo.log
-import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
-import no.nav.syfo.narmesteleder.oppdatering.kafka.model.KafkaMetadata
-import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
-import no.nav.syfo.narmesteleder.oppdatering.model.NlAvbrutt
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
+import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
+import java.util.UUID
 
 @KtorExperimentalAPI
 fun Route.registrerNarmesteLederUserApi(
-    nlResponseProducer: NLResponseProducer
+    deaktiverNarmesteLederService: DeaktiverNarmesteLederService
 ) {
     post("/{orgnummer}/avkreft") {
         val principal: JWTPrincipal = call.authentication.principal()!!
         val fnr = principal.payload.subject
+        val token = call.request.headers[HttpHeaders.Authorization]!!
         val orgnummer = call.parameters["orgnummer"]?.takeIf { it.isNotEmpty() }
             ?: throw IllegalArgumentException("orgnummer mangler")
 
-        nlResponseProducer.send(
-            NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    source = "user"
-                ),
-                nlAvbrutt = NlAvbrutt(
-                    orgnummer = orgnummer,
-                    sykmeldtFnr = fnr,
-                    aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
-                ),
-                nlResponse = null
-            )
-        )
-        log.info("Den ansatte har deaktivert NL-kobling for orgnummer $orgnummer")
+        val callId = UUID.randomUUID()
+        deaktiverNarmesteLederService.deaktiverNarmesteLeder(orgnummer = orgnummer, fnrSykmeldt = fnr, token = token, callId = callId)
+        log.info("Den ansatte har deaktivert NL-kobling for orgnummer $orgnummer, $callId")
+        DEAKTIVERT_AV_ANSATT_COUNTER.inc()
 
         call.respond(HttpStatusCode.OK)
     }

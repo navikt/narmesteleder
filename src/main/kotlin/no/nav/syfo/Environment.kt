@@ -22,8 +22,11 @@ data class Environment(
     val stsUrl: String = getEnvVar("SECURITYTOKENSERVICE_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val nlResponseTopic: String = "teamsykmelding.syfo-nl-response",
+    val nlRequestTopic: String = "teamsykmelding.syfo-nl-request",
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
-    val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(",")
+    val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
+    val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
+    val aaregApiKey: String = getEnvVar("AAREG_API_KEY")
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
