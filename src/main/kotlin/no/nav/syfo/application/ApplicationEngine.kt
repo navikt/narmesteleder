@@ -76,7 +76,7 @@ fun createApplicationEngine(
         }
 
         val utvidetNarmesteLederService = UtvidetNarmesteLederService(database, pdlPersonService)
-        val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, nlRequestProducer, arbeidsgiverService, pdlPersonService)
+        val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, nlRequestProducer, arbeidsgiverService, pdlPersonService, database)
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {

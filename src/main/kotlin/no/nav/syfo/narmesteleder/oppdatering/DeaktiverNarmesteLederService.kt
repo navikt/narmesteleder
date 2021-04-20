@@ -1,6 +1,8 @@
 package no.nav.syfo.narmesteleder.oppdatering
 
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.syfo.application.db.DatabaseInterface
+import no.nav.syfo.db.finnAktiveNarmestelederkoblinger
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
@@ -22,8 +24,19 @@ class DeaktiverNarmesteLederService(
     private val nlResponseProducer: NLResponseProducer,
     private val nlRequestProducer: NLRequestProducer,
     private val arbeidsgiverService: ArbeidsgiverService,
-    private val pdlPersonService: PdlPersonService
+    private val pdlPersonService: PdlPersonService,
+    private val database: DatabaseInterface
 ) {
+    suspend fun deaktiverNarmesteLederForAnsatt(fnrLeder: String, orgnummer: String, fnrSykmeldt: String, token: String, callId: UUID) {
+        val aktuelleNlKoblinger = database.finnAktiveNarmestelederkoblinger(fnrLeder).filter { it.orgnummer == orgnummer && it.fnr == fnrSykmeldt } // denne vil være tom frem til data er migrert..
+        if (aktuelleNlKoblinger.isNotEmpty()) {
+            log.info("Deaktiverer ${aktuelleNlKoblinger.size} NL-koblinger $callId")
+            aktuelleNlKoblinger.forEach { deaktiverNarmesteLeder(orgnummer = it.orgnummer, fnrSykmeldt = it.fnr, token = token, callId = callId) }
+        } else {
+            log.info("Ingen aktive koblinger å deaktivere $callId")
+        }
+    }
+
     suspend fun deaktiverNarmesteLeder(orgnummer: String, fnrSykmeldt: String, token: String, callId: UUID) {
         val aktivtArbeidsforhold = arbeidsgiverService.getArbeidsgivere(fnr = fnrSykmeldt, token = token)
             .firstOrNull { it.orgnummer == orgnummer && it.aktivtArbeidsforhold }
