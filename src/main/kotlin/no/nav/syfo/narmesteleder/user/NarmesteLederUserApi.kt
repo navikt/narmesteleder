@@ -34,7 +34,7 @@ fun Route.registrerNarmesteLederUserApi(
         call.respond(HttpStatusCode.OK)
     }
 
-    post("/{orgnummer}/avkreft") {
+    post("/arbeidsgiver/{orgnummer}/avkreft") {
         val principal: JWTPrincipal = call.authentication.principal()!!
         val fnrLeder = principal.payload.subject
         val token = call.request.headers[HttpHeaders.Authorization]!!
