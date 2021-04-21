@@ -38,6 +38,8 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequestKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
+import no.nav.syfo.narmesteleder.syfonarmesteleder.client.AccessTokenClient
+import no.nav.syfo.narmesteleder.syfonarmesteleder.client.SyfonarmestelederClient
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.service.PdlPersonService
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -104,6 +106,9 @@ fun main() {
     val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath, env.aaregApiKey)
     val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, stsOidcClient)
 
+    val accessTokenClient = AccessTokenClient(aadAccessTokenUrl = env.aadAccessTokenUrl, clientId = env.clientId, clientSecret = env.clientSecret, resource = env.syfonarmestelederClientId, httpClient = httpClient)
+    val syfonarmestelederClient = SyfonarmestelederClient(httpClient, accessTokenClient, env.syfonarmesteLederBasePath)
+
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().toConsumerConfig("narmesteleder", JacksonKafkaDeserializer::class),
         StringDeserializer(),
@@ -132,7 +137,8 @@ fun main() {
         pdlPersonService = pdlPersonService,
         nlResponseProducer = nlResponseProducer,
         nlRequestProducer = nlRequestProducer,
-        arbeidsgiverService = arbeidsgiverService
+        arbeidsgiverService = arbeidsgiverService,
+        syfonarmestelederClient = syfonarmestelederClient
     )
 
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, database)
