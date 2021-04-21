@@ -43,7 +43,7 @@ class DeaktiverNarmesteLederService(
 
         if (aktivtArbeidsforhold != null) {
             log.info("Ber om ny nærmeste leder siden arbeidsforhold er aktivt, $callId")
-            val navn = pdlPersonService.getPersonnavn(fnrs = listOf(fnrSykmeldt), callId = callId.toString())[fnrSykmeldt]
+            val navn = pdlPersonService.getPersoner(fnrs = listOf(fnrSykmeldt), callId = callId.toString())[fnrSykmeldt]?.navn
             nlRequestProducer.send(
                 NlRequestKafkaMessage(
                     nlRequest = NlRequest(

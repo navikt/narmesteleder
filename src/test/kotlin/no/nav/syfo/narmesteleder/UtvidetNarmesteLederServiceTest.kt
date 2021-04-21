@@ -6,6 +6,7 @@ import io.mockk.coEvery
 import io.mockk.mockkClass
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.pdl.model.Navn
+import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.testutils.TestDB
 import no.nav.syfo.testutils.dropData
@@ -48,9 +49,9 @@ class UtvidetNarmesteLederServiceTest : Spek({
                     ZoneOffset.UTC
                 ).minusDays(2)
             )
-            coEvery { pdlPersonService.getPersonnavn(any(), any()) } returns mapOf(
-                Pair(fnrLeder1, Navn("FORNAVN EKSTRANAVN", null, "ETTERNAVN")),
-                Pair(fnrLeder2, Navn("FORNAVN2", "MELLOMNAVN", "BINDESTREK-ETTERNAVN"))
+            coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
+                Pair(fnrLeder1, PdlPerson(Navn("FORNAVN EKSTRANAVN", null, "ETTERNAVN"), fnrLeder1, "aktorid1")),
+                Pair(fnrLeder2, PdlPerson(Navn("FORNAVN2", "MELLOMNAVN", "BINDESTREK-ETTERNAVN"), fnrLeder2, "aktorid2"))
             )
 
             runBlocking {
@@ -71,8 +72,8 @@ class UtvidetNarmesteLederServiceTest : Spek({
                     ZoneOffset.UTC
                 ).minusDays(2)
             )
-            coEvery { pdlPersonService.getPersonnavn(any(), any()) } returns mapOf(
-                Pair(fnrLeder1, Navn("FORNAVN", null, "ETTERNAVN")),
+            coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
+                Pair(fnrLeder1, PdlPerson(Navn("FORNAVN", null, "ETTERNAVN"), fnrLeder1, "aktorid1")),
                 Pair(fnrLeder2, null)
             )
 

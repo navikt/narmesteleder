@@ -11,6 +11,7 @@ import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.pdl.model.Navn
+import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.testutils.TestDB
 import no.nav.syfo.testutils.dropData
@@ -35,7 +36,7 @@ class DeaktiverNarmesteLederServiceTest : Spek({
 
     beforeEachTest {
         clearMocks(arbeidsgiverService, nlRequestProducer, nlResponseProducer)
-        coEvery { pdlPersonService.getPersonnavn(any(), any()) } returns mapOf(Pair(sykmeldtFnr, Navn("Fornavn", null, "Etternavn")))
+        coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(Pair(sykmeldtFnr, PdlPerson(Navn("Fornavn", null, "Etternavn"), sykmeldtFnr, "aktorid")))
         coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns emptyList()
     }
     afterEachTest {

@@ -13,6 +13,7 @@ import no.nav.syfo.narmesteleder.oppdatering.model.NlAvbrutt
 import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 import no.nav.syfo.narmesteleder.oppdatering.model.Sykmeldt
 import no.nav.syfo.pdl.model.Navn
+import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.testutils.TestDB
 import no.nav.syfo.testutils.dropData
@@ -36,10 +37,10 @@ class OppdaterNarmesteLederServiceTest : Spek({
 
     beforeEachTest {
         clearMocks(pdlPersonService)
-        coEvery { pdlPersonService.getPersonnavn(any(), any()) } returns mapOf(
-            Pair(fnrLeder, Navn("Leder", null, "Ledersen")),
-            Pair(fnrLeder2, Navn("Leder", null, "Ledersen")),
-            Pair(sykmeldtFnr, Navn("Syk", null, "Sykesen"))
+        coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
+            Pair(fnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
+            Pair(fnrLeder2, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder2, "aktorid2")),
+            Pair(sykmeldtFnr, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid3"))
         )
     }
     afterEachTest {
@@ -158,8 +159,8 @@ class OppdaterNarmesteLederServiceTest : Spek({
             nlOrgnummer2?.arbeidsgiverForskutterer shouldBeEqualTo false
         }
         it("Feiler hvis ansatt ikke finnes i PDL") {
-            coEvery { pdlPersonService.getPersonnavn(any(), any()) } returns mapOf(
-                Pair(fnrLeder, Navn("Leder", null, "Ledersen")),
+            coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
+                Pair(fnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
                 Pair(sykmeldtFnr, null)
             )
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
@@ -178,9 +179,9 @@ class OppdaterNarmesteLederServiceTest : Spek({
             }
         }
         it("Feiler hvis nærmeste leder ikke finnes i PDL") {
-            coEvery { pdlPersonService.getPersonnavn(any(), any()) } returns mapOf(
+            coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
                 Pair(fnrLeder, null),
-                Pair(sykmeldtFnr, Navn("Syk", null, "Sykesen"))
+                Pair(sykmeldtFnr, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2"))
             )
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(timestamp, "altinn"),
