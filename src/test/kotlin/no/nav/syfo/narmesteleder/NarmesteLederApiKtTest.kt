@@ -14,6 +14,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.Navn
+import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.testutils.TestDB
 import no.nav.syfo.testutils.dropData
@@ -134,10 +135,10 @@ class NarmesteLederApiKtTest : Spek({
                 }
             }
             it("Setter navn på lederne hvis utvidet == ja") {
-                coEvery { pdlPersonService.getPersonnavn(any(), any()) } returns mapOf(
+                coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
                     Pair(
                         fnrLeder,
-                        Navn("Fornavn", null, "Etternavn")
+                        PdlPerson(Navn("Fornavn", null, "Etternavn"), fnrLeder, "aktorid")
                     )
                 )
                 with(

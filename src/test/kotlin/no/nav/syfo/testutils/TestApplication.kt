@@ -69,7 +69,10 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         loginserviceIdportenDiscoveryUrl = "url",
         loginserviceIdportenAudience = audience,
         registerBasePath = "http://register",
-        aaregApiKey = "key"
+        aaregApiKey = "key",
+        syfonarmesteLederBasePath = "http::/narmesteleder",
+        syfonarmestelederClientId = "narmesteleder",
+        aadAccessTokenUrl = "aad"
     )
 
     val mockJwkProvider = mockkClass(JwkProvider::class)

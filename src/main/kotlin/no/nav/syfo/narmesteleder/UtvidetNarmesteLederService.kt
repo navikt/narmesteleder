@@ -17,8 +17,8 @@ class UtvidetNarmesteLederService(
         if (nlFnrs.isEmpty()) {
             return emptyList()
         }
-        val nlNavn = pdlPersonService.getPersonnavn(fnrs = nlFnrs, callId = callId)
+        val nlPersoner = pdlPersonService.getPersoner(fnrs = nlFnrs, callId = callId)
 
-        return narmesteLederRelasjoner.map { it.copy(navn = nlNavn[it.narmesteLederFnr]?.toFormattedNameString()) }
+        return narmesteLederRelasjoner.map { it.copy(navn = nlPersoner[it.narmesteLederFnr]?.navn?.toFormattedNameString()) }
     }
 }

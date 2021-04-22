@@ -27,8 +27,8 @@ class OppdaterNarmesteLederService(
                 val sykmeldtFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
                 val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
                 val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
-                val navnMap = pdlPersonService.getPersonnavn(listOf(sykmeldtFnr, nlFnr), callId)
-                if (navnMap[sykmeldtFnr] == null || navnMap[nlFnr] == null) {
+                val personMap = pdlPersonService.getPersoner(listOf(sykmeldtFnr, nlFnr), callId)
+                if (personMap[sykmeldtFnr] == null || personMap[nlFnr] == null) {
                     log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL $callId")
                     throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
                 }

@@ -10,6 +10,7 @@ import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.metrics.DEAKTIVERT_AV_ANSATT_COUNTER
+import no.nav.syfo.application.metrics.DEAKTIVERT_AV_LEDER_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import java.util.UUID
@@ -29,6 +30,23 @@ fun Route.registrerNarmesteLederUserApi(
         deaktiverNarmesteLederService.deaktiverNarmesteLeder(orgnummer = orgnummer, fnrSykmeldt = fnr, token = token, callId = callId)
         log.info("Den ansatte har deaktivert NL-kobling for orgnummer $orgnummer, $callId")
         DEAKTIVERT_AV_ANSATT_COUNTER.inc()
+
+        call.respond(HttpStatusCode.OK)
+    }
+
+    post("/arbeidsgiver/{orgnummer}/avkreft") {
+        val principal: JWTPrincipal = call.authentication.principal()!!
+        val fnrLeder = principal.payload.subject
+        val token = call.request.headers[HttpHeaders.Authorization]!!
+        val orgnummer = call.parameters["orgnummer"]?.takeIf { it.isNotEmpty() }
+            ?: throw IllegalArgumentException("orgnummer mangler")
+        val fnrSykmeldt: String = call.request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
+            ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
+
+        val callId = UUID.randomUUID()
+        deaktiverNarmesteLederService.deaktiverNarmesteLederForAnsatt(fnrLeder = fnrLeder, orgnummer = orgnummer, fnrSykmeldt = fnrSykmeldt, token = token, callId = callId)
+        log.info("Nærmeste leder har deaktivert NL-kobling for orgnummer $orgnummer, $callId")
+        DEAKTIVERT_AV_LEDER_COUNTER.inc()
 
         call.respond(HttpStatusCode.OK)
     }

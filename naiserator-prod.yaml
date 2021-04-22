@@ -48,7 +48,7 @@ spec:
     - configmap: loginservice-idporten
   ingresses:
     - "https://narmesteleder.intern.nav.no"
-  webproxy: false
+  webproxy: true
   kafka:
     pool: nav-prod
   azure:
@@ -83,6 +83,9 @@ spec:
         - application: sykmeldinger-backend
           namespace: default
           cluster: prod-fss
+    outbound:
+      external:
+        - host: syfonarmesteleder.prod-fss-pub.nais.io
   env:
     - name: SECURITYTOKENSERVICE_URL
       value: https://api-gw.oera.no/security-token-service/rest/v1/sts/token
@@ -92,3 +95,9 @@ spec:
       value: narmesteleder
     - name: REGISTER_BASE_PATH
       value: https://api-gw.oera.no
+    - name: AAD_ACCESS_TOKEN_URL
+      value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token
+    - name: SYFONARMESTELEDER_CLIENT_ID
+      value: ccf8c36f-27e6-4e76-8250-9a49939df7ef
+    - name: SYFONARMESTELEDER_URL
+      value: https://syfonarmesteleder.prod-fss-pub.nais.io
