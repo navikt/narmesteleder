@@ -29,7 +29,8 @@ data class Environment(
     val aaregApiKey: String = getEnvVar("AAREG_API_KEY"),
     val syfonarmesteLederBasePath: String = getEnvVar("SYFONARMESTELEDER_URL"),
     val syfonarmestelederClientId: String = getEnvVar("SYFONARMESTELEDER_CLIENT_ID"),
-    val aadAccessTokenUrl: String = getEnvVar("AAD_ACCESS_TOKEN_URL")
+    val aadAccessTokenUrl: String = getEnvVar("AAD_ACCESS_TOKEN_URL"),
+    val eksternIngress: String = getEnvVar("EKSTERN_INGRESS")
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
