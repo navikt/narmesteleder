@@ -82,8 +82,10 @@ fun createApplicationEngine(
             method(HttpMethod.Get)
             method(HttpMethod.Post)
             method(HttpMethod.Options)
-            host(env.allowedOrigin, schemes = listOf("https"))
+            host("*", schemes = listOf("http", "https"))
+            //host(env.allowedOrigin, schemes = listOf("https"))
             allowCredentials = true
+            allowNonSimpleContentTypes = true
         }
 
         val utvidetNarmesteLederService = UtvidetNarmesteLederService(database, pdlPersonService)
