@@ -42,7 +42,7 @@ class AccessTokenClient(
                         )
                     }
                     token = response
-                    log.debug("Har hentet accesstoken")
+                    log.info("Har hentet accesstoken")
                     return@run response
                 }
             ).access_token

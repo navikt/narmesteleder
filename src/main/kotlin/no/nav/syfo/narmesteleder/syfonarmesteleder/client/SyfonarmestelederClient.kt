@@ -15,17 +15,22 @@ class SyfonarmestelederClient(
     private val accessTokenClient: AccessTokenClient,
     private val baseUrl: String
 ) {
-    suspend fun getAktiveNarmestelederKoblinger(narmesteLederAktorId: String): SyfoNarmestelederResponse {
+    suspend fun getAktiveNarmestelederKoblinger(narmesteLederAktorId: String, callId: String): SyfoNarmestelederResponse {
         val token = accessTokenClient.getAccessToken()
-        val statement = httpClient.get<HttpStatement>("$baseUrl$NARMESTE_LEDER_URL/$narmesteLederAktorId") {
-            headers {
-                append(HttpHeaders.Authorization, "Bearer $token")
-            }
-            accept(ContentType.Application.Json)
-        }.execute()
-        val status = statement.status
-        log.info("Got status $status from NarmesteLeder")
-        return statement.receive()
+        try {
+            val statement = httpClient.get<HttpStatement>("$baseUrl$NARMESTE_LEDER_URL/$narmesteLederAktorId") {
+                headers {
+                    append(HttpHeaders.Authorization, "Bearer $token")
+                }
+                accept(ContentType.Application.Json)
+            }.execute()
+            val status = statement.status
+            log.info("Got status $status from NarmesteLeder")
+            return statement.receive()
+        } catch (e: Exception) {
+            log.error("Kunne ikke hente nærmesteleder-koblinger fra syfonarmesteleder $callId")
+            throw e
+        }
     }
 
     companion object {

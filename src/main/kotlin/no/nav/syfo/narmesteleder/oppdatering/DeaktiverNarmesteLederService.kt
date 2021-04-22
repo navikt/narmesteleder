@@ -97,7 +97,7 @@ class DeaktiverNarmesteLederService(
             log.warn("Finner ikke leder eller ansatt i PDL, $callId")
             throw RuntimeException("Finner ikke leder eller ansatt i PDL")
         }
-        val nlKoblinger = syfonarmestelederClient.getAktiveNarmestelederKoblinger(aktorIdLeder)
+        val nlKoblinger = syfonarmestelederClient.getAktiveNarmestelederKoblinger(aktorIdLeder, callId.toString())
 
         return nlKoblinger.narmesteLederRelasjoner.any { it.aktivTom == null && it.orgnummer == orgnummer && it.aktorId == aktorIdSykmeldt }
     }

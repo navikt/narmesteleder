@@ -47,7 +47,7 @@ class DeaktiverNarmesteLederServiceTest : Spek({
             Pair(lederFnr, PdlPerson(Navn("Fornavn2", null, "Etternavn2"), lederFnr, "aktorid2"))
         )
         coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns emptyList()
-        coEvery { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any()) } returns SyfoNarmestelederResponse(emptyList())
+        coEvery { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any(), any()) } returns SyfoNarmestelederResponse(emptyList())
     }
     afterEachTest {
         testDb.connection.dropData()
@@ -98,11 +98,11 @@ class DeaktiverNarmesteLederServiceTest : Spek({
             runBlocking {
                 deaktiverNarmesteLederService.deaktiverNarmesteLederForAnsatt(lederFnr, "orgnummer", sykmeldtFnr, "token", UUID.randomUUID())
                 verify { nlResponseProducer.send(any()) }
-                coVerify(exactly = 0) { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any()) }
+                coVerify(exactly = 0) { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any(), any()) }
             }
         }
         it("Deaktiverer ikke kobling hvis NL-kobling i databasen gjelder annen ansatt") {
-            coEvery { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any()) } returns SyfoNarmestelederResponse(
+            coEvery { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any(), any()) } returns SyfoNarmestelederResponse(
                 listOf(
                     NarmesteLederRelasjon("aktorid3", "orgnummer", "aktorid2", "90909090", "epost@nav.no", LocalDate.now(), null, null, null, null)
                 )
@@ -117,14 +117,14 @@ class DeaktiverNarmesteLederServiceTest : Spek({
             runBlocking {
                 deaktiverNarmesteLederService.deaktiverNarmesteLederForAnsatt(lederFnr, "orgnummer", sykmeldtFnr, "token", UUID.randomUUID())
                 verify(exactly = 0) { nlResponseProducer.send(any()) }
-                coVerify { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any()) }
+                coVerify { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any(), any()) }
             }
         }
         it("Deaktiverer ikke kobling hvis det ikke finnes aktive NL-koblinger i databasen eller fra syfonarmesteleder") {
             runBlocking {
                 deaktiverNarmesteLederService.deaktiverNarmesteLederForAnsatt(lederFnr, "orgnummer", sykmeldtFnr, "token", UUID.randomUUID())
                 verify(exactly = 0) { nlResponseProducer.send(any()) }
-                coVerify { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any()) }
+                coVerify { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any(), any()) }
             }
         }
     }
