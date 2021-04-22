@@ -2,10 +2,6 @@ package no.nav.syfo.narmesteleder.syfonarmesteleder.client
 
 import java.time.LocalDate
 
-data class SyfoNarmestelederResponse(
-    val narmesteLederRelasjoner: List<NarmesteLederRelasjon>
-)
-
 data class NarmesteLederRelasjon(
     val aktorId: String,
     val orgnummer: String,

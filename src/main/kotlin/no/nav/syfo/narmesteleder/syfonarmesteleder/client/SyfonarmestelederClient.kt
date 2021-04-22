@@ -15,7 +15,7 @@ class SyfonarmestelederClient(
     private val accessTokenClient: AccessTokenClient,
     private val baseUrl: String
 ) {
-    suspend fun getAktiveNarmestelederKoblinger(narmesteLederAktorId: String, callId: String): SyfoNarmestelederResponse {
+    suspend fun getAktiveNarmestelederKoblinger(narmesteLederAktorId: String, callId: String): List<NarmesteLederRelasjon> {
         val token = accessTokenClient.getAccessToken()
         try {
             val statement = httpClient.get<HttpStatement>("$baseUrl$NARMESTE_LEDER_URL/$narmesteLederAktorId") {

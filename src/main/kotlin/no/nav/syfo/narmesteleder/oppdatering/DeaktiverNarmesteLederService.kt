@@ -99,6 +99,6 @@ class DeaktiverNarmesteLederService(
         }
         val nlKoblinger = syfonarmestelederClient.getAktiveNarmestelederKoblinger(aktorIdLeder, callId.toString())
 
-        return nlKoblinger.narmesteLederRelasjoner.any { it.aktivTom == null && it.orgnummer == orgnummer && it.aktorId == aktorIdSykmeldt }
+        return nlKoblinger.any { it.aktivTom == null && it.orgnummer == orgnummer && it.aktorId == aktorIdSykmeldt }
     }
 }

@@ -28,7 +28,7 @@ class AccessTokenClient(
         return (
             token?.takeUnless { it.expires_on.isBefore(omToMinutter) }
                 ?: run {
-                    log.info("Henter nytt token fra Azure AD")
+                    log.debug("Henter nytt token fra Azure AD")
                     val response: AadAccessToken = httpClient.post(aadAccessTokenUrl) {
                         accept(ContentType.Application.Json)
                         method = HttpMethod.Post
@@ -42,7 +42,7 @@ class AccessTokenClient(
                         )
                     }
                     token = response
-                    log.info("Har hentet accesstoken")
+                    log.debug("Har hentet accesstoken")
                     return@run response
                 }
             ).access_token

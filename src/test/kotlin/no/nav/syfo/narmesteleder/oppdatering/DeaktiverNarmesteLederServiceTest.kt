@@ -12,7 +12,6 @@ import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.syfonarmesteleder.client.NarmesteLederRelasjon
-import no.nav.syfo.narmesteleder.syfonarmesteleder.client.SyfoNarmestelederResponse
 import no.nav.syfo.narmesteleder.syfonarmesteleder.client.SyfonarmestelederClient
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
@@ -47,7 +46,7 @@ class DeaktiverNarmesteLederServiceTest : Spek({
             Pair(lederFnr, PdlPerson(Navn("Fornavn2", null, "Etternavn2"), lederFnr, "aktorid2"))
         )
         coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns emptyList()
-        coEvery { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any(), any()) } returns SyfoNarmestelederResponse(emptyList())
+        coEvery { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any(), any()) } returns emptyList()
     }
     afterEachTest {
         testDb.connection.dropData()
@@ -102,11 +101,10 @@ class DeaktiverNarmesteLederServiceTest : Spek({
             }
         }
         it("Deaktiverer ikke kobling hvis NL-kobling i databasen gjelder annen ansatt") {
-            coEvery { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any(), any()) } returns SyfoNarmestelederResponse(
-                listOf(
-                    NarmesteLederRelasjon("aktorid3", "orgnummer", "aktorid2", "90909090", "epost@nav.no", LocalDate.now(), null, null, null, null)
-                )
+            coEvery { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any(), any()) } returns listOf(
+                NarmesteLederRelasjon("aktorid3", "orgnummer", "aktorid2", "90909090", "epost@nav.no", LocalDate.now(), null, null, null, null)
             )
+
             testDb.connection.lagreNarmesteleder(
                 orgnummer = "orgnummer", fnr = "12312345678", fnrNl = lederFnr, arbeidsgiverForskutterer = true,
                 aktivFom = OffsetDateTime.now(
