@@ -103,4 +103,4 @@ spec:
     - name: SYFONARMESTELEDER_URL
       value: https://syfonarmesteleder.dev-fss-pub.nais.io
     - name: ALLOWED_ORIGIN
-      value: tjenester-q1.nav.no
+      value: https://tjenester-q1.nav.no
