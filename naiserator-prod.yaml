@@ -83,6 +83,9 @@ spec:
         - application: sykmeldinger-backend
           namespace: default
           cluster: prod-fss
+    outbound:
+      external:
+        - host: syfonarmesteleder.prod-fss-pub.nais.io
   env:
     - name: SECURITYTOKENSERVICE_URL
       value: https://api-gw.oera.no/security-token-service/rest/v1/sts/token
