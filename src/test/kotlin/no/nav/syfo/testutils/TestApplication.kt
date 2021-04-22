@@ -73,7 +73,7 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         syfonarmesteLederBasePath = "http::/narmesteleder",
         syfonarmestelederClientId = "narmesteleder",
         aadAccessTokenUrl = "aad",
-        eksternIngress = "narmesteleder"
+        allowedOrigin = "tjenester"
     )
 
     val mockJwkProvider = mockkClass(JwkProvider::class)

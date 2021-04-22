@@ -102,5 +102,5 @@ spec:
       value: ccf8c36f-27e6-4e76-8250-9a49939df7ef
     - name: SYFONARMESTELEDER_URL
       value: https://syfonarmesteleder.prod-fss-pub.nais.io
-    - name: EKSTERN_INGRESS
-      value: narmesteleder.nav.no
+    - name: ALLOWED_ORIGIN
+      value: tjenester.nav.no

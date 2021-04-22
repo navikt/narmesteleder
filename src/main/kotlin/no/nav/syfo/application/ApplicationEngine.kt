@@ -82,8 +82,7 @@ fun createApplicationEngine(
             method(HttpMethod.Get)
             method(HttpMethod.Post)
             method(HttpMethod.Options)
-            anyHost()
-            //host(env.eksternIngress, schemes = listOf("https"))
+            host(env.allowedOrigin, schemes = listOf("https"))
             allowCredentials = true
         }
 
