@@ -8,6 +8,8 @@ import io.ktor.auth.Principal
 import io.ktor.auth.jwt.JWTCredential
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
+import io.ktor.http.auth.HttpAuthHeader
+import io.ktor.request.header
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.Environment
 import no.nav.syfo.log
@@ -25,6 +27,15 @@ fun Application.setupAuth(jwkProvider: JwkProvider, jwkProviderLoginservice: Jwk
             }
         }
         jwt(name = "loginservice") {
+            authHeader {
+                log.info("sjekker auth-header")
+                if (it.request.header("Authorization") != null) {
+                    log.info("fant auth-header, bruker den")
+                    return@authHeader HttpAuthHeader.Single("Bearer", it.request.header("Authorization")!!)
+                }
+                log.info("bruker cookie")
+                return@authHeader HttpAuthHeader.Single("Bearer", it.request.cookies.get(name = "selvbetjening-idtoken")!!)
+            }
             verifier(jwkProviderLoginservice, loginserviceIssuer)
             validate { credentials ->
                 when {
