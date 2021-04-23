@@ -46,6 +46,35 @@ fun generateJWT(
         .sign(alg)
 }
 
+fun generateJWTLoginservice(
+    consumerClientId: String = "client",
+    audience: String,
+    expiry: LocalDateTime? = LocalDateTime.now().plusHours(1),
+    subject: String = "subject",
+    issuer: String = "https://sts.issuer.net/myid",
+    level: String = "Level4"
+): String {
+    val now = Date()
+    val key = getDefaultRSAKey()
+    val alg = Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey())
+
+    return JWT.create()
+        .withKeyId(keyId)
+        .withSubject(subject)
+        .withIssuer(issuer)
+        .withAudience(audience)
+        .withJWTId(UUID.randomUUID().toString())
+        .withClaim("ver", "1.0")
+        .withClaim("nonce", "myNonce")
+        .withClaim("auth_time", now)
+        .withClaim("nbf", now)
+        .withClaim("azp", consumerClientId)
+        .withClaim("iat", now)
+        .withClaim("acr", level)
+        .withClaim("exp", Date.from(expiry?.atZone(ZoneId.systemDefault())?.toInstant()))
+        .sign(alg)
+}
+
 private fun getDefaultRSAKey(): RSAKey {
     return getJWKSet().getKeyByKeyId(keyId) as RSAKey
 }

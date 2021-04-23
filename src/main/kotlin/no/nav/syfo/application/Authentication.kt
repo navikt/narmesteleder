@@ -2,6 +2,7 @@ package no.nav.syfo.application
 
 import com.auth0.jwk.JwkProvider
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.Principal
@@ -28,13 +29,7 @@ fun Application.setupAuth(jwkProvider: JwkProvider, jwkProviderLoginservice: Jwk
         }
         jwt(name = "loginservice") {
             authHeader {
-                log.info("sjekker auth-header")
-                if (it.request.header("Authorization") != null) {
-                    log.info("fant auth-header, bruker den")
-                    return@authHeader HttpAuthHeader.Single("Bearer", it.request.header("Authorization")!!)
-                }
-                log.info("bruker cookie: ${it.request.cookies.get(name = "selvbetjening-idtoken")}")
-                return@authHeader HttpAuthHeader.Single("Bearer", it.request.cookies.get(name = "selvbetjening-idtoken")!!)
+                return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
             }
             verifier(jwkProviderLoginservice, loginserviceIssuer)
             validate { credentials ->
@@ -45,6 +40,16 @@ fun Application.setupAuth(jwkProvider: JwkProvider, jwkProviderLoginservice: Jwk
             }
         }
     }
+}
+
+fun ApplicationCall.getToken(): String? {
+    log.info("sjekker auth-header")
+    if (request.header("Authorization") != null) {
+        log.info("fant auth-header, bruker den")
+        return request.header("Authorization")
+    }
+    log.info("bruker cookie: ${request.cookies.get(name = "selvbetjening-idtoken")}")
+    return request.cookies.get(name = "selvbetjening-idtoken")
 }
 
 fun harTilgang(credentials: JWTCredential, clientId: String): Boolean {
