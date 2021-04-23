@@ -46,7 +46,7 @@ fun ApplicationCall.getToken(): String? {
     log.info("sjekker auth-header")
     if (request.header("Authorization") != null) {
         log.info("fant auth-header, bruker den")
-        return request.header("Authorization")
+        return request.header("Authorization")!!.removePrefix("Bearer ")
     }
     log.info("bruker cookie: ${request.cookies.get(name = "selvbetjening-idtoken")}")
     return request.cookies.get(name = "selvbetjening-idtoken")
