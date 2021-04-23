@@ -33,7 +33,7 @@ fun Application.setupAuth(jwkProvider: JwkProvider, jwkProviderLoginservice: Jwk
                     log.info("fant auth-header, bruker den")
                     return@authHeader HttpAuthHeader.Single("Bearer", it.request.header("Authorization")!!)
                 }
-                log.info("bruker cookie")
+                log.info("bruker cookie: ${it.request.cookies.get(name = "selvbetjening-idtoken")}")
                 return@authHeader HttpAuthHeader.Single("Bearer", it.request.cookies.get(name = "selvbetjening-idtoken")!!)
             }
             verifier(jwkProviderLoginservice, loginserviceIssuer)
