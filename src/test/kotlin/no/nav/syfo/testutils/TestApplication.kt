@@ -72,7 +72,8 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         aaregApiKey = "key",
         syfonarmesteLederBasePath = "http::/narmesteleder",
         syfonarmestelederClientId = "narmesteleder",
-        aadAccessTokenUrl = "aad"
+        aadAccessTokenUrl = "aad",
+        allowedOrigin = "tjenester"
     )
 
     val mockJwkProvider = mockkClass(JwkProvider::class)

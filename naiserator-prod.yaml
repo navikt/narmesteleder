@@ -48,6 +48,7 @@ spec:
     - configmap: loginservice-idporten
   ingresses:
     - "https://narmesteleder.intern.nav.no"
+    - "https://narmesteleder.nav.no"
   webproxy: true
   kafka:
     pool: nav-prod
@@ -101,3 +102,5 @@ spec:
       value: ccf8c36f-27e6-4e76-8250-9a49939df7ef
     - name: SYFONARMESTELEDER_URL
       value: https://syfonarmesteleder.prod-fss-pub.nais.io
+    - name: ALLOWED_ORIGIN
+      value: tjenester.nav.no
