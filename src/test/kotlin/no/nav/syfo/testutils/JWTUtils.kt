@@ -51,7 +51,7 @@ fun generateJWTLoginservice(
     audience: String,
     expiry: LocalDateTime? = LocalDateTime.now().plusHours(1),
     subject: String = "subject",
-    issuer: String = "https://sts.issuer.net/myid",
+    issuer: String = "issuer",
     level: String = "Level4"
 ): String {
     val now = Date()

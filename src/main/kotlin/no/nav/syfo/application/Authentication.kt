@@ -28,6 +28,7 @@ fun Application.setupAuth(jwkProvider: JwkProvider, jwkProviderLoginservice: Jwk
             }
         }
         jwt(name = "loginservice") {
+            log.info("treffer loginservice-auth")
             authHeader {
                 return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
             }
