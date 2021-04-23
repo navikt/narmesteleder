@@ -27,7 +27,7 @@ fun Route.registrerNarmesteLederUserApi(
             ?: throw IllegalArgumentException("orgnummer mangler")
 
         val callId = UUID.randomUUID()
-        deaktiverNarmesteLederService.deaktiverNarmesteLeder(orgnummer = orgnummer, fnrSykmeldt = fnr, token = token, callId = callId)
+        deaktiverNarmesteLederService.deaktiverNarmesteLeder(orgnummer = orgnummer, fnrSykmeldt = fnr, token = "Bearer $token", callId = callId)
         log.info("Den ansatte har deaktivert NL-kobling for orgnummer $orgnummer, $callId")
         DEAKTIVERT_AV_ANSATT_COUNTER.inc()
 
@@ -44,7 +44,7 @@ fun Route.registrerNarmesteLederUserApi(
             ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
 
         val callId = UUID.randomUUID()
-        deaktiverNarmesteLederService.deaktiverNarmesteLederForAnsatt(fnrLeder = fnrLeder, orgnummer = orgnummer, fnrSykmeldt = fnrSykmeldt, token = token, callId = callId)
+        deaktiverNarmesteLederService.deaktiverNarmesteLederForAnsatt(fnrLeder = fnrLeder, orgnummer = orgnummer, fnrSykmeldt = fnrSykmeldt, token = "Bearer $token", callId = callId)
         log.info("Nærmeste leder har deaktivert NL-kobling for orgnummer $orgnummer, $callId")
         DEAKTIVERT_AV_LEDER_COUNTER.inc()
 
