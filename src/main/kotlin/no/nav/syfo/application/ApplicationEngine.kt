@@ -82,7 +82,7 @@ fun createApplicationEngine(
             method(HttpMethod.Get)
             method(HttpMethod.Post)
             method(HttpMethod.Options)
-            host(env.allowedOrigin, schemes = listOf("https"))
+            host(if (env.cluster == "dev-gcp") { "*" } else { env.allowedOrigin }, schemes = listOf("https"))
             header("nav_csrf_protection")
             allowCredentials = true
             allowNonSimpleContentTypes = true
