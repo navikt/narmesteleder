@@ -84,6 +84,7 @@ fun createApplicationEngine(
             method(HttpMethod.Options)
             host(if (env.cluster == "dev-gcp") { "*" } else { env.allowedOrigin }, schemes = listOf("https"))
             header("nav_csrf_protection")
+            header("Sykmeldt-Fnr")
             allowCredentials = true
             allowNonSimpleContentTypes = true
         }
