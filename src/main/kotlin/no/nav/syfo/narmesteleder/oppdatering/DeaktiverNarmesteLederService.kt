@@ -33,8 +33,8 @@ class DeaktiverNarmesteLederService(
     suspend fun deaktiverNarmesteLederForAnsatt(fnrLeder: String, orgnummer: String, fnrSykmeldt: String, token: String, callId: UUID) {
         val aktuelleNlKoblinger = database.finnAktiveNarmestelederkoblinger(fnrLeder).filter { it.orgnummer == orgnummer && it.fnr == fnrSykmeldt }
         if (aktuelleNlKoblinger.isNotEmpty()) {
-            log.info("Deaktiverer ${aktuelleNlKoblinger.size} NL-koblinger $callId")
-            aktuelleNlKoblinger.forEach { deaktiverNarmesteLeder(orgnummer = it.orgnummer, fnrSykmeldt = it.fnr, token = token, callId = callId, forespurtAvAnsatt = false) }
+            log.info("Deaktiverer NL-koblinger for $callId")
+            deaktiverNarmesteLeder(orgnummer = aktuelleNlKoblinger.first().orgnummer, fnrSykmeldt = aktuelleNlKoblinger.first().fnr, token = token, callId = callId, forespurtAvAnsatt = false)
         } else {
             val personer = pdlPersonService.getPersoner(listOf(fnrLeder, fnrSykmeldt), callId.toString())
             if (kanDeaktivereNlKobling(personer = personer, fnrLeder = fnrLeder, orgnummer = orgnummer, fnrSykmeldt = fnrSykmeldt, callId = callId)) {
