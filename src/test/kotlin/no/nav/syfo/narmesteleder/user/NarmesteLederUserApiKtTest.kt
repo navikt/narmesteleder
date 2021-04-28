@@ -40,7 +40,7 @@ class NarmesteLederUserApiKtTest : Spek({
         syfonarmestelederClient
     )
 
-    coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns emptyList()
+    coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()
 
     describe("API for å deaktivere den sykmeldtes nærmeste leder - autentisering") {
         with(TestApplicationEngine()) {

@@ -36,7 +36,7 @@ class ArbeidsgiverServiceTest : Spek({
                 Gyldighetsperiode(fom = LocalDate.now(), tom = null)
             )
             runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token")
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
                 arbeidsgiverinformasjon[0].orgnummer shouldBeEqualTo "123456789"
@@ -46,7 +46,7 @@ class ArbeidsgiverServiceTest : Spek({
         it("arbeidsgiverService returnerer tom liste hvis bruker ikke har arbeidsforhold") {
             coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns emptyList()
             runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token")
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 0
             }
         }
@@ -56,7 +56,7 @@ class ArbeidsgiverServiceTest : Spek({
                 Gyldighetsperiode(fom = LocalDate.now().plusDays(1), tom = LocalDate.now().plusMonths(1))
             )
             runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token")
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 0
             }
         }
@@ -66,7 +66,7 @@ class ArbeidsgiverServiceTest : Spek({
                 Gyldighetsperiode(fom = LocalDate.now().plusDays(1), tom = LocalDate.now().plusDays(2))
             )
             runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", LocalDate.now().plusDays(3))
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true, LocalDate.now().plusDays(3))
                 arbeidsgiverinformasjon.size shouldBeEqualTo 0
             }
         }
@@ -76,7 +76,7 @@ class ArbeidsgiverServiceTest : Spek({
                 Gyldighetsperiode(fom = LocalDate.now().plusDays(1), tom = null)
             )
             runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", LocalDate.now().plusDays(3))
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true, LocalDate.now().plusDays(3))
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
             }
         }
@@ -85,7 +85,7 @@ class ArbeidsgiverServiceTest : Spek({
                 Gyldighetsperiode(fom = null, tom = null)
             )
             runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", LocalDate.now().plusDays(3))
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true, LocalDate.now().plusDays(3))
                 arbeidsgiverinformasjon.size shouldBeEqualTo 0
             }
         }
@@ -133,7 +133,7 @@ class ArbeidsgiverServiceTest : Spek({
                 )
             )
             runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token")
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 2
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
             }

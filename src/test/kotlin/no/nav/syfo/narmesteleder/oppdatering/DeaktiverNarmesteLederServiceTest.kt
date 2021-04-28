@@ -45,7 +45,6 @@ class DeaktiverNarmesteLederServiceTest : Spek({
             Pair(sykmeldtFnr, PdlPerson(Navn("Fornavn", null, "Etternavn"), sykmeldtFnr, "aktorid")),
             Pair(lederFnr, PdlPerson(Navn("Fornavn2", null, "Etternavn2"), lederFnr, "aktorid2"))
         )
-        coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns emptyList()
         coEvery { syfonarmestelederClient.getAktiveNarmestelederKoblinger(any(), any()) } returns emptyList()
     }
     afterEachTest {
@@ -57,28 +56,31 @@ class DeaktiverNarmesteLederServiceTest : Spek({
 
     describe("DeaktiverNarmesteLederService") {
         it("Deaktiverer NL-kobling og ber om ny NL hvis arbeidsforhold er aktivt") {
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = true))
-
             runBlocking {
+                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = true))
+
                 deaktiverNarmesteLederService.deaktiverNarmesteLeder("orgnummer", sykmeldtFnr, "token", UUID.randomUUID())
+
                 verify { nlResponseProducer.send(any()) }
                 verify { nlRequestProducer.send(any()) }
             }
         }
         it("Deaktiverer NL-kobling uten å be om ny NL hvis arbeidsforhold ikke er aktivt") {
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = false))
-
             runBlocking {
+                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = false))
+
                 deaktiverNarmesteLederService.deaktiverNarmesteLeder("orgnummer", sykmeldtFnr, "token", UUID.randomUUID())
+
                 verify { nlResponseProducer.send(any()) }
                 verify(exactly = 0) { nlRequestProducer.send(any()) }
             }
         }
         it("Deaktiverer NL-kobling uten å be om ny NL hvis arbeidsforhold ikke finnes i listen") {
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = true))
-
             runBlocking {
+                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = true))
+
                 deaktiverNarmesteLederService.deaktiverNarmesteLeder("orgnummer2", sykmeldtFnr, "token", UUID.randomUUID())
+
                 verify { nlResponseProducer.send(any()) }
                 verify(exactly = 0) { nlRequestProducer.send(any()) }
             }
@@ -87,6 +89,7 @@ class DeaktiverNarmesteLederServiceTest : Spek({
 
     describe("DeaktiverNarmesteLederService - deaktiver kobling for ansatt") {
         it("Deaktiverer kobling hvis finnes aktiv NL-kobling i databasen") {
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()
             testDb.connection.lagreNarmesteleder(
                 orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = lederFnr, arbeidsgiverForskutterer = true,
                 aktivFom = OffsetDateTime.now(
