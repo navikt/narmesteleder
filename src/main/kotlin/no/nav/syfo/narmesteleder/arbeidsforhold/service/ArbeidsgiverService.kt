@@ -19,7 +19,7 @@ class ArbeidsgiverService(
         val arbeidsgivere = arbeidsforholdClient.getArbeidsforhold(
             fnr = fnr,
             ansettelsesperiodeFom = ansettelsesperiodeFom,
-            token = if (forespurtAvAnsatt) { token } else { "Bearer $stsToken" },
+            token = if (forespurtAvAnsatt) { token } else { "Bearer ${stsToken.access_token}" },
             stsToken = stsToken.access_token
         )
 
