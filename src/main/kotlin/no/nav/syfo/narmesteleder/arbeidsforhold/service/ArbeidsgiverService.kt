@@ -13,10 +13,15 @@ class ArbeidsgiverService(
     private val arbeidsforholdClient: ArbeidsforholdClient,
     private val stsOidcClient: StsOidcClient
 ) {
-    suspend fun getArbeidsgivere(fnr: String, token: String, date: LocalDate = LocalDate.now()): List<Arbeidsgiverinfo> {
+    suspend fun getArbeidsgivere(fnr: String, token: String, forespurtAvAnsatt: Boolean, date: LocalDate = LocalDate.now()): List<Arbeidsgiverinfo> {
         val stsToken = stsOidcClient.oidcToken()
         val ansettelsesperiodeFom = LocalDate.now().minusMonths(4)
-        val arbeidsgivere = arbeidsforholdClient.getArbeidsforhold(fnr = fnr, ansettelsesperiodeFom = ansettelsesperiodeFom, token = token, stsToken = stsToken.access_token)
+        val arbeidsgivere = arbeidsforholdClient.getArbeidsforhold(
+            fnr = fnr,
+            ansettelsesperiodeFom = ansettelsesperiodeFom,
+            token = if (forespurtAvAnsatt) { token } else { "Bearer ${stsToken.access_token}" },
+            stsToken = stsToken.access_token
+        )
 
         if (arbeidsgivere.isEmpty()) {
             return emptyList()

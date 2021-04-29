@@ -33,21 +33,21 @@ class DeaktiverNarmesteLederService(
     suspend fun deaktiverNarmesteLederForAnsatt(fnrLeder: String, orgnummer: String, fnrSykmeldt: String, token: String, callId: UUID) {
         val aktuelleNlKoblinger = database.finnAktiveNarmestelederkoblinger(fnrLeder).filter { it.orgnummer == orgnummer && it.fnr == fnrSykmeldt }
         if (aktuelleNlKoblinger.isNotEmpty()) {
-            log.info("Deaktiverer ${aktuelleNlKoblinger.size} NL-koblinger $callId")
-            aktuelleNlKoblinger.forEach { deaktiverNarmesteLeder(orgnummer = it.orgnummer, fnrSykmeldt = it.fnr, token = token, callId = callId) }
+            log.info("Deaktiverer NL-koblinger for $callId")
+            deaktiverNarmesteLeder(orgnummer = aktuelleNlKoblinger.first().orgnummer, fnrSykmeldt = aktuelleNlKoblinger.first().fnr, token = token, callId = callId, forespurtAvAnsatt = false)
         } else {
             val personer = pdlPersonService.getPersoner(listOf(fnrLeder, fnrSykmeldt), callId.toString())
             if (kanDeaktivereNlKobling(personer = personer, fnrLeder = fnrLeder, orgnummer = orgnummer, fnrSykmeldt = fnrSykmeldt, callId = callId)) {
                 log.info("Deaktiverer NL-kobling $callId")
-                deaktiverNarmesteLeder(orgnummer = orgnummer, fnrSykmeldt = fnrSykmeldt, token = token, callId = callId)
+                deaktiverNarmesteLeder(orgnummer = orgnummer, fnrSykmeldt = fnrSykmeldt, token = token, callId = callId, forespurtAvAnsatt = false)
             } else {
                 log.info("Ingen aktive koblinger å deaktivere $callId")
             }
         }
     }
 
-    suspend fun deaktiverNarmesteLeder(orgnummer: String, fnrSykmeldt: String, token: String, callId: UUID, personer: Map<String, PdlPerson?>? = null) {
-        val aktivtArbeidsforhold = arbeidsgiverService.getArbeidsgivere(fnr = fnrSykmeldt, token = token)
+    suspend fun deaktiverNarmesteLeder(orgnummer: String, fnrSykmeldt: String, token: String, callId: UUID, personer: Map<String, PdlPerson?>? = null, forespurtAvAnsatt: Boolean = true) {
+        val aktivtArbeidsforhold = arbeidsgiverService.getArbeidsgivere(fnr = fnrSykmeldt, token = token, forespurtAvAnsatt = forespurtAvAnsatt)
             .firstOrNull { it.orgnummer == orgnummer && it.aktivtArbeidsforhold }
 
         if (aktivtArbeidsforhold != null) {
