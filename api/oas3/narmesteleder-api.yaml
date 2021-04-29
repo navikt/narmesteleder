@@ -86,6 +86,45 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+  /{orgnummer}/avkreft:
+    post:
+      summary: avkrefter evt aktiv leder-relasjon for angitt orgnummer for sykmeldt-fnr for fnr i access_token
+      operationId: avkreftNarmestelederForSykmeldt
+      tags:
+        - Narmesteleder-sykmeldt-userapi
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/OrgnummerPath'
+      responses:
+        '200':
+          description: Ok
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /arbeidsgiver/{orgnummer}/avkreft:
+    post:
+      summary: avkrefter aktiv leder-relasjon for angitt orgnummer og sykmeldt-fnr for leder-fnr i access_token
+      operationId: avkreftNarmestelederForSykmeldtFraLeder
+      tags:
+        - Narmesteleder-sykmeldt-userapi
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/OrgnummerPath'
+        - $ref: '#/components/parameters/SykmeldtFnr'
+      responses:
+        '200':
+          description: Ok
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
 
 components:
   responses:
@@ -141,6 +180,14 @@ components:
       schema:
         type: string
       example: 'ja'
+    OrgnummerPath:
+        description: Bedriftens orgnummer
+        name: orgnummer
+        in: path
+        required: true
+        schema:
+          type: string
+        example: '974600951'
   schemas:
     Date:
       type: string

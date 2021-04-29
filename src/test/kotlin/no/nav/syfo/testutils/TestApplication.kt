@@ -46,7 +46,9 @@ fun TestApplicationEngine.setUpTestApplication() {
     }
 }
 
-fun TestApplicationEngine.setUpAuth(): Environment {
+val testAudience = listOf("loginserviceId1", "loginserviceId2")
+
+fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Environment {
     val env = Environment(
         clientId = "narmesteleder",
         cluster = "dev",
@@ -61,13 +63,21 @@ fun TestApplicationEngine.setUpAuth(): Environment {
         dbPort = "",
         dbName = "",
         stsApiKey = "key",
-        pdlApiKey = "key"
+        pdlApiKey = "key",
+        loginserviceIdportenDiscoveryUrl = "url",
+        loginserviceIdportenAudience = audience,
+        registerBasePath = "http://register",
+        aaregApiKey = "key",
+        syfonarmesteLederBasePath = "http::/narmesteleder",
+        syfonarmestelederClientId = "narmesteleder",
+        aadAccessTokenUrl = "aad",
+        allowedOrigin = "tjenester"
     )
 
     val path = "src/test/resources/jwkset.json"
     val uri = Paths.get(path).toUri().toURL()
     val jwkProvider = JwkProviderBuilder(uri).build()
 
-    application.setupAuth(jwkProvider, env)
+    application.setupAuth(jwkProvider, jwkProvider, env, "issuer")
     return env
 }

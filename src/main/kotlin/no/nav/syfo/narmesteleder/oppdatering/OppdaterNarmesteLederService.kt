@@ -25,20 +25,32 @@ class OppdaterNarmesteLederService(
 
     suspend fun handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage: NlResponseKafkaMessage) {
         val callId = UUID.randomUUID().toString()
-        val sykmeldtFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
-        val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
-        val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
-        val navnMap = pdlPersonService.getPersonnavn(listOf(sykmeldtFnr, nlFnr), callId)
-        if (navnMap[sykmeldtFnr] == null || navnMap[nlFnr] == null) {
-            log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL $callId")
-            throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
-        }
-        val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
-        if (nlResponseKafkaMessage.kafkaMetadata.source == "macgyver") {
-            handterMigrertNarmesteLeder(narmesteLedere, nlResponseKafkaMessage, callId)
-        } else {
-            deaktiverTidligereLedere(narmesteLedere, callId)
-            createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
+        when {
+            nlResponseKafkaMessage.nlResponse != null -> {
+                val sykmeldtFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
+                val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
+                val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
+                val personMap = pdlPersonService.getPersoner(listOf(sykmeldtFnr, nlFnr), callId)
+                if (personMap[sykmeldtFnr] == null || personMap[nlFnr] == null) {
+                    log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL $callId")
+                    throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
+                }
+                val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
+                if (nlResponseKafkaMessage.kafkaMetadata.source == "macgyver") {
+                    handterMigrertNarmesteLeder(narmesteLedere, nlResponseKafkaMessage, callId)
+                } else {
+                    deaktiverTidligereLedere(narmesteLedere, OffsetDateTime.now(ZoneOffset.UTC), callId)
+                    createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
+                }
+            }
+            nlResponseKafkaMessage.nlAvbrutt != null -> {
+                val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = nlResponseKafkaMessage.nlAvbrutt.sykmeldtFnr, orgnummer = nlResponseKafkaMessage.nlAvbrutt.orgnummer)
+                deaktiverTidligereLedere(narmesteLedere, nlResponseKafkaMessage.nlAvbrutt.aktivTom, callId)
+            }
+            else -> {
+                log.error("Har mottatt nl-response som ikke er ny eller avbrutt")
+                throw IllegalStateException("Har mottatt nl-response som ikke er ny eller avbrutt")
+            }
         }
     }
 
@@ -50,12 +62,12 @@ class OppdaterNarmesteLederService(
     // må vi stoppe.
     fun handterMigrertNarmesteLeder(narmesteLedere: List<NarmesteLederRelasjon>, nlResponseKafkaMessage: NlResponseKafkaMessage, callId: String) {
         if (narmesteLedere.isEmpty()) {
-            database.lagreNarmesteLeder(nlResponseKafkaMessage.nlResponse, nlResponseKafkaMessage.kafkaMetadata.timestamp)
+            database.lagreNarmesteLeder(nlResponseKafkaMessage.nlResponse!!, nlResponseKafkaMessage.kafkaMetadata.timestamp)
             log.info("Lagret migrert NL for callId $callId")
         } else {
-            val sammeNarmesteLeder = narmesteLedere.find { it.narmesteLederFnr == nlResponseKafkaMessage.nlResponse.leder.fnr }
+            val sammeNarmesteLeder = narmesteLedere.find { it.narmesteLederFnr == nlResponseKafkaMessage.nlResponse!!.leder.fnr }
             if (sammeNarmesteLeder != null) {
-                database.oppdaterAktivFom(sammeNarmesteLeder.narmesteLederId, nlResponseKafkaMessage.nlResponse.aktivFom!!)
+                database.oppdaterAktivFom(sammeNarmesteLeder.narmesteLederId, nlResponseKafkaMessage.nlResponse!!.aktivFom!!)
                 log.info("Oppdatert aktivFom for narmesteleder ${sammeNarmesteLeder.narmesteLederId}, callid $callId")
                 if (skalDeaktivereTidligereLederIfmMigrering(sammeNarmesteLeder, nlResponseKafkaMessage.nlResponse)) {
                     database.deaktiverNarmesteLeder(
@@ -65,9 +77,9 @@ class OppdaterNarmesteLederService(
                     log.info("Deaktivert narmeste leder med id ${sammeNarmesteLeder.narmesteLederId} som har blitt deaktivert i syfoservice, $callId")
                 }
             } else {
-                val andreAktiveNarmesteLedere = narmesteLedere.filter { it.narmesteLederFnr != nlResponseKafkaMessage.nlResponse.leder.fnr && it.aktivTom == null }
+                val andreAktiveNarmesteLedere = narmesteLedere.filter { it.narmesteLederFnr != nlResponseKafkaMessage.nlResponse!!.leder.fnr && it.aktivTom == null }
                 if (andreAktiveNarmesteLedere.isNotEmpty()) {
-                    if (nlResponseKafkaMessage.nlResponse.aktivTom != null) {
+                    if (nlResponseKafkaMessage.nlResponse!!.aktivTom != null) {
                         database.lagreNarmesteLeder(nlResponseKafkaMessage.nlResponse, nlResponseKafkaMessage.kafkaMetadata.timestamp)
                         log.info("Lagret migrert, tidligere NL for callId $callId")
                     } else {
@@ -84,14 +96,14 @@ class OppdaterNarmesteLederService(
             sammeNarmesteLeder.timestamp.isBefore(OffsetDateTime.of(LocalDate.of(2021, 4, 8).atStartOfDay(), ZoneOffset.UTC))
     }
 
-    private fun deaktiverTidligereLedere(narmesteLedere: List<NarmesteLederRelasjon>, callId: String) {
+    private fun deaktiverTidligereLedere(narmesteLedere: List<NarmesteLederRelasjon>, aktivTom: OffsetDateTime, callId: String) {
         log.info("Deaktiverer ${narmesteLedere.size} nærmeste ledere $callId")
         narmesteLedere.filter { it.aktivTom == null }
-            .forEach { database.deaktiverNarmesteLeder(it.narmesteLederId) }
+            .forEach { database.deaktiverNarmesteLeder(narmesteLederId = it.narmesteLederId, aktivTom = aktivTom) }
     }
 
     private fun createOrUpdateNL(ledere: List<NarmesteLederRelasjon>, nlResponseKafkaMessage: NlResponseKafkaMessage, callId: String) {
-        when (val eksisterendeLeder = getExistingLeder(ledere, nlResponseKafkaMessage.nlResponse.leder.fnr)) {
+        when (val eksisterendeLeder = getExistingLeder(ledere, nlResponseKafkaMessage.nlResponse!!.leder.fnr)) {
             null -> {
                 database.lagreNarmesteLeder(nlResponseKafkaMessage.nlResponse, nlResponseKafkaMessage.kafkaMetadata.timestamp)
                 log.info("Created new NL for callId $callId")

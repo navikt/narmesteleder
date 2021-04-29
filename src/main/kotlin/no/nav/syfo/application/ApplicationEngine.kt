@@ -9,9 +9,11 @@ import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.authenticate
+import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
@@ -28,7 +30,13 @@ import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.forskuttering.registrerForskutteringApi
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.UtvidetNarmesteLederService
+import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
+import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
+import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
+import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.registrerNarmesteLederApi
+import no.nav.syfo.narmesteleder.syfonarmesteleder.client.SyfonarmestelederClient
+import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApi
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.util.UUID
 
@@ -37,8 +45,14 @@ fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
     jwkProvider: JwkProvider,
+    jwkProviderLoginservice: JwkProvider,
+    loginserviceIssuer: String,
     database: Database,
-    pdlPersonService: PdlPersonService
+    pdlPersonService: PdlPersonService,
+    nlResponseProducer: NLResponseProducer,
+    nlRequestProducer: NLRequestProducer,
+    arbeidsgiverService: ArbeidsgiverService,
+    syfonarmestelederClient: SyfonarmestelederClient
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -49,7 +63,7 @@ fun createApplicationEngine(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-        setupAuth(jwkProvider, env)
+        setupAuth(jwkProvider = jwkProvider, jwkProviderLoginservice = jwkProviderLoginservice, env = env, loginserviceIssuer = loginserviceIssuer)
         install(CallLogging) {
             mdc("Nav-Callid") { call ->
                 call.request.queryParameters["Nav-Callid"] ?: UUID.randomUUID().toString()
@@ -64,16 +78,30 @@ fun createApplicationEngine(
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
             }
         }
+        install(CORS) {
+            method(HttpMethod.Get)
+            method(HttpMethod.Post)
+            method(HttpMethod.Options)
+            host(if (env.cluster == "dev-gcp") { "*" } else { env.allowedOrigin }, schemes = listOf("https"))
+            header("nav_csrf_protection")
+            header("Sykmeldt-Fnr")
+            allowCredentials = true
+            allowNonSimpleContentTypes = true
+        }
 
         val utvidetNarmesteLederService = UtvidetNarmesteLederService(database, pdlPersonService)
+        val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, nlRequestProducer, arbeidsgiverService, pdlPersonService, database, syfonarmestelederClient)
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {
                 setupSwaggerDocApi()
             }
-            authenticate {
+            authenticate("servicebruker") {
                 registrerForskutteringApi(database)
                 registrerNarmesteLederApi(database, utvidetNarmesteLederService)
+            }
+            authenticate("loginservice") {
+                registrerNarmesteLederUserApi(deaktiverNarmesteLederService)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

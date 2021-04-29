@@ -30,6 +30,36 @@ fun getTestData(): String {
         "        },\n" +
         "        \"code\": \"ok\"\n" +
         "      }\n" +
+        "    ],\n" +
+        "    \"hentIdenterBolk\": [\n" +
+        "      {\n" +
+        "        \"ident\": \"12345678910\",\n" +
+        "        \"identer\": [\n" +
+        "          {\n" +
+        "            \"ident\": \"99999999999\",\n" +
+        "            \"gruppe\": \"AKTORID\"\n" +
+        "          },\n" +
+        "          {\n" +
+        "            \"ident\": \"12345678910\",\n" +
+        "            \"gruppe\": \"FOLKEREGISTERIDENT\"\n" +
+        "          }\n" +
+        "        ],\n" +
+        "        \"code\": \"ok\"\n" +
+        "      },\n" +
+        "      {\n" +
+        "        \"ident\": \"01987654321\",\n" +
+        "        \"identer\": [\n" +
+        "          {\n" +
+        "            \"ident\": \"88888888888\",\n" +
+        "            \"gruppe\": \"AKTORID\"\n" +
+        "          },\n" +
+        "          {\n" +
+        "            \"ident\": \"01987654321\",\n" +
+        "            \"gruppe\": \"FOLKEREGISTERIDENT\"\n" +
+        "          }\n" +
+        "        ],\n" +
+        "        \"code\": \"ok\"\n" +
+        "      }\n" +
         "    ]\n" +
         "  }\n" +
         "}"

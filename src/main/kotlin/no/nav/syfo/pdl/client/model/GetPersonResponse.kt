@@ -6,7 +6,8 @@ data class GetPersonResponse(
 )
 
 data class ResponseData(
-    val hentPersonBolk: List<HentPersonBolk>?
+    val hentPersonBolk: List<HentPersonBolk>?,
+    val hentIdenterBolk: List<HentIdenterBolk>?
 )
 
 data class HentPersonBolk(
@@ -24,6 +25,14 @@ data class Navn(
     val mellomnavn: String?,
     val etternavn: String
 )
+
+data class HentIdenterBolk(
+    val ident: String,
+    val identer: List<PdlIdent>?,
+    val code: String
+)
+
+data class PdlIdent(val ident: String, val gruppe: String)
 
 data class ResponseError(
     val message: String?,

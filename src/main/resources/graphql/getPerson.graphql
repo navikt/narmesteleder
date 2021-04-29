@@ -9,5 +9,13 @@ query($identer: [ID!]!){
         }
     },
     code
+  },
+  hentIdenterBolk(identer: $identer, historikk: false) {
+    ident,
+    identer {
+        ident,
+        gruppe
+    },
+    code
   }
 }
