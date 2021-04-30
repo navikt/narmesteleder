@@ -67,9 +67,16 @@ fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(fnr: String, orgnummer: 
     }
 }
 
-fun DatabaseInterface.deaktiverNarmesteLeder(narmesteLederId: UUID, aktivTom: OffsetDateTime) {
+fun DatabaseInterface.deaktiverNarmesteLeder(narmesteLederId: UUID, aktivTom: OffsetDateTime? = null) {
     connection.use { connection ->
         connection.deaktiverNarmesteLeder(narmesteLederId, aktivTom)
+        connection.commit()
+    }
+}
+
+fun DatabaseInterface.oppdaterAktivFom(narmesteLederId: UUID, aktivFom: OffsetDateTime) {
+    connection.use { connection ->
+        connection.oppdaterAktivFom(narmesteLederId, aktivFom)
         connection.commit()
     }
 }
@@ -81,9 +88,9 @@ fun DatabaseInterface.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: N
     }
 }
 
-fun DatabaseInterface.lagreNarmesteLeder(nlResponse: NlResponse, aktivFom: OffsetDateTime) {
+fun DatabaseInterface.lagreNarmesteLeder(nlResponse: NlResponse, kafkaTimestamp: OffsetDateTime) {
     connection.use { connection ->
-        connection.lagreNarmesteleder(nlResponse, aktivFom)
+        connection.lagreNarmesteleder(nlResponse, kafkaTimestamp)
         connection.commit()
     }
 }
@@ -102,7 +109,7 @@ fun DatabaseInterface.finnForskuttering(fnr: String, orgnummer: String): Forskut
     }
 }
 
-private fun Connection.lagreNarmesteleder(nlResponse: NlResponse, aktivFom: OffsetDateTime) {
+private fun Connection.lagreNarmesteleder(nlResponse: NlResponse, kafkaTimestamp: OffsetDateTime) {
     this.prepareStatement(
         """
                 INSERT INTO narmeste_leder(
@@ -124,14 +131,14 @@ private fun Connection.lagreNarmesteleder(nlResponse: NlResponse, aktivFom: Offs
         it.setString(4, nlResponse.leder.mobil)
         it.setString(5, nlResponse.leder.epost)
         it.setObject(6, nlResponse.utbetalesLonn)
-        it.setTimestamp(7, Timestamp.from(aktivFom.toInstant()))
-        it.setObject(8, null)
+        it.setTimestamp(7, nlResponse.aktivFom?.let { Timestamp.from(nlResponse.aktivFom.toInstant()) } ?: Timestamp.from(kafkaTimestamp.toInstant()))
+        it.setObject(8, nlResponse.aktivTom?.let { Timestamp.from(nlResponse.aktivTom.toInstant()) })
         it.setTimestamp(9, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
         it.execute()
     }
 }
 
-private fun Connection.deaktiverNarmesteLeder(narmesteLederId: UUID, aktivTom: OffsetDateTime) =
+private fun Connection.deaktiverNarmesteLeder(narmesteLederId: UUID, aktivTom: OffsetDateTime? = null) =
     this.prepareStatement(
         """
             UPDATE narmeste_leder 
@@ -139,7 +146,7 @@ private fun Connection.deaktiverNarmesteLeder(narmesteLederId: UUID, aktivTom: O
                 WHERE narmeste_leder_id = ?;
             """
     ).use {
-        it.setTimestamp(1, Timestamp.from(aktivTom.toInstant()))
+        it.setTimestamp(1, aktivTom?.let { Timestamp.from(aktivTom.toInstant()) } ?: Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
         it.setTimestamp(2, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
         it.setObject(3, narmesteLederId)
         it.execute()
@@ -158,6 +165,20 @@ private fun Connection.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: 
         it.setObject(3, nlResponse.utbetalesLonn)
         it.setTimestamp(4, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
         it.setObject(5, narmesteLederId)
+        it.execute()
+    }
+
+private fun Connection.oppdaterAktivFom(narmesteLederId: UUID, aktivFom: OffsetDateTime) =
+    this.prepareStatement(
+        """
+            UPDATE narmeste_leder 
+                SET aktiv_fom = ?, timestamp = ?
+                WHERE narmeste_leder_id = ?;
+            """
+    ).use {
+        it.setTimestamp(1, Timestamp.from(aktivFom.toInstant()))
+        it.setTimestamp(2, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+        it.setObject(3, narmesteLederId)
         it.execute()
     }
 
