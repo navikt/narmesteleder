@@ -1,7 +1,6 @@
 package no.nav.syfo.narmesteleder.oppdatering.kafka
 
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.delay
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
@@ -18,11 +17,12 @@ class NarmesteLederResponseConsumerService(
 ) {
 
     suspend fun startConsumer() {
+
         kafkaConsumer.subscribe(listOf(topic))
         log.info("Starting consuming topic $topic")
         while (applicationState.ready) {
             kafkaConsumer.poll(Duration.ZERO).forEach {
-                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(it.value())
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(it.value(), it.timestamp())
             }
         }
     }

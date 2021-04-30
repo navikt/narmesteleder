@@ -43,6 +43,7 @@ import no.nav.syfo.narmesteleder.syfonarmesteleder.client.SyfonarmestelederClien
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.service.PdlPersonService
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -121,7 +122,7 @@ fun main() {
     val syfonarmestelederClient = SyfonarmestelederClient(httpClient, accessTokenClient, env.syfonarmesteLederBasePath)
 
     val kafkaConsumer = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig().toConsumerConfig("narmesteleder", JacksonKafkaDeserializer::class),
+        KafkaUtils.getAivenKafkaConfig().also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest" }.toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
         StringDeserializer(),
         JacksonKafkaDeserializer(NlResponseKafkaMessage::class)
     )

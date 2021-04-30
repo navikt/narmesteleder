@@ -6,14 +6,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.deaktiverNarmesteLeder
+import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.db.lagreNarmesteLeder
 import no.nav.syfo.db.oppdaterNarmesteLeder
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
-import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 import no.nav.syfo.pdl.service.PdlPersonService
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
@@ -26,60 +25,49 @@ class OppdaterNarmesteLederService(
 
     private var counter = 0
     private var macgyverCounter = 0
-
+    private val macgyverTimestamp = 1619697827351
+    private var behandletCounter = 0
     init {
         GlobalScope.launch {
             while (true) {
-                log.info("Macgyver $macgyverCounter, Total: $counter")
+                log.info("Behandlet $behandletCounter, Macgyver $macgyverCounter, Total: $counter")
                 delay(10_000)
             }
         }
     }
 
-    suspend fun handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage: NlResponseKafkaMessage) {
+    suspend fun handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage: NlResponseKafkaMessage, timestamp: Long) {
         val callId = UUID.randomUUID().toString()
         counter += 1
-        if (nlResponseKafkaMessage.kafkaMetadata.source != "macgyver") {
+        if (nlResponseKafkaMessage.kafkaMetadata.source == "macgyver") {
+            macgyverCounter += 1
+            return
+        } else if (timestamp < macgyverTimestamp) {
             return
         }
-        macgyverCounter += 1
         when {
             nlResponseKafkaMessage.nlResponse != null -> {
                 val sykmeldtFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
                 val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
-//                val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
-//                val personMap = pdlPersonService.getPersoner(listOf(sykmeldtFnr, nlFnr), callId)
-//                if (personMap[sykmeldtFnr] == null || personMap[nlFnr] == null) {
-//                    log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL $callId")
-//                    throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
-//                }
-                // val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
-
-                handterMigrertNarmesteLeder(nlResponseKafkaMessage)
-
-//                else {
-//                    deaktiverTidligereLedere(narmesteLedere, OffsetDateTime.now(ZoneOffset.UTC), callId)
-//                    createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
-//                }
+                val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
+                val personMap = pdlPersonService.getPersoner(listOf(sykmeldtFnr, nlFnr), callId)
+                if (personMap[sykmeldtFnr] == null || personMap[nlFnr] == null) {
+                    log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL $callId")
+                    throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
+                }
+                val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
+                deaktiverTidligereLedere(narmesteLedere, OffsetDateTime.now(ZoneOffset.UTC), callId)
+                createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
             }
             nlResponseKafkaMessage.nlAvbrutt != null -> {
-//                val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = nlResponseKafkaMessage.nlAvbrutt.sykmeldtFnr, orgnummer = nlResponseKafkaMessage.nlAvbrutt.orgnummer)
-//                deaktiverTidligereLedere(narmesteLedere, nlResponseKafkaMessage.nlAvbrutt.aktivTom, callId)
+                val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = nlResponseKafkaMessage.nlAvbrutt.sykmeldtFnr, orgnummer = nlResponseKafkaMessage.nlAvbrutt.orgnummer)
+                deaktiverTidligereLedere(narmesteLedere, nlResponseKafkaMessage.nlAvbrutt.aktivTom, callId)
             }
             else -> {
                 log.error("Har mottatt nl-response som ikke er ny eller avbrutt")
                 throw IllegalStateException("Har mottatt nl-response som ikke er ny eller avbrutt")
             }
         }
-    }
-
-    fun handterMigrertNarmesteLeder(nlResponseKafkaMessage: NlResponseKafkaMessage) {
-        database.lagreNarmesteLeder(nlResponseKafkaMessage.nlResponse!!, nlResponseKafkaMessage.kafkaMetadata.timestamp)
-    }
-
-    private fun skalDeaktivereTidligereLederIfmMigrering(sammeNarmesteLeder: NarmesteLederRelasjon, nlResponse: NlResponse): Boolean {
-        return sammeNarmesteLeder.aktivTom == null && nlResponse.aktivTom != null &&
-            sammeNarmesteLeder.timestamp.isBefore(OffsetDateTime.of(LocalDate.of(2021, 4, 8).atStartOfDay(), ZoneOffset.UTC))
     }
 
     private fun deaktiverTidligereLedere(narmesteLedere: List<NarmesteLederRelasjon>, aktivTom: OffsetDateTime, callId: String) {
