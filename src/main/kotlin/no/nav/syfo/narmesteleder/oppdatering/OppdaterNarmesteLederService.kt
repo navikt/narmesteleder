@@ -6,9 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.deaktiverNarmesteLeder
-import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.db.lagreNarmesteLeder
-import no.nav.syfo.db.oppdaterAktivFom
 import no.nav.syfo.db.oppdaterNarmesteLeder
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
@@ -19,7 +17,6 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
-import javax.xml.bind.JAXBElement
 
 @KtorExperimentalAPI
 class OppdaterNarmesteLederService(
@@ -42,7 +39,7 @@ class OppdaterNarmesteLederService(
     suspend fun handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage: NlResponseKafkaMessage) {
         val callId = UUID.randomUUID().toString()
         counter += 1
-        if(nlResponseKafkaMessage.kafkaMetadata.source != "macgyver") {
+        if (nlResponseKafkaMessage.kafkaMetadata.source != "macgyver") {
             return
         }
         macgyverCounter += 1
@@ -56,7 +53,7 @@ class OppdaterNarmesteLederService(
 //                    log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL $callId")
 //                    throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
 //                }
-                //val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
+                // val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
                 if (nlResponseKafkaMessage.kafkaMetadata.source == "macgyver") {
                     handterMigrertNarmesteLeder(nlResponseKafkaMessage)
                 }
@@ -77,7 +74,7 @@ class OppdaterNarmesteLederService(
     }
 
     fun handterMigrertNarmesteLeder(nlResponseKafkaMessage: NlResponseKafkaMessage) {
-            database.lagreNarmesteLeder(nlResponseKafkaMessage.nlResponse!!, nlResponseKafkaMessage.kafkaMetadata.timestamp)
+        database.lagreNarmesteLeder(nlResponseKafkaMessage.nlResponse!!, nlResponseKafkaMessage.kafkaMetadata.timestamp)
     }
 
     private fun skalDeaktivereTidligereLederIfmMigrering(sammeNarmesteLeder: NarmesteLederRelasjon, nlResponse: NlResponse): Boolean {
