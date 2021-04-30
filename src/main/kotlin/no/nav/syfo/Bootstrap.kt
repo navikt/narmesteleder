@@ -163,9 +163,9 @@ fun main() {
     applicationServer.start()
     applicationState.ready = true
 
-//    startBackgroundJob(applicationState) {
-//        narmesteLederResponseConsumerService.startConsumer()
-//    }
+    startBackgroundJob(applicationState) {
+        narmesteLederResponseConsumerService.startConsumer()
+    }
 }
 
 fun startBackgroundJob(applicationState: ApplicationState, block: suspend CoroutineScope.() -> Unit) {
