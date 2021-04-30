@@ -27,10 +27,11 @@ class OppdaterNarmesteLederService(
     private var macgyverCounter = 0
     private val macgyverTimestamp = 1619697827351
     private var behandletCounter = 0
+    private var preMacgyver = 0
     init {
         GlobalScope.launch {
             while (true) {
-                log.info("Behandlet $behandletCounter, Macgyver $macgyverCounter, Total: $counter")
+                log.info("Behandlet $behandletCounter, MacGyver $macgyverCounter, Pre-MacGyver $preMacgyver, Total: $counter")
                 delay(10_000)
             }
         }
@@ -43,6 +44,7 @@ class OppdaterNarmesteLederService(
             macgyverCounter += 1
             return
         } else if (timestamp < macgyverTimestamp) {
+            preMacgyver += 1
             return
         }
         when {
@@ -68,6 +70,7 @@ class OppdaterNarmesteLederService(
                 throw IllegalStateException("Har mottatt nl-response som ikke er ny eller avbrutt")
             }
         }
+        behandletCounter += 1
     }
 
     private fun deaktiverTidligereLedere(narmesteLedere: List<NarmesteLederRelasjon>, aktivTom: OffsetDateTime, callId: String) {
