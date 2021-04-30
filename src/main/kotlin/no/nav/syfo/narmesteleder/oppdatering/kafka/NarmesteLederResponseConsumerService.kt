@@ -24,7 +24,6 @@ class NarmesteLederResponseConsumerService(
             kafkaConsumer.poll(Duration.ZERO).forEach {
                 oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(it.value())
             }
-            delay(1L)
         }
     }
 }

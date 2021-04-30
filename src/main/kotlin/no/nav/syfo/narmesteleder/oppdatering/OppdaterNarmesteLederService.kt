@@ -54,9 +54,9 @@ class OppdaterNarmesteLederService(
 //                    throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
 //                }
                 // val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
-                if (nlResponseKafkaMessage.kafkaMetadata.source == "macgyver") {
-                    handterMigrertNarmesteLeder(nlResponseKafkaMessage)
-                }
+
+                handterMigrertNarmesteLeder(nlResponseKafkaMessage)
+
 //                else {
 //                    deaktiverTidligereLedere(narmesteLedere, OffsetDateTime.now(ZoneOffset.UTC), callId)
 //                    createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
