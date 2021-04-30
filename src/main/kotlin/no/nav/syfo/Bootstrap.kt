@@ -122,7 +122,7 @@ fun main() {
     val syfonarmestelederClient = SyfonarmestelederClient(httpClient, accessTokenClient, env.syfonarmesteLederBasePath)
 
     val kafkaConsumer = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig().also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest" }.toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
+        KafkaUtils.getAivenKafkaConfig().also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }.toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
         StringDeserializer(),
         JacksonKafkaDeserializer(NlResponseKafkaMessage::class)
     )
