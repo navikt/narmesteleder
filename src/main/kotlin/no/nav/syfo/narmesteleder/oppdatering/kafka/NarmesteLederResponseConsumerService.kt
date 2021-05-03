@@ -22,7 +22,7 @@ class NarmesteLederResponseConsumerService(
         log.info("Starting consuming topic $topic")
         while (applicationState.ready) {
             kafkaConsumer.poll(Duration.ZERO).forEach {
-                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(it.value(), it.timestamp())
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(it.value())
             }
         }
     }
