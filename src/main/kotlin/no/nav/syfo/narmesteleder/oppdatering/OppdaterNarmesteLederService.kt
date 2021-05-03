@@ -1,9 +1,6 @@
 package no.nav.syfo.narmesteleder.oppdatering
 
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.deaktiverNarmesteLeder
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
@@ -23,26 +20,8 @@ class OppdaterNarmesteLederService(
     private val database: DatabaseInterface
 ) {
 
-    private var counter = 0
-    private var macgyverCounter = 0
-    private var behandletCounter = 0
-
-    init {
-        GlobalScope.launch {
-            while (true) {
-                log.info("Behandlet $behandletCounter, MacGyver $macgyverCounter, Total: $counter")
-                delay(10_000)
-            }
-        }
-    }
-
     suspend fun handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage: NlResponseKafkaMessage) {
         val callId = UUID.randomUUID().toString()
-        counter += 1
-        if (nlResponseKafkaMessage.kafkaMetadata.source == "macgyver") {
-            macgyverCounter += 1
-            return
-        }
         when {
             nlResponseKafkaMessage.nlResponse != null -> {
                 val sykmeldtFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
@@ -66,7 +45,6 @@ class OppdaterNarmesteLederService(
                 throw IllegalStateException("Har mottatt nl-response som ikke er ny eller avbrutt")
             }
         }
-        behandletCounter += 1
     }
 
     private fun deaktiverTidligereLedere(narmesteLedere: List<NarmesteLederRelasjon>, aktivTom: OffsetDateTime, callId: String) {

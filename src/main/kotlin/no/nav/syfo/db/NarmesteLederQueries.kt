@@ -74,13 +74,6 @@ fun DatabaseInterface.deaktiverNarmesteLeder(narmesteLederId: UUID, aktivTom: Of
     }
 }
 
-fun DatabaseInterface.oppdaterAktivFom(narmesteLederId: UUID, aktivFom: OffsetDateTime) {
-    connection.use { connection ->
-        connection.oppdaterAktivFom(narmesteLederId, aktivFom)
-        connection.commit()
-    }
-}
-
 fun DatabaseInterface.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: NlResponse) {
     connection.use { connection ->
         connection.oppdaterNarmesteLeder(narmesteLederId, nlResponse)
@@ -165,20 +158,6 @@ private fun Connection.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: 
         it.setObject(3, nlResponse.utbetalesLonn)
         it.setTimestamp(4, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
         it.setObject(5, narmesteLederId)
-        it.execute()
-    }
-
-private fun Connection.oppdaterAktivFom(narmesteLederId: UUID, aktivFom: OffsetDateTime) =
-    this.prepareStatement(
-        """
-            UPDATE narmeste_leder 
-                SET aktiv_fom = ?, timestamp = ?
-                WHERE narmeste_leder_id = ?;
-            """
-    ).use {
-        it.setTimestamp(1, Timestamp.from(aktivFom.toInstant()))
-        it.setTimestamp(2, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
-        it.setObject(3, narmesteLederId)
         it.execute()
     }
 
