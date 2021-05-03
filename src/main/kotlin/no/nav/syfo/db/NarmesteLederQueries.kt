@@ -161,7 +161,6 @@ private fun Connection.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: 
         it.execute()
     }
 
-
 private fun ResultSet.toNarmesteLederRelasjon(): NarmesteLederRelasjon =
     NarmesteLederRelasjon(
         narmesteLederId = getObject("narmeste_leder_id", UUID::class.java),
