@@ -21,7 +21,7 @@ data class Environment(
     val stsApiKey: String? = getEnvVar("STS_API_KEY"),
     val stsUrl: String = getEnvVar("SECURITYTOKENSERVICE_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
-    val nlResponseTopic: String = "teamsykmelding.syfo-nl-response",
+    val nlResponseTopic: String = "teamsykmelding.syfo-narmesteleder",
     val nlRequestTopic: String = "teamsykmelding.syfo-nl-request",
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
