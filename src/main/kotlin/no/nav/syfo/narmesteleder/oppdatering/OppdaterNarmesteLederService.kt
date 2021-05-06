@@ -33,7 +33,7 @@ class OppdaterNarmesteLederService(
                 val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
                 val personMap = pdlPersonService.getPersoner(listOf(sykmeldtFnr, nlFnr), callId)
                 if (personMap[sykmeldtFnr] == null || personMap[nlFnr] == null) {
-                    log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL partition: $partition, offset: $offset")
+                    log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL callId $callId partition: $partition, offset: $offset")
                     throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
                 }
                 val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
