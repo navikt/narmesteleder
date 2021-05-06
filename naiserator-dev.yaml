@@ -48,6 +48,7 @@ spec:
     - configmap: loginservice-idporten
   ingresses:
     - "https://narmesteleder.dev.nav.no"
+    - "https://narmesteleder.dev.intern.nav.no"
   webproxy: true
   kafka:
     pool: nav-dev
