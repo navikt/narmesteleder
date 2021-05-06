@@ -96,11 +96,5 @@ spec:
       value: narmesteleder
     - name: REGISTER_BASE_PATH
       value: https://api-gw.oera.no
-    - name: AAD_ACCESS_TOKEN_URL
-      value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token
-    - name: SYFONARMESTELEDER_CLIENT_ID
-      value: ccf8c36f-27e6-4e76-8250-9a49939df7ef
-    - name: SYFONARMESTELEDER_URL
-      value: https://syfonarmesteleder.prod-fss-pub.nais.io
     - name: ALLOWED_ORIGIN
       value: tjenester.nav.no
