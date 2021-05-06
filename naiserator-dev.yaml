@@ -82,11 +82,8 @@ spec:
         - application: syfosmaltinn
         - application: narmesteleder
         - application: sykmeldinger-backend
-          namespace: default
+          namespace: teamsykmelding
           cluster: dev-fss
-    outbound:
-      external:
-        - host: syfonarmesteleder.dev-fss-pub.nais.io
   env:
     - name: SECURITYTOKENSERVICE_URL
       value: https://api-gw-q1.oera.no/security-token-service/rest/v1/sts/token
