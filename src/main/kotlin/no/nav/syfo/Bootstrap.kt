@@ -141,7 +141,8 @@ fun main() {
         kafkaConsumer,
         applicationState,
         env.nlResponseTopic,
-        oppdaterNarmesteLederService
+        oppdaterNarmesteLederService,
+        env.cluster
     )
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
