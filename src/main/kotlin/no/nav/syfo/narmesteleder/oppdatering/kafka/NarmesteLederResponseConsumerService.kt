@@ -13,7 +13,8 @@ class NarmesteLederResponseConsumerService(
     private val kafkaConsumer: KafkaConsumer<String, NlResponseKafkaMessage>,
     private val applicationState: ApplicationState,
     private val topic: String,
-    private val oppdaterNarmesteLederService: OppdaterNarmesteLederService
+    private val oppdaterNarmesteLederService: OppdaterNarmesteLederService,
+    private val cluster: String
 ) {
 
     suspend fun startConsumer() {
@@ -22,7 +23,16 @@ class NarmesteLederResponseConsumerService(
         log.info("Starting consuming topic $topic")
         while (applicationState.ready) {
             kafkaConsumer.poll(Duration.ZERO).forEach {
-                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(it.value(), it.partition(), it.offset())
+                try {
+                    oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(it.value(), it.partition(), it.offset())
+                } catch (e: Exception) {
+                    if (cluster == "dev-gcp") {
+                        log.error("Noe gikk galt ved mottak av melding med offset ${it.offset()}: ${e.message}, ignoreres i dev")
+                    } else {
+                        log.error("Noe gikk galt ved mottak av melding med offset ${it.offset()}: ${e.message}")
+                        throw e
+                    }
+                }
             }
         }
     }
