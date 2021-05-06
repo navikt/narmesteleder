@@ -105,12 +105,29 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+  /user/sykmeldt/narmesteledere:
+    get:
+      summary: henter nærmeste ledere for fnr i access_token
+      operationId: getNarmestelederForSykmeldtUser
+      tags:
+        - Narmesteleder-sykmeldt-userapi
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          $ref: '#/components/responses/NarmesteLederListeResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
   /arbeidsgiver/{orgnummer}/avkreft:
     post:
       summary: avkrefter aktiv leder-relasjon for angitt orgnummer og sykmeldt-fnr for leder-fnr i access_token
       operationId: avkreftNarmestelederForSykmeldtFraLeder
       tags:
-        - Narmesteleder-sykmeldt-userapi
+        - Narmesteleder-sykmeldt-user-arbeidsgiverapi
       security:
         - bearerAuth: [ ]
       parameters:
@@ -135,7 +152,7 @@ components:
           schema:
             $ref: '#/components/schemas/Forskuttering'
     NarmesteLederRelasjonListeResponse:
-      description: "NarmesteLeder response"
+      description: "NarmesteLederRelasjon response"
       content:
         application/json:
           schema:
@@ -148,6 +165,14 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/NarmesteLederRelasjon'
+    NarmesteLederListeResponse:
+      description: "NarmesteLeder response"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NarmesteLeder'
 
   parameters:
     Orgnummer:
@@ -238,6 +263,31 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Tilgang'
+        timestamp:
+          $ref: '#/components/schemas/Timestamp'
+        navn:
+          type: string
+    NarmesteLeder:
+      type: object
+      required:
+        - orgnummer
+        - narmesteLederTelefonnummer
+        - narmesteLederEpost
+        - aktivFom
+        - timestamp
+      properties:
+        orgnummer:
+          type: string
+        narmesteLederTelefonnummer:
+          type: string
+        narmesteLederEpost:
+          type: string
+        aktivFom:
+          $ref: '#/components/schemas/Date'
+        aktivTom:
+          $ref: '#/components/schemas/Date'
+        arbeidsgiverForskutterer:
+          type: boolean
         timestamp:
           $ref: '#/components/schemas/Timestamp'
         navn:
