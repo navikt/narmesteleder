@@ -38,11 +38,8 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequestKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
-import no.nav.syfo.narmesteleder.syfonarmesteleder.client.AccessTokenClient
-import no.nav.syfo.narmesteleder.syfonarmesteleder.client.SyfonarmestelederClient
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.service.PdlPersonService
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -50,7 +47,6 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.ProxySelector
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
@@ -85,16 +81,7 @@ fun main() {
             }
         }
     }
-    val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        config()
-        engine {
-            customizeClient {
-                setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
-            }
-        }
-    }
     val httpClient = HttpClient(Apache, config)
-    val httpClientWithProxy = HttpClient(Apache, proxyConfig)
 
     val wellKnown = getWellKnown(httpClient, env.loginserviceIdportenDiscoveryUrl)
     val jwkProviderLoginservice = JwkProviderBuilder(URL(wellKnown.jwks_uri))
@@ -117,9 +104,6 @@ fun main() {
     val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient)
     val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath, env.aaregApiKey)
     val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, stsOidcClient)
-
-    val accessTokenClient = AccessTokenClient(aadAccessTokenUrl = env.aadAccessTokenUrl, clientId = env.clientId, clientSecret = env.clientSecret, resource = env.syfonarmestelederClientId, httpClient = httpClientWithProxy)
-    val syfonarmestelederClient = SyfonarmestelederClient(httpClient, accessTokenClient, env.syfonarmesteLederBasePath)
 
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }.toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
@@ -149,8 +133,7 @@ fun main() {
         pdlPersonService = pdlPersonService,
         nlResponseProducer = nlResponseProducer,
         nlRequestProducer = nlRequestProducer,
-        arbeidsgiverService = arbeidsgiverService,
-        syfonarmestelederClient = syfonarmestelederClient
+        arbeidsgiverService = arbeidsgiverService
     )
 
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, database)

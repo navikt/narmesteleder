@@ -14,7 +14,6 @@ import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
-import no.nav.syfo.narmesteleder.syfonarmesteleder.client.SyfonarmestelederClient
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.testutils.generateJWTLoginservice
 import no.nav.syfo.testutils.setUpAuth
@@ -29,15 +28,13 @@ class NarmesteLederUserApiKtTest : Spek({
     val nlRequestProducer = mockk<NLRequestProducer>(relaxed = true)
     val arbeidsgiverService = mockk<ArbeidsgiverService>()
     val pdlPersonService = mockk<PdlPersonService>()
-    val syfonarmestelederClient = mockk<SyfonarmestelederClient>()
     val database = mockk<DatabaseInterface>()
     val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(
         nlResponseProducer,
         nlRequestProducer,
         arbeidsgiverService,
         pdlPersonService,
-        database,
-        syfonarmestelederClient
+        database
     )
 
     coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()

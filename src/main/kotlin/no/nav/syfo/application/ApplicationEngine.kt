@@ -35,7 +35,6 @@ import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.registrerNarmesteLederApi
-import no.nav.syfo.narmesteleder.syfonarmesteleder.client.SyfonarmestelederClient
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApi
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.util.UUID
@@ -51,8 +50,7 @@ fun createApplicationEngine(
     pdlPersonService: PdlPersonService,
     nlResponseProducer: NLResponseProducer,
     nlRequestProducer: NLRequestProducer,
-    arbeidsgiverService: ArbeidsgiverService,
-    syfonarmestelederClient: SyfonarmestelederClient
+    arbeidsgiverService: ArbeidsgiverService
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -90,7 +88,7 @@ fun createApplicationEngine(
         }
 
         val utvidetNarmesteLederService = UtvidetNarmesteLederService(database, pdlPersonService)
-        val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, nlRequestProducer, arbeidsgiverService, pdlPersonService, database, syfonarmestelederClient)
+        val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, nlRequestProducer, arbeidsgiverService, pdlPersonService, database)
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {

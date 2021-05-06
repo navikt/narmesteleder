@@ -68,9 +68,6 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         loginserviceIdportenAudience = audience,
         registerBasePath = "http://register",
         aaregApiKey = "key",
-        syfonarmesteLederBasePath = "http::/narmesteleder",
-        syfonarmestelederClientId = "narmesteleder",
-        aadAccessTokenUrl = "aad",
         allowedOrigin = "tjenester"
     )
 
