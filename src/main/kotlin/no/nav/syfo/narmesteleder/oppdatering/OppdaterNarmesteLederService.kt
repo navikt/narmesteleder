@@ -20,7 +20,11 @@ class OppdaterNarmesteLederService(
     private val database: DatabaseInterface
 ) {
 
-    suspend fun handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage: NlResponseKafkaMessage) {
+    suspend fun handterMottattNarmesteLederOppdatering(
+        nlResponseKafkaMessage: NlResponseKafkaMessage,
+        partition: Int,
+        offset: Long
+    ) {
         val callId = UUID.randomUUID().toString()
         when {
             nlResponseKafkaMessage.nlResponse != null -> {
@@ -29,7 +33,7 @@ class OppdaterNarmesteLederService(
                 val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
                 val personMap = pdlPersonService.getPersoner(listOf(sykmeldtFnr, nlFnr), callId)
                 if (personMap[sykmeldtFnr] == null || personMap[nlFnr] == null) {
-                    log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL $callId")
+                    log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL partition: $partition, offset: $offset")
                     throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
                 }
                 val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
