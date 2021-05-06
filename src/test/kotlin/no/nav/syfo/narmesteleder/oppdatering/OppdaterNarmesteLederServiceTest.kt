@@ -62,7 +62,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
             )
 
             runBlocking {
-                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
             }
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -88,7 +88,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
             )
 
             runBlocking {
-                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
             }
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -114,7 +114,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
             )
 
             runBlocking {
-                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
             }
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -143,7 +143,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
             )
 
             runBlocking {
-                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
             }
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -174,7 +174,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
 
             assertFailsWith<IllegalStateException> {
                 runBlocking {
-                    oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+                    oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
                 }
             }
         }
@@ -194,7 +194,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
 
             assertFailsWith<IllegalStateException> {
                 runBlocking {
-                    oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+                    oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
                 }
             }
         }
@@ -212,7 +212,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
             )
 
             runBlocking {
-                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
             }
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -233,7 +233,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
             )
 
             runBlocking {
-                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage)
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
             }
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)

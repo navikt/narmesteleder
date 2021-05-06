@@ -40,6 +40,7 @@ class PdlPersonService(private val pdlClient: PdlClient, private val stsOidcClie
                 log.warn("Mottok feilkode ${it.code} fra PDL for en eller flere identer, {}", callId)
             }
         }
+
         return pdlResponse.data.toPdlPersonMap()
     }
 
