@@ -6,7 +6,6 @@ import no.nav.syfo.narmesteleder.organisasjon.model.Organisasjonsinfo
 import no.nav.syfo.narmesteleder.organisasjon.model.getName
 import no.nav.syfo.narmesteleder.user.model.NarmesteLeder
 import no.nav.syfo.narmesteleder.user.model.SyforestNarmesteLeder
-import kotlin.random.Random
 
 @KtorExperimentalAPI
 class SyforestNarmesteLederService(
@@ -27,7 +26,6 @@ class SyforestNarmesteLederService(
 
     private fun NarmesteLeder.toSyforestNarmesteLeder(organisasjoner: List<Organisasjonsinfo>): SyforestNarmesteLeder {
         return SyforestNarmesteLeder(
-            id = Random.nextLong(), // brukes ikke
             aktoerId = "", // brukes ikke
             navn = navn!!,
             epost = narmesteLederEpost,

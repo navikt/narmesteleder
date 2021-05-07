@@ -3,7 +3,6 @@ package no.nav.syfo.narmesteleder.user.model
 import java.time.LocalDate
 
 data class SyforestNarmesteLeder(
-    val id: Long,
     val aktoerId: String,
     val navn: String,
     val epost: String,

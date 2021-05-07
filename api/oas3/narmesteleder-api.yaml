@@ -320,7 +320,6 @@ components:
     SyforestNarmesteLeder:
       type: object
       required:
-        - id
         - aktoerId
         - navn
         - epost
@@ -328,8 +327,6 @@ components:
         - orgnummer
         - organisasjonsnavn
       properties:
-        id:
-          type: long
         aktoerId:
           type: string
         navn:
