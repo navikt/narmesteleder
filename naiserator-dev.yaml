@@ -48,6 +48,7 @@ spec:
     - configmap: loginservice-idporten
   ingresses:
     - "https://narmesteleder.dev.nav.no"
+    - "https://narmesteleder.dev.intern.nav.no"
   webproxy: true
   kafka:
     pool: nav-dev
@@ -82,11 +83,8 @@ spec:
         - application: syfosmaltinn
         - application: narmesteleder
         - application: sykmeldinger-backend
-          namespace: default
+          namespace: teamsykmelding
           cluster: dev-fss
-    outbound:
-      external:
-        - host: syfonarmesteleder.dev-fss-pub.nais.io
   env:
     - name: SECURITYTOKENSERVICE_URL
       value: https://api-gw-q1.oera.no/security-token-service/rest/v1/sts/token
