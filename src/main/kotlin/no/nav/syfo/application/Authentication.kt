@@ -29,6 +29,9 @@ fun Application.setupAuth(jwkProvider: JwkProvider, jwkProviderLoginservice: Jwk
         }
         jwt(name = "loginservice") {
             authHeader {
+                if (it.getToken() == null) {
+                    return@authHeader null
+                }
                 return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
             }
             verifier(jwkProviderLoginservice, loginserviceIssuer)
