@@ -68,6 +68,7 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         loginserviceIdportenAudience = audience,
         registerBasePath = "http://register",
         aaregApiKey = "key",
+        eregApiKey = "key",
         allowedOrigin = "tjenester"
     )
 

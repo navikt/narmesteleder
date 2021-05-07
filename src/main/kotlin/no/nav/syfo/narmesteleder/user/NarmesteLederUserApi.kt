@@ -12,6 +12,7 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.getToken
 import no.nav.syfo.application.metrics.DEAKTIVERT_AV_ANSATT_COUNTER
 import no.nav.syfo.log
+import no.nav.syfo.narmesteleder.SyforestNarmesteLederService
 import no.nav.syfo.narmesteleder.UtvidetNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import java.util.UUID
@@ -19,7 +20,8 @@ import java.util.UUID
 @KtorExperimentalAPI
 fun Route.registrerNarmesteLederUserApi(
     deaktiverNarmesteLederService: DeaktiverNarmesteLederService,
-    utvidetNarmesteLederService: UtvidetNarmesteLederService
+    utvidetNarmesteLederService: UtvidetNarmesteLederService,
+    syforestNarmesteLederService: SyforestNarmesteLederService
 ) {
     post("/{orgnummer}/avkreft") {
         val principal: JWTPrincipal = call.authentication.principal()!!
@@ -49,6 +51,20 @@ fun Route.registrerNarmesteLederUserApi(
         call.respond(
             utvidetNarmesteLederService.hentNarmesteLedereForAnsatt(
                 sykmeldtFnr = fnr,
+                callId = callId.toString()
+            )
+        )
+    }
+
+    // tilbyr data på samme format som syforest og vil bli fjernet i fremtiden
+    get("/syforest/narmesteledere") {
+        val principal: JWTPrincipal = call.authentication.principal()!!
+        val fnr = principal.payload.subject
+        val callId = UUID.randomUUID()
+
+        call.respond(
+            syforestNarmesteLederService.hentAktiveNarmesteLedere(
+                fnr = fnr,
                 callId = callId.toString()
             )
         )
