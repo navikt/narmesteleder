@@ -27,6 +27,7 @@ data class Environment(
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
     val aaregApiKey: String = getEnvVar("AAREG_API_KEY"),
+    val eregApiKey: String = getEnvVar("EREG_API_KEY"),
     val allowedOrigin: String = getEnvVar("ALLOWED_ORIGIN")
 ) {
     fun jdbcUrl(): String {
