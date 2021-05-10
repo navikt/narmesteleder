@@ -45,6 +45,7 @@ spec:
     enabled: false
   envFrom:
     - secret: narmesteleder-secret
+    - secret: narmesteleder-redis-password
     - configmap: loginservice-idporten
   ingresses:
     - "https://narmesteleder.intern.nav.no"
