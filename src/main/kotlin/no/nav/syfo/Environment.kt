@@ -28,7 +28,10 @@ data class Environment(
     val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
     val aaregApiKey: String = getEnvVar("AAREG_API_KEY"),
     val eregApiKey: String = getEnvVar("EREG_API_KEY"),
-    val allowedOrigin: String = getEnvVar("ALLOWED_ORIGIN")
+    val allowedOrigin: String = getEnvVar("ALLOWED_ORIGIN"),
+    val redisHost: String = getEnvVar("REDIS_HOST", "narmesteleder-redis.teamsykmelding.svc.nais.local"),
+    val redisPort: Int = getEnvVar("REDIS_PORT_NARMESTELEDER", "6379").toInt(),
+    val redisSecret: String = getEnvVar("REDIS_PASSWORD")
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"

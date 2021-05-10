@@ -22,6 +22,7 @@ val flywayVersion = "5.2.4"
 val hikariVersion = "3.3.0"
 val postgresEmbeddedVersion = "0.13.3"
 val swaggerUiVersion = "3.10.0"
+val jedisVersion = "3.1.0"
 
 plugins {
     id("org.jmailen.kotlinter") version "3.3.0"
@@ -81,6 +82,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+
+    implementation("redis.clients:jedis:$jedisVersion")
 
     swaggerUI( "org.webjars:swagger-ui:$swaggerUiVersion")
 

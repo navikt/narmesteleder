@@ -69,7 +69,8 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         registerBasePath = "http://register",
         aaregApiKey = "key",
         eregApiKey = "key",
-        allowedOrigin = "tjenester"
+        allowedOrigin = "tjenester",
+        redisSecret = "secret"
     )
 
     val path = "src/test/resources/jwkset.json"
