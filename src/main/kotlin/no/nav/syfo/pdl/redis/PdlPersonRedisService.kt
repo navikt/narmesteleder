@@ -34,7 +34,7 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
             jedis.auth(redisSecret)
             return jedis.mget(*fnrs.map { "${prefix}$it" }.toTypedArray()).mapNotNull { jedisObjectMapper.readValue(it, PdlPersonRedisModel::class.java) }.associateBy { it.fnr }
         } catch (ex: Exception) {
-            log.error("Could not get redis for person", ex.message)
+            log.error("Could not get redis for person", ex)
             emptyMap()
         } finally {
             jedis?.close()
