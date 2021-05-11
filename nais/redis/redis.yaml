@@ -1,3 +1,4 @@
+---
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
@@ -21,6 +22,11 @@ spec:
   service:
     port: 6379
     protocol: redis
+  accessPolicy:
+    inbound:
+      rules:
+        - application: narmesteleder
+        - application: narmesteleder-redisexporter
   envFrom:
     - secret: narmesteleder-redis-password
 
@@ -49,6 +55,10 @@ spec:
       memory: 100Mi
   liveness:
     path: /health
+  accessPolicy:
+    outbound:
+      rules:
+        - application: narmesteleder-redis
   env:
     - name: REDIS_ADDR
       value: narmesteleder-redis:6379
