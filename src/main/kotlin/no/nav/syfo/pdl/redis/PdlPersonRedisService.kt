@@ -32,14 +32,7 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
         return try {
             jedis = jedisPool.resource
             jedis.auth(redisSecret)
-            val cacheMap = mutableMapOf<String, PdlPersonRedisModel?>()
-            val values = jedis.mget(*fnrs.map { "${prefix}$it" }.toTypedArray())
-                .mapNotNull { jedisObjectMapper.readValue(it, PdlPersonRedisModel::class.java) }
-
-            fnrs.forEach {
-                cacheMap[it] = values.find { pdlPersonRedisModel -> pdlPersonRedisModel.fnr == it }
-            }
-            return cacheMap
+            return jedis.mget(*fnrs.map { "${prefix}$it" }.toTypedArray()).mapNotNull { jedisObjectMapper.readValue(it, PdlPersonRedisModel::class.java) }.associateBy { it.fnr }
         } catch (ex: Exception) {
             log.error("Could not get redis for person", ex.message)
             emptyMap()
