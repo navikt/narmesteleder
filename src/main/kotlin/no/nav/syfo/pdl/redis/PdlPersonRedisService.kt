@@ -21,7 +21,7 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
             jedis.auth(redisSecret)
             jedis.setex("${prefix}$fnr", redisTimeoutSeconds, jedisObjectMapper.writeValueAsString(pdlPersonRedisModel))
         } catch (ex: Exception) {
-            log.error("Could not update redis for person {}", ex.message)
+            log.error("Could not update redis for person", ex)
         } finally {
             jedis?.close()
         }
@@ -32,7 +32,7 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
         return try {
             jedis = jedisPool.resource
             jedis.auth(redisSecret)
-            return jedis.mget(*fnrs.map { "${prefix}$it" }.toTypedArray()).mapNotNull { jedisObjectMapper.readValue(it, PdlPersonRedisModel::class.java) }.associateBy { it.fnr }
+            return jedis.mget(*fnrs.map { "${prefix}$it" }.toTypedArray()).filterNotNull().map { jedisObjectMapper.readValue(it, PdlPersonRedisModel::class.java) }.associateBy { it.fnr }
         } catch (ex: Exception) {
             log.error("Could not get redis for person", ex)
             emptyMap()
