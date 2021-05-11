@@ -10,7 +10,7 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(PdlPersonRedisService::class.java)
-        private const val redisTimeoutSeconds: Int = 600
+        private const val redisTimeoutSeconds: Int = 3600
         private const val prefix = "PDL"
     }
 
@@ -27,18 +27,15 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
         }
     }
 
-    fun getPerson(fnr: String): PdlPersonRedisModel? {
+    fun getPerson(fnrs: List<String>): Map<String, PdlPersonRedisModel?> {
         var jedis: Jedis? = null
         return try {
             jedis = jedisPool.resource
             jedis.auth(redisSecret)
-            when (val stringValue = jedis.get("${prefix}$fnr")) {
-                null -> null
-                else -> jedisObjectMapper.readValue(stringValue, PdlPersonRedisModel::class.java)
-            }
+            return jedis.mget(*fnrs.map { "${prefix}$it" }.toTypedArray()).mapNotNull { jedisObjectMapper.readValue(it, PdlPersonRedisModel::class.java) }.associateBy { it.fnr }
         } catch (ex: Exception) {
             log.error("Could not get redis for person", ex.message)
-            null
+            emptyMap()
         } finally {
             jedis?.close()
         }
