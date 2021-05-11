@@ -41,7 +41,7 @@ object PdlPersonServiceTest : Spek({
     beforeEachTest {
         clearMocks(stsOidcClient, pdlClient, pdlPersonRedisService)
         coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
-        coEvery { pdlPersonRedisService.getPerson(any()) } returns null
+        coEvery { pdlPersonRedisService.getPerson(any()) } returns emptyMap()
     }
 
     describe("Test av PdlPersonService") {
@@ -101,8 +101,10 @@ object PdlPersonServiceTest : Spek({
             }
         }
         it("Henter navn og aktørid for to ledere fra redis") {
-            coEvery { pdlPersonRedisService.getPerson(eq(fnrLeder1)) } returns PdlPersonRedisModel(NavnRedisModel("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
-            coEvery { pdlPersonRedisService.getPerson(eq(fnrLeder2)) } returns PdlPersonRedisModel(NavnRedisModel("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
+            coEvery { pdlPersonRedisService.getPerson(eq(listOf(fnrLeder1, fnrLeder2))) } returns mapOf(
+                fnrLeder1 to PdlPersonRedisModel(NavnRedisModel("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1),
+                fnrLeder2 to PdlPersonRedisModel(NavnRedisModel("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
+            )
 
             runBlocking {
                 val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
@@ -114,8 +116,10 @@ object PdlPersonServiceTest : Spek({
             coVerify(exactly = 0) { pdlPersonRedisService.updatePerson(any(), any()) }
         }
         it("Henter navn og aktørid for to ledere, en fra redis og en fra PDL") {
-            coEvery { pdlPersonRedisService.getPerson(eq(fnrLeder1)) } returns PdlPersonRedisModel(NavnRedisModel("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
-            coEvery { pdlPersonRedisService.getPerson(eq(fnrLeder2)) } returns null
+            coEvery { pdlPersonRedisService.getPerson(eq(listOf(fnrLeder1, fnrLeder2))) } returns mapOf(
+                fnrLeder1 to PdlPersonRedisModel(NavnRedisModel("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1),
+                fnrLeder2 to null
+            )
             coEvery { pdlClient.getPersoner(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentPersonBolk = listOf(

@@ -84,7 +84,6 @@ class PdlPersonService(
         Navn(fornavn = navn.fornavn, mellomnavn = navn.mellomnavn, etternavn = navn.etternavn)
 
     private fun getPersonerFromRedis(fnrs: List<String>): Map<String, PdlPerson> {
-        val map = fnrs.map { it to pdlPersonRedisService.getPerson(it)?.toPdlPerson() }.toMap()
-        return map.filterValues { it != null }.mapValues { it.value as PdlPerson }
+        return pdlPersonRedisService.getPerson(fnrs).filterValues { it != null }.mapValues { it.value!!.toPdlPerson() }
     }
 }
