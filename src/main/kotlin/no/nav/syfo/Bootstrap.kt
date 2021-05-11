@@ -40,6 +40,7 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
 import no.nav.syfo.narmesteleder.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -48,6 +49,8 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
@@ -71,6 +74,8 @@ fun main() {
     DefaultExports.initialize()
     val applicationState = ApplicationState()
     val database = Database(env)
+
+    val jedisPool = JedisPool(JedisPoolConfig(), env.redisHost, env.redisPort)
 
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(JsonFeature) {
@@ -102,7 +107,8 @@ fun main() {
         env.pdlApiKey,
         PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
     )
-    val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient)
+    val pdlPersonRedisService = PdlPersonRedisService(jedisPool, env.redisSecret)
+    val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService)
     val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath, env.aaregApiKey)
     val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, stsOidcClient)
     val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.registerBasePath, env.eregApiKey)

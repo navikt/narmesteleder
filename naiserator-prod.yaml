@@ -85,6 +85,9 @@ spec:
         - application: sykmeldinger-backend
           namespace: teamsykmelding
           cluster: prod-fss
+    outbound:
+      rules:
+        - application: narmesteleder-redis
   env:
     - name: SECURITYTOKENSERVICE_URL
       value: https://api-gw.oera.no/security-token-service/rest/v1/sts/token
