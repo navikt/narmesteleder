@@ -18,10 +18,10 @@ class OrganisasjonsinfoClient(
     suspend fun getOrginfo(orgNummer: String): Organisasjonsinfo {
         val organisasjonsinfoFraRedis = getOrganisasjonsinfoFromRedis(orgNummer)
         if (organisasjonsinfoFraRedis != null) {
-            log.info("Traff cache")
+            log.debug("Traff cache")
             return organisasjonsinfoFraRedis
         }
-        log.info("Henter fra ereg")
+        log.debug("Henter fra ereg")
         val organisasjonsinfo = httpClient.get<Organisasjonsinfo>("$basePath/ereg/api/v1/organisasjon/$orgNummer/noekkelinfo") {
             header("x-nav-apikey", apiKey)
         }
