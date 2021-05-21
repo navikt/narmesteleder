@@ -10,10 +10,12 @@ import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
-import no.nav.syfo.narmesteleder.UtvidetNarmesteLederService
+import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.fnrLeder
 import no.nav.syfo.narmesteleder.leder.model.AnsattResponse
+import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import no.nav.syfo.narmesteleder.sykmeldtFnr
+import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserArbeidsgiverApi
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
@@ -32,8 +34,8 @@ import org.spekframework.spek2.style.specification.describe
 class LederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
     val testDb = TestDB()
-    val utvidetNarmesteLederService = UtvidetNarmesteLederService(testDb, pdlPersonService)
-
+    val narmestelederService = NarmesteLederService(testDb, pdlPersonService)
+    val deaktiverNarmesteLederService = mockk<DeaktiverNarmesteLederService>(relaxed = true)
     beforeEachTest {
         clearMocks(pdlPersonService)
         testDb.connection.lagreNarmesteleder(
@@ -62,14 +64,15 @@ class LederApiKtTest : Spek({
             setUpAuth()
             application.routing {
                 authenticate("loginservice") {
-                    registerLederApi(
-                        utvidetNarmesteLederService,
+                    registrerNarmesteLederUserArbeidsgiverApi(
+                        deaktiverNarmesteLederService,
+                        narmestelederService
                     )
                 }
             }
             it("get empty list") {
                 with(
-                    handleRequest(HttpMethod.Get, "/leder/narmesteleder") {
+                    handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatte") {
                         addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = "12345678902", issuer = "issuer")}")
                     }
                 ) {
@@ -90,7 +93,7 @@ class LederApiKtTest : Spek({
                     arbeidsgiverForskutterer = true
                 )
                 with(
-                    handleRequest(HttpMethod.Get, "/leder/narmesteleder") {
+                    handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatte") {
                         addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = fnrLeder, issuer = "issuer")}")
                     }
                 ) {

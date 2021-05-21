@@ -9,7 +9,7 @@ import no.nav.syfo.narmesteleder.user.model.SyforestNarmesteLeder
 
 @KtorExperimentalAPI
 class SyforestNarmesteLederService(
-    private val utvidetNarmesteLederService: UtvidetNarmesteLederService,
+    private val utvidetNarmesteLederService: NarmesteLederService,
     private val organisasjonsinfoClient: OrganisasjonsinfoClient
 ) {
     suspend fun hentAktiveNarmesteLedere(fnr: String, callId: String): List<SyforestNarmesteLeder> {

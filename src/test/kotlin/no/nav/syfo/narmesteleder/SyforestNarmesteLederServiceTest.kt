@@ -19,7 +19,7 @@ import java.util.UUID
 
 @KtorExperimentalAPI
 class SyforestNarmesteLederServiceTest : Spek({
-    val utvidetNarmesteLederService = mockk<UtvidetNarmesteLederService>()
+    val utvidetNarmesteLederService = mockk<NarmesteLederService>()
     val organisasjonsinfoClient = mockk<OrganisasjonsinfoClient>()
     val syforestNarmesteLederService = SyforestNarmesteLederService(utvidetNarmesteLederService, organisasjonsinfoClient)
     val callId = UUID.randomUUID()

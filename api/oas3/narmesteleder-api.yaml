@@ -159,6 +159,23 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+  /arbeidsgiver/ansatte:
+    get:
+      summary: henter alle ansatte til narmesteleder, leder-fnr i access_token
+      operationId: getArbeidsgiverAnsatte
+      tags:
+        - Narmesteleder-sykmeldt-user-arbeidsgiverapi
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          $ref: '#/components/responses/AnsatteResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
 
 components:
   responses:
@@ -198,6 +215,12 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SyforestNarmesteLeder'
+    AnsatteResponse:
+      description: "Ansatte response"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Ansatte'
 
   parameters:
     Orgnummer:
@@ -317,6 +340,29 @@ components:
           $ref: '#/components/schemas/Timestamp'
         navn:
           type: string
+    Ansatte:
+      type: object
+      properties:
+        ansatte:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ansatt'
+    Ansatt:
+      type: object
+      properties:
+        fnr:
+          type: string
+          description: FNR til den ansatte
+        navn:
+          type: string
+          description: Navn til den ansatte
+        orgnummer:
+          type: string
+          description: organisasjonsnr
+        narmestelederId:
+          type: string
+          description: ID på denne koblingen mellom ansatt og leder
+
     SyforestNarmesteLeder:
       type: object
       required:

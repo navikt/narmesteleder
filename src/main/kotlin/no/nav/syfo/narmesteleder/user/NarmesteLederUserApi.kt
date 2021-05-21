@@ -12,15 +12,15 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.getToken
 import no.nav.syfo.application.metrics.DEAKTIVERT_AV_ANSATT_COUNTER
 import no.nav.syfo.log
+import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.SyforestNarmesteLederService
-import no.nav.syfo.narmesteleder.UtvidetNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import java.util.UUID
 
 @KtorExperimentalAPI
 fun Route.registrerNarmesteLederUserApi(
     deaktiverNarmesteLederService: DeaktiverNarmesteLederService,
-    utvidetNarmesteLederService: UtvidetNarmesteLederService,
+    utvidetNarmesteLederService: NarmesteLederService,
     syforestNarmesteLederService: SyforestNarmesteLederService
 ) {
     post("/{orgnummer}/avkreft") {

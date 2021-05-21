@@ -9,7 +9,7 @@ import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
 
 @KtorExperimentalAPI
-class UtvidetNarmesteLederService(
+class NarmesteLederService(
     private val database: DatabaseInterface,
     private val pdlPersonService: PdlPersonService
 ) {
