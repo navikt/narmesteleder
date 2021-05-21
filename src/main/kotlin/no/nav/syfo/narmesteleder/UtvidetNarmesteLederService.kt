@@ -3,6 +3,7 @@ package no.nav.syfo.narmesteleder
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
+import no.nav.syfo.db.getAnsatte
 import no.nav.syfo.narmesteleder.user.model.NarmesteLeder
 import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -21,6 +22,15 @@ class UtvidetNarmesteLederService(
         val nlPersoner = pdlPersonService.getPersoner(fnrs = nlFnrs, callId = callId)
 
         return narmesteLederRelasjoner.map { it.copy(navn = nlPersoner[it.narmesteLederFnr]?.navn?.toFormattedNameString()) }
+    }
+
+    suspend fun getAnsatte(lederFnr: String, callId: String): List<NarmesteLederRelasjon> {
+        val narmestelederRelasjoner = database.getAnsatte(lederFnr)
+
+        val fnrs = narmestelederRelasjoner.map { it.fnr }
+
+        val ansatte = pdlPersonService.getPersoner(fnrs = fnrs, callId = callId)
+        return narmestelederRelasjoner.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
     }
 
     suspend fun hentNarmesteLedereForAnsatt(sykmeldtFnr: String, callId: String): List<NarmesteLeder> {

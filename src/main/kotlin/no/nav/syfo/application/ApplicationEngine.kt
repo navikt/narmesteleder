@@ -32,6 +32,7 @@ import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.SyforestNarmesteLederService
 import no.nav.syfo.narmesteleder.UtvidetNarmesteLederService
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
+import no.nav.syfo.narmesteleder.leder.registerLederApi
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
@@ -106,6 +107,7 @@ fun createApplicationEngine(
             authenticate("loginservice") {
                 registrerNarmesteLederUserApi(deaktiverNarmesteLederService, utvidetNarmesteLederService, syforestNarmesteLederService)
                 registrerNarmesteLederUserArbeidsgiverApi(deaktiverNarmesteLederService)
+                registerLederApi(utvidetNarmesteLederService)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
