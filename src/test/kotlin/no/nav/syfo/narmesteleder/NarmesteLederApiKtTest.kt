@@ -38,7 +38,7 @@ const val fnrLeder = "123"
 class NarmesteLederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
     val testDb = TestDB()
-    val utvidetNarmesteLederService = UtvidetNarmesteLederService(testDb, pdlPersonService)
+    val utvidetNarmesteLederService = NarmesteLederService(testDb, pdlPersonService)
 
     beforeEachTest {
         clearMocks(pdlPersonService)

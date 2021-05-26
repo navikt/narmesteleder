@@ -10,8 +10,8 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.syfo.application.db.DatabaseInterface
+import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.SyforestNarmesteLederService
-import no.nav.syfo.narmesteleder.UtvidetNarmesteLederService
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
@@ -42,7 +42,7 @@ class NarmesteLederUserApiKtTest : Spek({
         pdlPersonService,
         database
     )
-    val utvidetNarmesteLederService = UtvidetNarmesteLederService(database, pdlPersonService)
+    val utvidetNarmesteLederService = NarmesteLederService(database, pdlPersonService)
     val syforestNarmesteLederService = SyforestNarmesteLederService(utvidetNarmesteLederService, organisasjonsinfoClient)
 
     coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()

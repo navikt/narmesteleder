@@ -53,6 +53,19 @@ fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(fnr: String): List<Narme
     }
 }
 
+fun DatabaseInterface.getAnsatte(fnr: String): List<NarmesteLederRelasjon> {
+    return connection.use { connection ->
+        connection.prepareStatement(
+            """
+           SELECT * from narmeste_leder where narmeste_leder_fnr = ?;
+        """
+        ).use {
+            it.setString(1, fnr)
+            it.executeQuery().toList { toNarmesteLederRelasjon() }
+        }
+    }
+}
+
 fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(fnr: String, orgnummer: String): List<NarmesteLederRelasjon> {
     return connection.use { connection ->
         connection.prepareStatement(

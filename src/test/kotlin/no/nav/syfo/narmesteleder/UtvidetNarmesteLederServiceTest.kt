@@ -21,7 +21,7 @@ import java.time.ZoneOffset
 class UtvidetNarmesteLederServiceTest : Spek({
     val testDb = TestDB()
     val pdlPersonService = mockkClass(PdlPersonService::class)
-    val utvidetNarmesteLederService = UtvidetNarmesteLederService(testDb, pdlPersonService)
+    val utvidetNarmesteLederService = NarmesteLederService(testDb, pdlPersonService)
 
     val callId = "callid"
     val fnr = "fnr"

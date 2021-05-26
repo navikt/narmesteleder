@@ -16,7 +16,7 @@ import org.slf4j.MDC
 @KtorExperimentalAPI
 fun Route.registrerNarmesteLederApi(
     database: DatabaseInterface,
-    utvidetNarmesteLederService: UtvidetNarmesteLederService
+    utvidetNarmesteLederService: NarmesteLederService
 ) {
     get("/leder/narmesteleder/aktive") {
         val callId = MDC.get("Nav-Callid")
