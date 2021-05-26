@@ -7,6 +7,7 @@ import no.nav.syfo.db.getAnsatte
 import no.nav.syfo.narmesteleder.user.model.NarmesteLeder
 import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
+import java.util.function.Predicate
 
 @KtorExperimentalAPI
 class NarmesteLederService(
@@ -24,14 +25,26 @@ class NarmesteLederService(
         return narmesteLederRelasjoner.map { it.copy(navn = nlPersoner[it.narmesteLederFnr]?.navn?.toFormattedNameString()) }
     }
 
-    suspend fun getAnsatte(lederFnr: String, callId: String): List<NarmesteLederRelasjon> {
-        val narmestelederRelasjoner = database.getAnsatte(lederFnr)
+    suspend fun getAnsatte(lederFnr: String, callId: String, status: String?): List<NarmesteLederRelasjon> {
+
+        val nlFilter = when (status) {
+            "ACTIVE" -> activeNLFilter()
+            "INACTIVE" -> inactiveNLFilter()
+            else -> allNlFilter()
+        }
+
+        val narmestelederRelasjoner = database.getAnsatte(lederFnr).filter { nlFilter.test(it) }
 
         val fnrs = narmestelederRelasjoner.map { it.fnr }
-
         val ansatte = pdlPersonService.getPersoner(fnrs = fnrs, callId = callId)
         return narmestelederRelasjoner.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
     }
+
+    private fun allNlFilter() = Predicate<NarmesteLederRelasjon> { true }
+
+    private fun inactiveNLFilter() = Predicate<NarmesteLederRelasjon> { it.aktivTom != null }
+
+    private fun activeNLFilter() = Predicate<NarmesteLederRelasjon> { it.aktivTom == null }
 
     suspend fun hentNarmesteLedereForAnsatt(sykmeldtFnr: String, callId: String): List<NarmesteLeder> {
         return hentNarmesteledereMedNavn(sykmeldtFnr, callId).map { it.tilNarmesteLeder() }

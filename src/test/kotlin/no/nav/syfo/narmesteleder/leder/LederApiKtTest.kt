@@ -26,10 +26,12 @@ import no.nav.syfo.testutils.generateJWTLoginservice
 import no.nav.syfo.testutils.lagreNarmesteleder
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
 
 class LederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
@@ -101,6 +103,80 @@ class LederApiKtTest : Spek({
                     val relasjoner: AnsattResponse? = response.content?.let { objectMapper.readValue(it) }
                     relasjoner shouldNotBe null
                     relasjoner!!.ansatte.size shouldBeEqualTo 3
+                }
+            }
+
+            it("Get only ACTIVE") {
+                testDb.connection.lagreNarmesteleder(
+                    orgnummer = "orgnummer",
+                    fnr = "1",
+                    fnrNl = fnrLeder,
+                    arbeidsgiverForskutterer = false,
+                    aktivTom = OffsetDateTime.now()
+                )
+                with(
+                    handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatte?status=active") {
+                        addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = fnrLeder, issuer = "issuer")}")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    val relasjoner: AnsattResponse? = response.content?.let { objectMapper.readValue(it) }
+                    relasjoner shouldNotBe null
+                    relasjoner!!.ansatte.size shouldBeEqualTo 1
+                    relasjoner.ansatte.find { it.fnr == "1" } shouldBe null
+                }
+            }
+
+            it("Get only INACTIVE") {
+                testDb.connection.lagreNarmesteleder(
+                    orgnummer = "orgnummer",
+                    fnr = "1",
+                    fnrNl = fnrLeder,
+                    arbeidsgiverForskutterer = false,
+                    aktivTom = OffsetDateTime.now()
+                )
+                with(
+                    handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatte?status=inactive") {
+                        addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = fnrLeder, issuer = "issuer")}")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    val relasjoner: AnsattResponse? = response.content?.let { objectMapper.readValue(it) }
+                    relasjoner shouldNotBe null
+                    relasjoner!!.ansatte.size shouldBeEqualTo 1
+                    relasjoner.ansatte.find { it.fnr == "1" } shouldNotBe null
+                }
+            }
+
+            it("Get ALL") {
+                testDb.connection.lagreNarmesteleder(
+                    orgnummer = "orgnummer",
+                    fnr = "1",
+                    fnrNl = fnrLeder,
+                    arbeidsgiverForskutterer = false,
+                    aktivTom = OffsetDateTime.now()
+                )
+                with(
+                    handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatte?status=all") {
+                        addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = fnrLeder, issuer = "issuer")}")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    val relasjoner: AnsattResponse? = response.content?.let { objectMapper.readValue(it) }
+                    relasjoner shouldNotBe null
+                    relasjoner!!.ansatte.size shouldBeEqualTo 2
+                    relasjoner.ansatte.find { it.fnr == "1" } shouldNotBe null
+                }
+                with(
+                    handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatte") {
+                        addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = fnrLeder, issuer = "issuer")}")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    val relasjoner: AnsattResponse? = response.content?.let { objectMapper.readValue(it) }
+                    relasjoner shouldNotBe null
+                    relasjoner!!.ansatte.size shouldBeEqualTo 2
+                    relasjoner.ansatte.find { it.fnr == "1" } shouldNotBe null
                 }
             }
         }

@@ -167,6 +167,13 @@ paths:
         - Narmesteleder-sykmeldt-user-arbeidsgiverapi
       security:
         - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: status
+          schema:
+            default: ALL
+            type: string
+            enum: [ALL, ACTIVE, INACTIVE]
       responses:
         '200':
           $ref: '#/components/responses/AnsatteResponse'
