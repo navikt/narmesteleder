@@ -76,7 +76,7 @@ spec:
           namespace: default
           cluster: dev-fss
         - application: syfooppfolgingsplanservice
-          namespace: default
+          namespace: team-esyfo
           cluster: dev-fss
         - application: modiasyforest
           namespace: default
