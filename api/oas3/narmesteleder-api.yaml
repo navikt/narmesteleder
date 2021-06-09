@@ -32,7 +32,7 @@ paths:
       summary: returnerer liste av alle aktive NL-koblinger for angitt leder-fnr
       operationId: getNarmestelederRelasjonerForLeder
       tags:
-        - Narmesteleder-leder
+        - Narmesteleder-leder for serviceuser (AzureAD)
       security:
         - bearerAuth: []
       parameters:
@@ -51,7 +51,7 @@ paths:
       summary: returnerer aktiv nærmeste leder for angitt fnr og orgnummer
       operationId: getNarmestelederForSykmeldt
       tags:
-        - Narmesteleder-sykmeldt
+        - Narmesteleder-sykmeldt for serviceuser (AzureAD)
       security:
         - bearerAuth: [ ]
       parameters:
@@ -71,7 +71,7 @@ paths:
       summary: returnerer alle nærmeste leder-relasjoner for angitt fnr
       operationId: getNarmestelederForSykmeldt
       tags:
-        - Narmesteleder-sykmeldt
+        - Narmesteleder-sykmeldt for serviceuser (AzureAD)
       security:
         - bearerAuth: [ ]
       parameters:
@@ -91,7 +91,7 @@ paths:
       summary: avkrefter evt aktiv leder-relasjon for angitt orgnummer for sykmeldt-fnr for fnr i access_token
       operationId: avkreftNarmestelederForSykmeldt
       tags:
-        - Narmesteleder-sykmeldt-userapi
+        - Narmesteleder sykmeldt api
       security:
         - bearerAuth: [ ]
       parameters:
@@ -110,7 +110,7 @@ paths:
       summary: henter nærmeste ledere for fnr i access_token
       operationId: getNarmestelederForSykmeldtUser
       tags:
-        - Narmesteleder-sykmeldt-userapi
+        - Narmesteleder sykmeldt api
       security:
         - bearerAuth: [ ]
       responses:
@@ -127,7 +127,7 @@ paths:
       summary: henter nærmeste ledere for fnr i access_token på syforest-format
       operationId: getNarmestelederForSykmeldtUserSyforest
       tags:
-        - Narmesteleder-sykmeldt-userapi
+        - Narmesteleder sykmeldt api
       security:
         - bearerAuth: [ ]
       responses:
@@ -144,7 +144,7 @@ paths:
       summary: avkrefter aktiv leder-relasjon for angitt orgnummer og sykmeldt-fnr for leder-fnr i access_token
       operationId: avkreftNarmestelederForSykmeldtFraLeder
       tags:
-        - Narmesteleder-sykmeldt-user-arbeidsgiverapi
+        - Narmesteleder arbeidsgiver api
       security:
         - bearerAuth: [ ]
       parameters:
@@ -164,7 +164,7 @@ paths:
       summary: henter alle ansatte til narmesteleder, leder-fnr i access_token
       operationId: getArbeidsgiverAnsatte
       tags:
-        - Narmesteleder-sykmeldt-user-arbeidsgiverapi
+        - Narmesteleder arbeidsgiver api
       security:
         - bearerAuth: [ ]
       parameters:

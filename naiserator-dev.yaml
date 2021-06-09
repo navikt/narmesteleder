@@ -83,6 +83,7 @@ spec:
           cluster: dev-fss
         - application: syfosmaltinn
         - application: narmesteleder
+        - application: sykmeldinger-arbeidsgiver
         - application: sykmeldinger-backend
           namespace: teamsykmelding
           cluster: dev-fss
