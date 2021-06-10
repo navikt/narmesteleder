@@ -60,14 +60,11 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        - application: syfoarbeidsgivertilgang
-          namespace: default
-          cluster: prod-fss
         - application: syfosoknad
           namespace: flex
           cluster: prod-fss
         - application: syfovarsel
-          namespace: default
+          namespace: flex
           cluster: prod-fss
         - application: syfobrukertilgang
           namespace: default

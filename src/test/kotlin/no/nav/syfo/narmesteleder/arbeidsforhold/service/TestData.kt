@@ -1,25 +1,22 @@
 package no.nav.syfo.narmesteleder.arbeidsforhold.service
 
-import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsavtale
+import no.nav.syfo.narmesteleder.arbeidsforhold.model.Ansettelsesperiode
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsforhold
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiver
-import no.nav.syfo.narmesteleder.arbeidsforhold.model.Gyldighetsperiode
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Opplysningspliktig
+import no.nav.syfo.narmesteleder.arbeidsforhold.model.Periode
 import java.time.LocalDate
 
 fun getArbeidsgiverforhold(
-    gyldighetsperiode: Gyldighetsperiode = Gyldighetsperiode(
-        LocalDate.now(),
-        LocalDate.now()
+    ansettelsesperiode: Ansettelsesperiode = Ansettelsesperiode(
+        Periode(fom = LocalDate.of(2020, 6, 1), tom = null)
     )
 ): List<Arbeidsforhold> {
     return listOf(
         Arbeidsforhold(
             Arbeidsgiver("Organisasjon", "123456789"),
             Opplysningspliktig("Organisasjon", "987654321"),
-            listOf(
-                Arbeidsavtale(gyldighetsperiode = gyldighetsperiode, stillingsprosent = 100.0)
-            )
+            ansettelsesperiode
         )
     )
 }
