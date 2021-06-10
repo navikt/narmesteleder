@@ -4,6 +4,7 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.db.getAnsatte
+import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.user.model.NarmesteLeder
 import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -12,7 +13,8 @@ import java.util.function.Predicate
 @KtorExperimentalAPI
 class NarmesteLederService(
     private val database: DatabaseInterface,
-    private val pdlPersonService: PdlPersonService
+    private val pdlPersonService: PdlPersonService,
+    private val arbeidsgiverService: ArbeidsgiverService
 ) {
     suspend fun hentNarmesteledereMedNavn(sykmeldtFnr: String, callId: String): List<NarmesteLederRelasjon> {
         val narmesteLederRelasjoner = database.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -25,7 +27,7 @@ class NarmesteLederService(
         return narmesteLederRelasjoner.map { it.copy(navn = nlPersoner[it.narmesteLederFnr]?.navn?.toFormattedNameString()) }
     }
 
-    suspend fun getAnsatte(lederFnr: String, callId: String, status: String?): List<NarmesteLederRelasjon> {
+    suspend fun getAnsatte(lederFnr: String, callId: String, status: String?, token: String): List<NarmesteLederRelasjon> {
 
         val nlFilter = when (status) {
             "ACTIVE" -> activeNLFilter()
@@ -37,7 +39,14 @@ class NarmesteLederService(
 
         val fnrs = narmestelederRelasjoner.map { it.fnr }
         val ansatte = pdlPersonService.getPersoner(fnrs = fnrs, callId = callId)
-        return narmestelederRelasjoner.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
+        val arbeidsforhold = arbeidsgiverService.getArbeidsgivere(fnr = lederFnr, token = token, forespurtAvAnsatt = true)
+
+        return narmestelederRelasjoner.filter { relasjon ->
+            arbeidsforhold.any { arbeidsgiverinfo ->
+                arbeidsgiverinfo.orgnummer == relasjon.orgnummer &&
+                    arbeidsgiverinfo.aktivtArbeidsforhold
+            }
+        }.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
     }
 
     private fun allNlFilter() = Predicate<NarmesteLederRelasjon> { true }

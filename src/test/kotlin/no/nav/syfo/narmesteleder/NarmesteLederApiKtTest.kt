@@ -12,6 +12,7 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
+import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
@@ -37,8 +38,9 @@ const val fnrLeder = "123"
 @KtorExperimentalAPI
 class NarmesteLederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
+    val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)
     val testDb = TestDB()
-    val utvidetNarmesteLederService = NarmesteLederService(testDb, pdlPersonService)
+    val utvidetNarmesteLederService = NarmesteLederService(testDb, pdlPersonService, arbeidsgiverService)
 
     beforeEachTest {
         clearMocks(pdlPersonService)
