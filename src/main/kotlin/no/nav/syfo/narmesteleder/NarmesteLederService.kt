@@ -4,6 +4,7 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.db.getAnsatte
+import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.user.model.NarmesteLeder
 import no.nav.syfo.pdl.model.toFormattedNameString
@@ -36,6 +37,10 @@ class NarmesteLederService(
         }
 
         val narmestelederRelasjoner = database.getAnsatte(lederFnr).filter { nlFilter.test(it) }
+        if ( narmestelederRelasjoner.isEmpty() ) {
+            log.info("Fant ingen narmesteleder relasjoner, with filter $status")
+            return emptyList()
+        }
 
         val fnrs = narmestelederRelasjoner.map { it.fnr }
         val ansatte = pdlPersonService.getPersoner(fnrs = fnrs, callId = callId)

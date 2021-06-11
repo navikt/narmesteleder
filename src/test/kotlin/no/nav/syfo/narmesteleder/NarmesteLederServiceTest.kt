@@ -1,9 +1,12 @@
 package no.nav.syfo.narmesteleder
 
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.getAnsatte
@@ -29,6 +32,10 @@ class NarmesteLederServiceTest : Spek({
     val service = NarmesteLederService(database, pdlPersonService, arbeidsgiverService)
 
     mockkStatic("no.nav.syfo.db.NarmesteLederQueriesKt")
+
+    beforeEachTest {
+        clearAllMocks()
+    }
 
     describe("Get ansatte") {
         it("should get one ansatt") {
@@ -87,6 +94,18 @@ class NarmesteLederServiceTest : Spek({
                 val ansatte = service.getAnsatte("2", "callId", "ACTIVE", "token")
                 ansatte.size shouldBeEqualTo 0
             }
+        }
+
+        it("Skal ikke kalle pdl eller andre tjenester når man ikke finner narmesteleder relasjoner i databasen") {
+            every { database.getAnsatte(any()) } returns emptyList()
+            runBlocking {
+                val ansatte = service.getAnsatte("2", "callid", "ACTIVE", "token")
+                ansatte.size shouldBeEqualTo 0
+                coVerify(exactly = 0) { pdlPersonService.getPersoner(any(), any()) }
+                coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
+                coVerify(exactly = 0) { pdlPersonService.getPersoner(any(), any()) }
+            }
+
         }
     }
 })
