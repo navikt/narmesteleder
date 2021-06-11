@@ -46,22 +46,7 @@ class NarmesteLederServiceTest : Spek({
                 every { database.getAnsatte("2") } returns listOf(
                     getNarmestelederRelasjon()
                 )
-                coEvery { arbeidsgiverService.getArbeidsgivere("2", "token", false) } throws RuntimeException("message")
-
-                val ansatte = service.getAnsatte("2", "callId", "ACTIVE", "token")
-                ansatte.size shouldBeEqualTo 1
-            }
-        }
-        it("should get one ansatt") {
-            runBlocking {
-                coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
-                    "1" to PdlPerson(Navn("ansatt", null, "etternavn"), "1", "aktorId"),
-                    "2" to PdlPerson(Navn("leder", null, "etternavn"), "2", "aktorIdLeder")
-                )
-                every { database.getAnsatte("2") } returns listOf(
-                    getNarmestelederRelasjon()
-                )
-                coEvery { arbeidsgiverService.getArbeidsgivere("2", "token", false) } returns listOf(
+                coEvery { arbeidsgiverService.getArbeidsgivere("2", "token", true) } returns listOf(
                     Arbeidsgiverinfo(
                         orgnummer = "123456789",
                         juridiskOrgnummer = "123456780",
