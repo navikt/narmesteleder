@@ -28,7 +28,7 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApi(
         val fnr = principal.payload.subject
         val callId = UUID.randomUUID()
         val status = call.parameters["status"]?.toUpperCase()
-        val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString(), status)
+        val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString(), status, call.getToken()!!)
         call.respond(AnsattResponse(lederRelasjoner.map { it.toAnsatt() }))
     }
 

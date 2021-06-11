@@ -79,6 +79,7 @@ spec:
           namespace: default
           cluster: prod-fss
         - application: syfosmaltinn
+        - application: sykmeldinger-arbeidsgiver
         - application: sykmeldinger-backend
           namespace: teamsykmelding
           cluster: prod-fss

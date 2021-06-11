@@ -91,7 +91,7 @@ fun createApplicationEngine(
             allowNonSimpleContentTypes = true
         }
 
-        val narmesteLederService = NarmesteLederService(database, pdlPersonService)
+        val narmesteLederService = NarmesteLederService(database, pdlPersonService, arbeidsgiverService)
         val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, nlRequestProducer, arbeidsgiverService, pdlPersonService, database)
         val syforestNarmesteLederService = SyforestNarmesteLederService(narmesteLederService, organisasjonsinfoClient)
         routing {

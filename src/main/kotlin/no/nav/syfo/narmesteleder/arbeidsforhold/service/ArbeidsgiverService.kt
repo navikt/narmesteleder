@@ -25,27 +25,22 @@ class ArbeidsgiverService(
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
         }
-        val arbeidsgiverList = ArrayList<Arbeidsgiverinfo>()
-        arbeidsgivere.filter {
+        return arbeidsgivere.filter {
             it.arbeidsgiver.type == "Organisasjon"
         }.distinctBy {
             it.arbeidsgiver.organisasjonsnummer
-        }.forEach { arbeidsforhold ->
-            addArbeidsinfo(arbeidsgiverList, arbeidsforhold)
+        }.map {
+            toArbeidsgiverInfo(it)
         }
-        return arbeidsgiverList
     }
 
-    private fun addArbeidsinfo(
-        arbeidsgiverList: ArrayList<Arbeidsgiverinfo>,
+    private fun toArbeidsgiverInfo(
         arbeidsforhold: Arbeidsforhold
-    ) {
-        arbeidsgiverList.add(
-            Arbeidsgiverinfo(
-                orgnummer = arbeidsforhold.arbeidsgiver.organisasjonsnummer!!,
-                juridiskOrgnummer = arbeidsforhold.opplysningspliktig.organisasjonsnummer!!,
-                aktivtArbeidsforhold = arbeidsforhold.ansettelsesperiode.periode.tom == null
-            )
+    ): Arbeidsgiverinfo {
+        return Arbeidsgiverinfo(
+            orgnummer = arbeidsforhold.arbeidsgiver.organisasjonsnummer!!,
+            juridiskOrgnummer = arbeidsforhold.opplysningspliktig.organisasjonsnummer!!,
+            aktivtArbeidsforhold = arbeidsforhold.ansettelsesperiode.periode.tom == null
         )
     }
 }

@@ -31,7 +31,7 @@ import org.spekframework.spek2.style.specification.describe
 class NarmesteLederUserApiKtTest : Spek({
     val nlResponseProducer = mockk<NLResponseProducer>(relaxed = true)
     val nlRequestProducer = mockk<NLRequestProducer>(relaxed = true)
-    val arbeidsgiverService = mockk<ArbeidsgiverService>()
+    val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)
     val organisasjonsinfoClient = mockk<OrganisasjonsinfoClient>()
     val pdlPersonService = mockk<PdlPersonService>()
     val database = mockk<DatabaseInterface>()
@@ -42,7 +42,7 @@ class NarmesteLederUserApiKtTest : Spek({
         pdlPersonService,
         database
     )
-    val utvidetNarmesteLederService = NarmesteLederService(database, pdlPersonService)
+    val utvidetNarmesteLederService = NarmesteLederService(database, pdlPersonService, arbeidsgiverService)
     val syforestNarmesteLederService = SyforestNarmesteLederService(utvidetNarmesteLederService, organisasjonsinfoClient)
 
     coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()

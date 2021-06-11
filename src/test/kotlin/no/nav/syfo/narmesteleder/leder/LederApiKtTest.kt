@@ -11,6 +11,8 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.syfo.narmesteleder.NarmesteLederService
+import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiverinfo
+import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.fnrLeder
 import no.nav.syfo.narmesteleder.leder.model.AnsattResponse
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
@@ -36,7 +38,19 @@ import java.time.OffsetDateTime
 class LederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
     val testDb = TestDB()
-    val narmestelederService = NarmesteLederService(testDb, pdlPersonService)
+    val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)
+    val narmestelederService = NarmesteLederService(testDb, pdlPersonService, arbeidsgiverService)
+
+    coEvery {
+        arbeidsgiverService.getArbeidsgivere(any(), any(), any())
+    } returns listOf(
+        Arbeidsgiverinfo(
+            orgnummer = "orgnummer",
+            juridiskOrgnummer = "123456780",
+            aktivtArbeidsforhold = true
+        )
+    )
+
     val deaktiverNarmesteLederService = mockk<DeaktiverNarmesteLederService>(relaxed = true)
     beforeEachTest {
         clearMocks(pdlPersonService)
