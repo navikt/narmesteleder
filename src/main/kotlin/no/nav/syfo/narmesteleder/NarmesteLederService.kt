@@ -37,16 +37,32 @@ class NarmesteLederService(
         }
 
         val narmestelederRelasjoner = database.getAnsatte(lederFnr).filter { nlFilter.test(it) }
-        if ( narmestelederRelasjoner.isEmpty() ) {
+        if (narmestelederRelasjoner.isEmpty()) {
             log.info("Fant ingen narmesteleder relasjoner, with filter $status")
             return emptyList()
         }
+        log.info("Got ${narmestelederRelasjoner.size} relasjoner for narmesteleder")
 
         val fnrs = narmestelederRelasjoner.map { it.fnr }
         val ansatte = pdlPersonService.getPersoner(fnrs = fnrs, callId = callId)
-        //val arbeidsforhold = arbeidsgiverService.getArbeidsgivere(fnr = lederFnr, token = token, forespurtAvAnsatt = true)
 
-        return narmestelederRelasjoner.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
+        val arbeidsforhold =
+            try {
+                arbeidsgiverService.getArbeidsgivere(fnr = lederFnr, token = token, forespurtAvAnsatt = true)
+            } catch (ex: Exception) {
+                log.info("Got exception from arbeidsgiverservice", ex)
+                null
+            }
+
+        return when (arbeidsforhold == null) {
+            true -> return narmestelederRelasjoner.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
+            else -> narmestelederRelasjoner.filter { relasjon ->
+                arbeidsforhold.any { arbeidsgiverinfo ->
+                    arbeidsgiverinfo.orgnummer == relasjon.orgnummer &&
+                        arbeidsgiverinfo.aktivtArbeidsforhold
+                }
+            }.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
+        }
     }
 
     private fun allNlFilter() = Predicate<NarmesteLederRelasjon> { true }
