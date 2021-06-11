@@ -50,7 +50,6 @@ fun ApplicationCall.getToken(): String? {
     if (request.header("Authorization") != null) {
         return request.header("Authorization")!!.removePrefix("Bearer ")
     }
-    request.authorization()
     return request.cookies.get(name = "selvbetjening-idtoken")
 }
 
