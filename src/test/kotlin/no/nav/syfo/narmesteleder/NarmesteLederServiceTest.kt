@@ -1,6 +1,7 @@
 package no.nav.syfo.narmesteleder
 
 import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -34,7 +35,7 @@ class NarmesteLederServiceTest : Spek({
     mockkStatic("no.nav.syfo.db.NarmesteLederQueriesKt")
 
     beforeEachTest {
-        clearAllMocks()
+        clearMocks(pdlPersonService, arbeidsgiverService)
     }
 
     describe("Get ansatte") {
