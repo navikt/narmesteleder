@@ -51,6 +51,9 @@ class NarmesteLederService(
             }
         }
 
+        if (gyldigeNlRelasjoner.isEmpty()) {
+            return emptyList()
+        }
         val ansatte = pdlPersonService.getPersoner(fnrs = gyldigeNlRelasjoner.map { it.fnr }, callId = callId)
         log.info("Got ${narmestelederRelasjoner.size} relasjoner from DB, total gyldige: ${gyldigeNlRelasjoner.size}")
 
