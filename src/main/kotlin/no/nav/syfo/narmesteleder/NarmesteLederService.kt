@@ -44,14 +44,9 @@ class NarmesteLederService(
 
         val fnrs = narmestelederRelasjoner.map { it.fnr }
         val ansatte = pdlPersonService.getPersoner(fnrs = fnrs, callId = callId)
-        val arbeidsforhold = arbeidsgiverService.getArbeidsgivere(fnr = lederFnr, token = token, forespurtAvAnsatt = true)
+        //val arbeidsforhold = arbeidsgiverService.getArbeidsgivere(fnr = lederFnr, token = token, forespurtAvAnsatt = true)
 
-        return narmestelederRelasjoner.filter { relasjon ->
-            arbeidsforhold.any { arbeidsgiverinfo ->
-                arbeidsgiverinfo.orgnummer == relasjon.orgnummer &&
-                    arbeidsgiverinfo.aktivtArbeidsforhold
-            }
-        }.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
+        return narmestelederRelasjoner.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
     }
 
     private fun allNlFilter() = Predicate<NarmesteLederRelasjon> { true }
