@@ -10,7 +10,6 @@ import io.ktor.auth.jwt.JWTCredential
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.http.auth.HttpAuthHeader
-import io.ktor.request.authorization
 import io.ktor.request.header
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.Environment
