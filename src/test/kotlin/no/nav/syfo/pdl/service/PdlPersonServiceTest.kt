@@ -141,5 +141,47 @@ object PdlPersonServiceTest : Spek({
             coVerify(exactly = 1) { pdlClient.getPersoner(eq(listOf(fnrLeder2)), any()) }
             coVerify(exactly = 1) { pdlPersonRedisService.updatePerson(any(), any()) }
         }
+        it("Skal hente 1000 narmesteldere") {
+            coEvery { pdlPersonRedisService.getPerson(any()) } returns emptyMap()
+            val total = 1001
+            val fnrs = (0 until total).map { it.toString() }
+            coEvery { pdlClient.getPersoner(any(), any()) } answers {
+                val fnrs = args[0] as List<String>
+                GetPersonResponse(
+                    data = ResponseData(
+                        hentPersonBolk = fnrs.map {
+                            HentPersonBolk(
+                                it,
+                                Person(
+                                    navn = listOf(
+                                        no.nav.syfo.pdl.client.model.Navn(
+                                            "Fornavn",
+                                            "Mellomnanv",
+                                            "Etternavn"
+                                        )
+                                    )
+                                ),
+                                code = "ok"
+                            )
+                        },
+                        hentIdenterBolk = fnrs.map {
+                            HentIdenterBolk(
+                                it,
+                                listOf(PdlIdent(it, "FOLKEREGISTERIDENT"), PdlIdent(it, PdlPersonService.AKTORID)),
+                                code = "ok"
+                            )
+                        }
+                    ),
+                    emptyList()
+                )
+            }
+
+            runBlocking {
+                val personer = pdlPersonService.getPersoner(fnrs = fnrs, "callid")
+                coVerify(exactly = 11) { pdlClient.getPersoner(any(), any()) }
+
+                personer.size shouldBeEqualTo 1001
+            }
+        }
     }
 })
