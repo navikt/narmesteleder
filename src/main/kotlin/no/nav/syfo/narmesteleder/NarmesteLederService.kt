@@ -42,7 +42,6 @@ class NarmesteLederService(
             return emptyList()
         }
 
-
         val ansatte = pdlPersonService.getPersoner(fnrs = narmestelederRelasjoner.map { it.fnr }, callId = callId)
         log.info("Got ${narmestelederRelasjoner.size} relasjoner from DB")
 

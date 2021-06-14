@@ -28,7 +28,7 @@ class PdlPersonService(
         if (fnrsManglerIRedis.isNotEmpty()) {
             val stsToken = stsOidcClient.oidcToken().access_token
 
-            val pdlResponse = when (fnrs.size > 100) {
+            val pdlResponse = when (fnrsManglerIRedis.size > 100) {
                 true -> pdlClient.getPersoner(fnrsManglerIRedis.slice(0..99), stsToken)
                 false -> pdlClient.getPersoner(fnrsManglerIRedis, stsToken)
             }
