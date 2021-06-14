@@ -1,9 +1,14 @@
 package no.nav.syfo.pdl.service
 
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.log
 import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.ResponseData
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
@@ -28,10 +33,7 @@ class PdlPersonService(
         if (fnrsManglerIRedis.isNotEmpty()) {
             val stsToken = stsOidcClient.oidcToken().access_token
 
-            val pdlResponse = when (fnrsManglerIRedis.size > 100) {
-                true -> pdlClient.getPersoner(fnrsManglerIRedis.slice(0..99), stsToken)
-                false -> pdlClient.getPersoner(fnrsManglerIRedis, stsToken)
-            }
+            val pdlResponse = getPersonsFromPdl(fnrsManglerIRedis, stsToken)
 
             if (pdlResponse.errors != null) {
                 pdlResponse.errors.forEach {
@@ -65,6 +67,30 @@ class PdlPersonService(
             return personerFraRedis.plus(pdlPersonMap)
         }
         return personerFraRedis
+    }
+
+    private suspend fun getPersonsFromPdl(
+        fnrs: List<String>,
+        stsToken: String
+    ): GetPersonResponse {
+        val listFnrs = fnrs.chunked(100).map {
+            GlobalScope.async(context = Dispatchers.IO) {
+                pdlClient.getPersoner(it, stsToken)
+            }
+        }
+
+        val responses = listFnrs.awaitAll().map { it }
+        val identer = responses.mapNotNull { it.data.hentIdenterBolk }.flatten()
+        val personBolk = responses.mapNotNull { it.data.hentPersonBolk }.flatten()
+        val errors = responses.mapNotNull { it.errors }.flatten()
+
+        return GetPersonResponse(
+            ResponseData(
+                hentPersonBolk = personBolk,
+                hentIdenterBolk = identer
+            ),
+            errors = errors
+        )
     }
 
     private fun ResponseData.toPdlPersonMap(): Map<String, PdlPerson?> {
