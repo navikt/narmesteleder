@@ -54,7 +54,7 @@ class NarmesteLederServiceTest : Spek({
                     )
                 )
 
-                val ansatte = service.getAnsatte("2", "callId", "ACTIVE", "token")
+                val ansatte = service.getAnsatte("2", "callId")
                 ansatte.size shouldBeEqualTo 1
             }
         }
@@ -98,7 +98,7 @@ class NarmesteLederServiceTest : Spek({
         it("Skal ikke kalle pdl eller andre tjenester når man ikke finner narmesteleder relasjoner i databasen") {
             every { database.getAnsatte(any()) } returns emptyList()
             runBlocking {
-                val ansatte = service.getAnsatte("2", "callid", "ACTIVE", "token")
+                val ansatte = service.getAnsatte("2", "callid")
                 ansatte.size shouldBeEqualTo 0
                 coVerify(exactly = 0) { pdlPersonService.getPersoner(any(), any()) }
                 coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
