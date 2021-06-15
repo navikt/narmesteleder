@@ -32,6 +32,23 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApi(
         call.respond(AnsattResponse(lederRelasjoner.map { it.toAnsatt() }))
     }
 
+    get("/arbeidsgiver/ansatt/{narmestelederId}") {
+        val principal: JWTPrincipal = call.authentication.principal()!!
+        val fnr = principal.payload.subject!!
+        val narmestelederId = try {
+            UUID.fromString(call.parameters["narmestelederId"])
+        } catch (ex: IllegalArgumentException) {
+            log.warn("UUID is not valid ${call.parameters["narmestelederId"]}")
+            call.respond(HttpStatusCode.NotFound)
+            return@get
+        }
+        val callId = UUID.randomUUID().toString()
+        when (val relasjon = narmesteLederService.getAnsatt(fnr, narmestelederId, callId)) {
+            null -> call.respond(HttpStatusCode.NotFound)
+            else -> call.respond(relasjon.toAnsatt())
+        }
+    }
+
     post("/arbeidsgiver/{orgnummer}/avkreft") {
         val principal: JWTPrincipal = call.authentication.principal()!!
         val fnrLeder = principal.payload.subject

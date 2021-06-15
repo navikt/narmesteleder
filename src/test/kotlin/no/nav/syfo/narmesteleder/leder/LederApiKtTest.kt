@@ -10,10 +10,12 @@ import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
+import no.nav.syfo.db.getAnsatte
 import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiverinfo
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.fnrLeder
+import no.nav.syfo.narmesteleder.leder.model.Ansatt
 import no.nav.syfo.narmesteleder.leder.model.AnsattResponse
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import no.nav.syfo.narmesteleder.sykmeldtFnr
@@ -34,6 +36,7 @@ import org.amshove.kluent.shouldNotBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
+import java.util.UUID
 
 class LederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
@@ -63,7 +66,7 @@ class LederApiKtTest : Spek({
         coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
             Pair(
                 sykmeldtFnr,
-                PdlPerson(Navn("Fornavn", null, "Etternavn"), fnrLeder, "aktorid")
+                PdlPerson(Navn("Fornavn", null, "Etternavn"), sykmeldtFnr, "aktorid")
             )
         )
     }
@@ -191,6 +194,55 @@ class LederApiKtTest : Spek({
                     relasjoner shouldNotBe null
                     relasjoner!!.ansatte.size shouldBeEqualTo 2
                     relasjoner.ansatte.find { it.fnr == "1" } shouldNotBe null
+                }
+            }
+
+            it("Get single nl-relasjon") {
+                val r = testDb.getAnsatte(fnrLeder)
+                val nlId = r.first().narmesteLederId
+                with(
+                    handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatt/$nlId") {
+                        addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = fnrLeder, issuer = "issuer")}")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    val relasjon: Ansatt? = response.content?.let { objectMapper.readValue(it) }
+                    relasjon shouldNotBe null
+                    relasjon!!.narmestelederId shouldBeEqualTo nlId
+                    relasjon!!.fnr shouldBeEqualTo sykmeldtFnr
+                    relasjon!!.orgnummer shouldBeEqualTo "orgnummer"
+                }
+            }
+
+            it("Get single nl-relasjon retursn 404 when wrong nlId") {
+                with(
+                    handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatt/123") {
+                        addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = fnrLeder, issuer = "issuer")}")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
+                }
+            }
+
+            it("Get single nl-relasjon return 404 when nldi not found ") {
+                with(
+                    handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatt/${UUID.randomUUID()}") {
+                        addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = fnrLeder, issuer = "issuer")}")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
+                }
+            }
+
+            it("Get single nl-relasjon retursn 404 when wrong fnr on nlId") {
+                val r = testDb.getAnsatte(fnrLeder)
+                val nlId = r.first().narmesteLederId
+                with(
+                    handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatt/$nlId") {
+                        addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = sykmeldtFnr, issuer = "issuer")}")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
                 }
             }
         }

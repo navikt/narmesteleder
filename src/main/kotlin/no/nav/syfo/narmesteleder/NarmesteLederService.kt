@@ -4,11 +4,13 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.db.getAnsatte
+import no.nav.syfo.db.getNarmestelederRelasjon
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.user.model.NarmesteLeder
 import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
+import java.util.UUID
 import java.util.function.Predicate
 
 @KtorExperimentalAPI
@@ -69,5 +71,16 @@ class NarmesteLederService(
             timestamp = timestamp,
             navn = navn
         )
+    }
+
+    suspend fun getAnsatt(fnr: String, narmestelederId: UUID, callId: String): NarmesteLederRelasjon? {
+        val ansatt = database.getNarmestelederRelasjon(narmestelederId, fnr)
+        return when (ansatt) {
+            null -> null
+            else -> {
+                val persons = pdlPersonService.getPersoner(fnrs = listOf(ansatt.fnr), callId = callId)
+                return ansatt.copy(navn = persons[ansatt.fnr]?.navn?.toFormattedNameString())
+            }
+        }
     }
 }
