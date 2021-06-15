@@ -183,6 +183,25 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+  /arbeidsgiver/ansatt/{narmestelederId}:
+    get:
+      summary: henter en narmesteleder kobling for narmestelederId og leder-fnr i access_token
+      operationId: getArbeidsgiverAnsatt
+      tags:
+        - Narmesteleder arbeidsgiver api
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          $ref: '#/components/responses/AnsattResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
 
 components:
   responses:
@@ -228,6 +247,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Ansatte'
+    AnsattResponse:
+      description: "Ansatt response"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Ansatt'
 
   parameters:
     Orgnummer:

@@ -26,6 +26,26 @@ fun DatabaseInterface.finnAktiveNarmestelederkoblinger(narmesteLederFnr: String)
     }
 }
 
+fun DatabaseInterface.getNarmestelederRelasjon(narmestelederId: UUID, fnr: String): NarmesteLederRelasjon? {
+    return connection.use { connection ->
+        connection.prepareStatement(
+            """
+            select * from narmeste_leder where narmeste_leder_id = ? and narmeste_leder_fnr = ?;"""
+        ).use { ps ->
+            ps.setObject(1, narmestelederId)
+            ps.setString(2, fnr)
+            ps.executeQuery().toSingleNarmesteLederRelasjon()
+        }
+    }
+}
+
+private fun ResultSet.toSingleNarmesteLederRelasjon(): NarmesteLederRelasjon? {
+    return when (next()) {
+        true -> toNarmesteLederRelasjon()
+        false -> null
+    }
+}
+
 fun DatabaseInterface.finnNarmestelederForSykmeldt(fnr: String, orgnummer: String): NarmesteLederRelasjon? {
     return connection.use { connection ->
         connection.prepareStatement(
@@ -137,7 +157,12 @@ private fun Connection.lagreNarmesteleder(nlResponse: NlResponse, kafkaTimestamp
         it.setString(4, nlResponse.leder.mobil)
         it.setString(5, nlResponse.leder.epost)
         it.setObject(6, nlResponse.utbetalesLonn)
-        it.setTimestamp(7, nlResponse.aktivFom?.let { Timestamp.from(nlResponse.aktivFom.toInstant()) } ?: Timestamp.from(kafkaTimestamp.toInstant()))
+        it.setTimestamp(
+            7,
+            nlResponse.aktivFom?.let { Timestamp.from(nlResponse.aktivFom.toInstant()) } ?: Timestamp.from(
+                kafkaTimestamp.toInstant()
+            )
+        )
         it.setObject(8, nlResponse.aktivTom?.let { Timestamp.from(nlResponse.aktivTom.toInstant()) })
         it.setTimestamp(9, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
         it.execute()
@@ -152,7 +177,12 @@ private fun Connection.deaktiverNarmesteLeder(narmesteLederId: UUID, aktivTom: O
                 WHERE narmeste_leder_id = ?;
             """
     ).use {
-        it.setTimestamp(1, aktivTom?.let { Timestamp.from(aktivTom.toInstant()) } ?: Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+        it.setTimestamp(
+            1,
+            aktivTom?.let { Timestamp.from(aktivTom.toInstant()) } ?: Timestamp.from(
+                OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+            )
+        )
         it.setTimestamp(2, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
         it.setObject(3, narmesteLederId)
         it.execute()
