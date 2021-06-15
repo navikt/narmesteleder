@@ -30,17 +30,11 @@ class NarmesteLederService(
         return narmesteLederRelasjoner.map { it.copy(navn = nlPersoner[it.narmesteLederFnr]?.navn?.toFormattedNameString()) }
     }
 
-    suspend fun getAnsatte(lederFnr: String, callId: String, status: String?, token: String): List<NarmesteLederRelasjon> {
+    suspend fun getAnsatte(lederFnr: String, callId: String): List<NarmesteLederRelasjon> {
 
-        val nlFilter = when (status) {
-            "ACTIVE" -> activeNLFilter()
-            "INACTIVE" -> inactiveNLFilter()
-            else -> allNlFilter()
-        }
-
-        val narmestelederRelasjoner = database.getAnsatte(lederFnr).filter { nlFilter.test(it) }
+        val narmestelederRelasjoner = database.getAnsatte(lederFnr)
         if (narmestelederRelasjoner.isEmpty()) {
-            log.info("Fant ingen narmesteleder relasjoner, with filter $status")
+            log.info("Fant ingen narmesteleder relasjoner")
             return emptyList()
         }
 
@@ -49,12 +43,6 @@ class NarmesteLederService(
 
         return narmestelederRelasjoner.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
     }
-
-    private fun allNlFilter() = Predicate<NarmesteLederRelasjon> { true }
-
-    private fun inactiveNLFilter() = Predicate<NarmesteLederRelasjon> { it.aktivTom != null }
-
-    private fun activeNLFilter() = Predicate<NarmesteLederRelasjon> { it.aktivTom == null }
 
     suspend fun hentNarmesteLedereForAnsatt(sykmeldtFnr: String, callId: String): List<NarmesteLeder> {
         return hentNarmesteledereMedNavn(sykmeldtFnr, callId).map { it.tilNarmesteLeder() }

@@ -123,7 +123,7 @@ class LederApiKtTest : Spek({
                 }
             }
 
-            it("Get only ACTIVE") {
+            it("Get only active") {
                 testDb.connection.lagreNarmesteleder(
                     orgnummer = "orgnummer",
                     fnr = "1",
@@ -140,11 +140,11 @@ class LederApiKtTest : Spek({
                     val relasjoner: AnsattResponse? = response.content?.let { objectMapper.readValue(it) }
                     relasjoner shouldNotBe null
                     relasjoner!!.ansatte.size shouldBeEqualTo 1
-                    relasjoner.ansatte.find { it.fnr == "1" } shouldBe null
+                    relasjoner.ansatte.find { it.fnr == "1" } shouldBeEqualTo null
                 }
             }
 
-            it("Get only INACTIVE") {
+            it("Get not INACTIVE") {
                 testDb.connection.lagreNarmesteleder(
                     orgnummer = "orgnummer",
                     fnr = "1",
@@ -161,11 +161,10 @@ class LederApiKtTest : Spek({
                     val relasjoner: AnsattResponse? = response.content?.let { objectMapper.readValue(it) }
                     relasjoner shouldNotBe null
                     relasjoner!!.ansatte.size shouldBeEqualTo 1
-                    relasjoner.ansatte.find { it.fnr == "1" } shouldNotBe null
                 }
             }
 
-            it("Get ALL") {
+            it("Get only active") {
                 testDb.connection.lagreNarmesteleder(
                     orgnummer = "orgnummer",
                     fnr = "1",
@@ -181,8 +180,8 @@ class LederApiKtTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     val relasjoner: AnsattResponse? = response.content?.let { objectMapper.readValue(it) }
                     relasjoner shouldNotBe null
-                    relasjoner!!.ansatte.size shouldBeEqualTo 2
-                    relasjoner.ansatte.find { it.fnr == "1" } shouldNotBe null
+                    relasjoner!!.ansatte.size shouldBeEqualTo 1
+                    relasjoner.ansatte.find { it.fnr == "1" } shouldBe null
                 }
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/ansatte") {
@@ -192,8 +191,8 @@ class LederApiKtTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     val relasjoner: AnsattResponse? = response.content?.let { objectMapper.readValue(it) }
                     relasjoner shouldNotBe null
-                    relasjoner!!.ansatte.size shouldBeEqualTo 2
-                    relasjoner.ansatte.find { it.fnr == "1" } shouldNotBe null
+                    relasjoner!!.ansatte.size shouldBeEqualTo 1
+                    relasjoner.ansatte.find { it.fnr == "1" } shouldBe null
                 }
             }
 

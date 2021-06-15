@@ -30,7 +30,7 @@ fun DatabaseInterface.getNarmestelederRelasjon(narmestelederId: UUID, fnr: Strin
     return connection.use { connection ->
         connection.prepareStatement(
             """
-            select * from narmeste_leder where narmeste_leder_id = ? and narmeste_leder_fnr = ?;"""
+            select * from narmeste_leder where narmeste_leder_id = ? and narmeste_leder_fnr = ? and aktiv_tom is null;"""
         ).use { ps ->
             ps.setObject(1, narmestelederId)
             ps.setString(2, fnr)
@@ -77,7 +77,7 @@ fun DatabaseInterface.getAnsatte(fnr: String): List<NarmesteLederRelasjon> {
     return connection.use { connection ->
         connection.prepareStatement(
             """
-           SELECT * from narmeste_leder where narmeste_leder_fnr = ?;
+           SELECT * from narmeste_leder where narmeste_leder_fnr = ? and aktiv_tom is null;
         """
         ).use {
             it.setString(1, fnr)

@@ -171,9 +171,9 @@ paths:
         - in: query
           name: status
           schema:
-            default: ALL
+            default: ACTIVE
             type: string
-            enum: [ALL, ACTIVE, INACTIVE]
+            enum: [ACTIVE]
       responses:
         '200':
           $ref: '#/components/responses/AnsatteResponse'
