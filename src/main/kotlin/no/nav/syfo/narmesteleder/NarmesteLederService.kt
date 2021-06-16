@@ -11,7 +11,6 @@ import no.nav.syfo.narmesteleder.user.model.NarmesteLeder
 import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.util.UUID
-import java.util.function.Predicate
 
 @KtorExperimentalAPI
 class NarmesteLederService(
