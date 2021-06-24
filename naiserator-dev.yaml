@@ -86,6 +86,8 @@ spec:
         - application: sykmeldinger-backend
           namespace: teamsykmelding
           cluster: dev-fss
+        - application: debug-dings
+          namespace: plattformsikkerhet
     outbound:
       rules:
         - application: narmesteleder-redis
