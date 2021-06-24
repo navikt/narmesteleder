@@ -57,6 +57,8 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
+  tokenx:
+    enabled: true
   accessPolicy:
     inbound:
       rules:

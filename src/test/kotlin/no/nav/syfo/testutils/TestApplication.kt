@@ -70,13 +70,15 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         aaregApiKey = "key",
         eregApiKey = "key",
         allowedOrigin = "tjenester",
-        redisSecret = "secret"
+        redisSecret = "secret",
+        tokenXWellKnownUrl = "https://tokenx",
+        narmestelederTokenXClientId = "id"
     )
 
     val path = "src/test/resources/jwkset.json"
     val uri = Paths.get(path).toUri().toURL()
     val jwkProvider = JwkProviderBuilder(uri).build()
 
-    application.setupAuth(jwkProvider, jwkProvider, env, "issuer")
+    application.setupAuth(jwkProvider, jwkProvider, jwkProvider, env, "issuer", "issuer")
     return env
 }

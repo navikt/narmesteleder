@@ -183,6 +183,30 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+  /arbeidsgiver/v2/ansatte:
+    get:
+      summary: henter alle ansatte til narmesteleder, leder-fnr i access_token (TokenX)
+      operationId: getArbeidsgiverAnsatteV2
+      tags:
+        - Narmesteleder arbeidsgiver api
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: status
+          schema:
+            default: ACTIVE
+            type: string
+            enum: [ ACTIVE ]
+      responses:
+        '200':
+          $ref: '#/components/responses/AnsatteResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
   /arbeidsgiver/ansatt/{narmestelederId}:
     get:
       summary: henter en narmesteleder kobling for narmestelederId og leder-fnr i access_token

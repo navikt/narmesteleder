@@ -27,7 +27,9 @@ data class Environment(
     val allowedOrigin: String = getEnvVar("ALLOWED_ORIGIN"),
     val redisHost: String = getEnvVar("REDIS_HOST", "narmesteleder-redis.teamsykmelding.svc.cluster.local"),
     val redisPort: Int = getEnvVar("REDIS_PORT_NARMESTELEDER", "6379").toInt(),
-    val redisSecret: String = getEnvVar("REDIS_PASSWORD")
+    val redisSecret: String = getEnvVar("REDIS_PASSWORD"),
+    val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
+    val narmestelederTokenXClientId: String = getEnvVar("TOKEN_X_CLIENT_ID")
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
