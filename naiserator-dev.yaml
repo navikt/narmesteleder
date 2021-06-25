@@ -90,7 +90,6 @@ spec:
           namespace: plattformsikkerhet
         - application: notifikasjon-bruker-api
           namespace: fager
-          cluster: dev-fss
     outbound:
       rules:
         - application: narmesteleder-redis

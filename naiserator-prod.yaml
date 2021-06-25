@@ -87,7 +87,6 @@ spec:
           cluster: prod-fss
         - application: notifikasjon-bruker-api
           namespace: fager
-          cluster: prod-fss
     outbound:
       rules:
         - application: narmesteleder-redis
