@@ -85,6 +85,9 @@ spec:
         - application: sykmeldinger-backend
           namespace: teamsykmelding
           cluster: prod-fss
+        - application: notifikasjon-bruker-api
+          namespace: fager
+          cluster: prod-fss
     outbound:
       rules:
         - application: narmesteleder-redis
