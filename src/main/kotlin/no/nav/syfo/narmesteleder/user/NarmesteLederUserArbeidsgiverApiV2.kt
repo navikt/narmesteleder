@@ -20,11 +20,21 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApiV2(
 ) {
     get("/arbeidsgiver/v2/ansatte") {
         val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject
+        val fnr = finnFnrFraToken(principal)
         log.info("Subject: $fnr")
         log.info("Token: ${call.request.header("Authorization")}")
         val callId = UUID.randomUUID()
         val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString())
         call.respond(AnsattResponse(lederRelasjoner.map { it.toAnsatt() }))
+    }
+}
+
+fun finnFnrFraToken(principal: JWTPrincipal): String {
+    return if (principal.payload.getClaim("pid") != null) {
+        log.info("Fant pid-claim: ${principal.payload.audience}")
+        principal.payload.getClaim("pid").toString()
+    } else {
+        log.info("Bruker fnr fra subject: ${principal.payload.subject}")
+        principal.payload.subject
     }
 }
