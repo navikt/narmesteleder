@@ -31,8 +31,8 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApiV2(
 
 fun finnFnrFraToken(principal: JWTPrincipal): String {
     return if (principal.payload.getClaim("pid") != null) {
-        log.info("Fant pid-claim: ${principal.payload.audience}")
-        principal.payload.getClaim("pid").toString()
+        log.info("Fant pid-claim: ${principal.payload.getClaim("pid").asString()}")
+        principal.payload.getClaim("pid").asString()
     } else {
         log.info("Bruker fnr fra subject: ${principal.payload.subject}")
         principal.payload.subject
