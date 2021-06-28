@@ -39,6 +39,7 @@ import no.nav.syfo.narmesteleder.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.narmesteleder.registrerNarmesteLederApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserArbeidsgiverApi
+import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserArbeidsgiverApiV2
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.util.UUID
 
@@ -48,7 +49,9 @@ fun createApplicationEngine(
     applicationState: ApplicationState,
     jwkProvider: JwkProvider,
     jwkProviderLoginservice: JwkProvider,
+    jwkProviderTokenX: JwkProvider,
     loginserviceIssuer: String,
+    tokenXIssuer: String,
     database: Database,
     pdlPersonService: PdlPersonService,
     nlResponseProducer: NLResponseProducer,
@@ -65,7 +68,14 @@ fun createApplicationEngine(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-        setupAuth(jwkProvider = jwkProvider, jwkProviderLoginservice = jwkProviderLoginservice, env = env, loginserviceIssuer = loginserviceIssuer)
+        setupAuth(
+            jwkProvider = jwkProvider,
+            jwkProviderLoginservice = jwkProviderLoginservice,
+            jwkProviderTokenX = jwkProviderTokenX,
+            env = env,
+            loginserviceIssuer = loginserviceIssuer,
+            tokenXIssuer = tokenXIssuer
+        )
         install(CallLogging) {
             mdc("Nav-Callid") { call ->
                 call.request.queryParameters["Nav-Callid"] ?: UUID.randomUUID().toString()
@@ -106,6 +116,9 @@ fun createApplicationEngine(
             authenticate("loginservice") {
                 registrerNarmesteLederUserApi(deaktiverNarmesteLederService, narmesteLederService, syforestNarmesteLederService)
                 registrerNarmesteLederUserArbeidsgiverApi(deaktiverNarmesteLederService, narmesteLederService)
+            }
+            authenticate("tokenx") {
+                registrerNarmesteLederUserArbeidsgiverApiV2(narmesteLederService)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

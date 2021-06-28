@@ -15,7 +15,14 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.Environment
 import no.nav.syfo.log
 
-fun Application.setupAuth(jwkProvider: JwkProvider, jwkProviderLoginservice: JwkProvider, env: Environment, loginserviceIssuer: String) {
+fun Application.setupAuth(
+    jwkProvider: JwkProvider,
+    jwkProviderLoginservice: JwkProvider,
+    jwkProviderTokenX: JwkProvider,
+    env: Environment,
+    loginserviceIssuer: String,
+    tokenXIssuer: String
+) {
     install(Authentication) {
         jwt("servicebruker") {
             verifier(jwkProvider, env.jwtIssuer)
@@ -42,6 +49,28 @@ fun Application.setupAuth(jwkProvider: JwkProvider, jwkProviderLoginservice: Jwk
                 }
             }
         }
+        jwt(name = "tokenx") {
+            authHeader {
+                if (it.getToken() == null) {
+                    return@authHeader null
+                }
+                return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
+            }
+            verifier(jwkProviderTokenX, tokenXIssuer)
+            validate { credentials ->
+                when {
+                    harNarmestelederAudience(credentials, env.narmestelederTokenXClientId) && erNiva4(credentials) ->
+                        {
+                            val principal = JWTPrincipal(credentials.payload)
+                            BrukerPrincipal(
+                                fnr = finnFnrFraToken(principal),
+                                principal = principal
+                            )
+                        }
+                    else -> unauthorized(credentials)
+                }
+            }
+        }
     }
 }
 
@@ -50,6 +79,16 @@ fun ApplicationCall.getToken(): String? {
         return request.header("Authorization")!!.removePrefix("Bearer ")
     }
     return request.cookies.get(name = "selvbetjening-idtoken")
+}
+
+fun finnFnrFraToken(principal: JWTPrincipal): String {
+    return if (principal.payload.getClaim("pid") != null && !principal.payload.getClaim("pid").asString().isNullOrEmpty()) {
+        log.debug("Bruker fnr fra pid-claim")
+        principal.payload.getClaim("pid").asString()
+    } else {
+        log.debug("Bruker fnr fra subject")
+        principal.payload.subject
+    }
 }
 
 fun harTilgang(credentials: JWTCredential, clientId: String): Boolean {
@@ -71,6 +110,15 @@ fun hasLoginserviceIdportenClientIdAudience(credentials: JWTCredential, loginser
     return loginserviceIdportenClientId.any { credentials.payload.audience.contains(it) }
 }
 
+fun harNarmestelederAudience(credentials: JWTCredential, clientId: String): Boolean {
+    return credentials.payload.audience.contains(clientId)
+}
+
 fun erNiva4(credentials: JWTCredential): Boolean {
     return "Level4" == credentials.payload.getClaim("acr").asString()
 }
+
+data class BrukerPrincipal(
+    val fnr: String,
+    val principal: JWTPrincipal
+) : Principal

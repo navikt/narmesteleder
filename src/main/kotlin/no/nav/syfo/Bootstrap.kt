@@ -96,6 +96,12 @@ fun main() {
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
+    val wellKnownTokenX = getWellKnownTokenX(httpClient, env.tokenXWellKnownUrl)
+    val jwkProviderTokenX = JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
+        .cached(10, 24, TimeUnit.HOURS)
+        .rateLimited(10, 1, TimeUnit.MINUTES)
+        .build()
+
     val stsOidcClient = StsOidcClient(
         username = vaultSecrets.serviceuserUsername,
         password = vaultSecrets.serviceuserPassword,
@@ -138,7 +144,9 @@ fun main() {
         applicationState = applicationState,
         jwkProvider = jwkProvider,
         jwkProviderLoginservice = jwkProviderLoginservice,
+        jwkProviderTokenX = jwkProviderTokenX,
         loginserviceIssuer = wellKnown.issuer,
+        tokenXIssuer = wellKnownTokenX.issuer,
         database = database,
         pdlPersonService = pdlPersonService,
         nlResponseProducer = nlResponseProducer,
@@ -182,6 +190,16 @@ fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) =
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnown(
     val authorization_endpoint: String,
+    val token_endpoint: String,
+    val jwks_uri: String,
+    val issuer: String
+)
+
+fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =
+    runBlocking { httpClient.get<WellKnownTokenX>(wellKnownUrl) }
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class WellKnownTokenX(
     val token_endpoint: String,
     val jwks_uri: String,
     val issuer: String
