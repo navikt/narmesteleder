@@ -59,7 +59,14 @@ fun Application.setupAuth(
             verifier(jwkProviderTokenX, tokenXIssuer)
             validate { credentials ->
                 when {
-                    harNarmestelederAudience(credentials, env.narmestelederTokenXClientId) && erNiva4(credentials) -> JWTPrincipal(credentials.payload)
+                    harNarmestelederAudience(credentials, env.narmestelederTokenXClientId) && erNiva4(credentials) ->
+                        {
+                            val principal = JWTPrincipal(credentials.payload)
+                            BrukerPrincipal(
+                                fnr = finnFnrFraToken(principal),
+                                principal = principal
+                            )
+                        }
                     else -> unauthorized(credentials)
                 }
             }
@@ -76,10 +83,10 @@ fun ApplicationCall.getToken(): String? {
 
 fun finnFnrFraToken(principal: JWTPrincipal): String {
     return if (principal.payload.getClaim("pid") != null && !principal.payload.getClaim("pid").asString().isNullOrEmpty()) {
-        log.info("Fant pid-claim: ${principal.payload.getClaim("pid").asString()}")
+        log.debug("Bruker fnr fra pid-claim")
         principal.payload.getClaim("pid").asString()
     } else {
-        log.info("Bruker fnr fra subject: ${principal.payload.subject}")
+        log.debug("Bruker fnr fra subject")
         principal.payload.subject
     }
 }
@@ -110,3 +117,8 @@ fun harNarmestelederAudience(credentials: JWTCredential, clientId: String): Bool
 fun erNiva4(credentials: JWTCredential): Boolean {
     return "Level4" == credentials.payload.getClaim("acr").asString()
 }
+
+data class BrukerPrincipal(
+    val fnr: String,
+    val principal: JWTPrincipal
+) : Principal
