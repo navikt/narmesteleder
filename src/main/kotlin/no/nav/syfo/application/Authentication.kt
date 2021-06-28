@@ -74,6 +74,16 @@ fun ApplicationCall.getToken(): String? {
     return request.cookies.get(name = "selvbetjening-idtoken")
 }
 
+fun finnFnrFraToken(principal: JWTPrincipal): String {
+    return if (principal.payload.getClaim("pid") != null && !principal.payload.getClaim("pid").asString().isNullOrEmpty()) {
+        log.info("Fant pid-claim: ${principal.payload.getClaim("pid").asString()}")
+        principal.payload.getClaim("pid").asString()
+    } else {
+        log.info("Bruker fnr fra subject: ${principal.payload.subject}")
+        principal.payload.subject
+    }
+}
+
 fun harTilgang(credentials: JWTCredential, clientId: String): Boolean {
     val appid: String = credentials.payload.getClaim("azp").asString()
     log.debug("authorization attempt for $appid")

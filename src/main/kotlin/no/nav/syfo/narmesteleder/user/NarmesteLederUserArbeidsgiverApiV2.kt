@@ -8,6 +8,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.util.KtorExperimentalAPI
+import no.nav.syfo.application.finnFnrFraToken
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.leder.model.AnsattResponse
@@ -26,15 +27,5 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApiV2(
         val callId = UUID.randomUUID()
         val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString())
         call.respond(AnsattResponse(lederRelasjoner.map { it.toAnsatt() }))
-    }
-}
-
-fun finnFnrFraToken(principal: JWTPrincipal): String {
-    return if (principal.payload.getClaim("pid") != null) {
-        log.info("Fant pid-claim: ${principal.payload.getClaim("pid").asString()}")
-        principal.payload.getClaim("pid").asString()
-    } else {
-        log.info("Bruker fnr fra subject: ${principal.payload.subject}")
-        principal.payload.subject
     }
 }
