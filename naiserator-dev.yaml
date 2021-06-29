@@ -90,6 +90,9 @@ spec:
           namespace: plattformsikkerhet
         - application: notifikasjon-bruker-api
           namespace: fager
+        - application: isdialogmote
+          namespace: teamsykefravr
+          cluster: dev-gcp
     outbound:
       rules:
         - application: narmesteleder-redis

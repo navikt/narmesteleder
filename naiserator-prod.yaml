@@ -87,6 +87,9 @@ spec:
           cluster: prod-fss
         - application: notifikasjon-bruker-api
           namespace: fager
+        - application: isdialogmote
+          namespace: teamsykefravr
+          cluster: prod-gcp
     outbound:
       rules:
         - application: narmesteleder-redis
