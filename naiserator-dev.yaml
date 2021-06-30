@@ -106,4 +106,4 @@ spec:
     - name: REGISTER_BASE_PATH
       value: https://api-gw-q1.oera.no
     - name: ALLOWED_ORIGIN
-      value: tjenester-q1.nav.no
+      value: tjenester-q1.nav.no,www-gcp.dev.nav.no,narmesteleder.dev.nav.no
