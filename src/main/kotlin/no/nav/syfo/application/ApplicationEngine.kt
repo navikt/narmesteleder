@@ -95,7 +95,7 @@ fun createApplicationEngine(
             method(HttpMethod.Post)
             method(HttpMethod.Options)
             env.allowedOrigin.forEach {
-                hosts.add(it)
+                hosts.add("https://$it")
             }
             header("nav_csrf_protection")
             header("Sykmeldt-Fnr")
