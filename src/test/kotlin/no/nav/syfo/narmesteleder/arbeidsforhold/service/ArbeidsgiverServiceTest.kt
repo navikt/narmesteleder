@@ -90,5 +90,28 @@ class ArbeidsgiverServiceTest : Spek({
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
             }
         }
+        it("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold for samme orgnummer") {
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "123456789"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    Ansettelsesperiode(
+                        Periode(fom = LocalDate.of(2020, 5, 1), tom = LocalDate.of(2020, 6, 1))
+                    )
+                ),
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "123456789"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    Ansettelsesperiode(
+                        Periode(fom = LocalDate.of(2020, 1, 1), tom = null)
+                    )
+                )
+            )
+            runBlocking {
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
+                arbeidsgiverinformasjon.size shouldBeEqualTo 1
+                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
+            }
+        }
     }
 })
