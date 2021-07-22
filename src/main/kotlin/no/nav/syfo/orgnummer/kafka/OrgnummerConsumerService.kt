@@ -1,5 +1,6 @@
 package no.nav.syfo.orgnummer.kafka
 
+import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import kotlinx.coroutines.time.delay
 import no.nav.syfo.application.db.DatabaseInterface
@@ -22,30 +23,33 @@ class OrgnummerConsumerService(
     private val logTimer = 60_000L
 
     suspend fun startConsumer() {
-            var processedMessages = 0
-            var juridiskOrgnummerMangler = 0
-            kafkaConsumer.subscribe(listOf(topic))
-            while (true) {
-                try {
-                    val crs = kafkaConsumer.poll(Duration.ofSeconds(10))
-                    if (crs.isEmpty) {
-                        delay(Duration.ofSeconds(1))
-                    } else {
-                        val arbeidsgivere = crs.map { it.value().event.arbeidsgiver }
-                        val utenJuridisk = arbeidsgivere.filter { it.juridiskOrgnummer.isNullOrEmpty() }
-                        if (utenJuridisk.isNotEmpty()) {
-                            juridiskOrgnummerMangler += utenJuridisk.size
-                        }
-                        database.saveOrUpdateOrgnummer(arbeidsgivere.filter { !it.juridiskOrgnummer.isNullOrEmpty() })
+        var processedMessages = 0
+        var juridiskOrgnummerMangler = 0
+        kafkaConsumer.subscribe(listOf(topic))
+        while (true) {
+            try {
+                val crs = kafkaConsumer.poll(Duration.ofSeconds(10))
+                if (crs.isEmpty) {
+                    delay(Duration.ofSeconds(1))
+                } else {
+                    val arbeidsgivere = crs.map { it.value().event.arbeidsgiver }
+                    val utenJuridisk = arbeidsgivere.filter { it.juridiskOrgnummer.isNullOrEmpty() }
+                    if (utenJuridisk.isNotEmpty()) {
+                        juridiskOrgnummerMangler += utenJuridisk.size
                     }
-                    processedMessages += crs.count()
-                    processedMessages = logProcessedMessages(processedMessages, juridiskOrgnummerMangler)
-                } catch (ex: MissingKotlinParameterException) {
-                    log.error("faild to map parameters ${ex.parameter}, ${ex.path}")
-                    throw ex;
-                } catch (ex: Exception) {
-                    log.error("Error in orgnummer", ex.javaClass)
-                    throw ex;
+                    database.saveOrUpdateOrgnummer(arbeidsgivere.filter { !it.juridiskOrgnummer.isNullOrEmpty() })
+                }
+                processedMessages += crs.count()
+                processedMessages = logProcessedMessages(processedMessages, juridiskOrgnummerMangler)
+            } catch (ex: MissingKotlinParameterException) {
+                log.error("faild to map parameters ${ex.parameter}, ${ex.path}")
+                throw ex
+            } catch (ex: JsonParseException) {
+                log.error("JsonParseException ${ex.javaClass}, ${ex.location}")
+                throw ex
+            } catch (ex: Exception) {
+                log.error("Error in consuming sendt sykmelding", ex)
+                throw ex
             }
         }
     }
