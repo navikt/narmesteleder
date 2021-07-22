@@ -29,7 +29,6 @@ class OrgnummerConsumerService(
             if (crs.isEmpty) {
                 delay(Duration.ofSeconds(1))
             } else {
-                log.info("read ${crs.count()} from kafka topic $topic")
                 val arbeidsgivere = crs.map { it.value().event.arbeidsgiver }
                 val utenJuridisk = arbeidsgivere.filter { it.juridiskOrgnummer.isNullOrEmpty() }
                 if (utenJuridisk.isNotEmpty()) {
