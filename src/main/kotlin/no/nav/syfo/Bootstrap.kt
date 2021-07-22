@@ -199,7 +199,7 @@ fun startBackgroundJob(applicationState: ApplicationState, block: suspend Corout
         try {
             block()
         } catch (ex: Exception) {
-            log.error("Error in background task, restarting application")
+            log.error("Error in background task, restarting application", ex)
             applicationState.alive = false
             applicationState.ready = false
         }
