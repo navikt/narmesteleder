@@ -45,13 +45,15 @@ class OrgnummerDBKtTest : Spek({
             val toUpdate = listOf<ArbeidsgiverStatus>(
                 ArbeidsgiverStatus("1", "11"),
                 ArbeidsgiverStatus("2", "11"),
+                ArbeidsgiverStatus("2", "11"),
                 ArbeidsgiverStatus("3", "33"),
                 ArbeidsgiverStatus("4", "44"),
                 ArbeidsgiverStatus("5", "44"),
                 ArbeidsgiverStatus("6", "66"),
                 ArbeidsgiverStatus("7", "77"),
                 ArbeidsgiverStatus("1", "10"),
-            )
+            ).distinct()
+
 
             database.saveOrUpdateOrgnummer(toUpdate)
             database.getJuridiskOrgnummer("1") shouldBeEqualTo "10"

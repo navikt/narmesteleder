@@ -32,7 +32,7 @@ class OrgnummerConsumerService(
                 if (crs.isEmpty) {
                     delay(Duration.ofSeconds(1))
                 } else {
-                    val arbeidsgivere = crs.map { it.value().event.arbeidsgiver }
+                    val arbeidsgivere = crs.map { it.value().event.arbeidsgiver }.distinct()
                     val utenJuridisk = arbeidsgivere.filter { it.juridiskOrgnummer.isNullOrEmpty() }
                     if (utenJuridisk.isNotEmpty()) {
                         juridiskOrgnummerMangler += utenJuridisk.size
