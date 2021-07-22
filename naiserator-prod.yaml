@@ -104,3 +104,5 @@ spec:
       value: https://api-gw.oera.no
     - name: ALLOWED_ORIGIN
       value: tjenester.nav.no,www.nav.no
+    - name: KAFKA_BOOTSTRAP_SERVERS_URL
+      value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443

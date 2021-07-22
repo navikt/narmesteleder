@@ -1,6 +1,7 @@
 package no.nav.syfo.orgnummer.db
 
 import no.nav.syfo.application.db.DatabaseInterface
+import no.nav.syfo.orgnummer.kafka.ArbeidsgiverStatus
 import java.sql.Connection
 import java.sql.ResultSet
 
@@ -17,6 +18,27 @@ fun DatabaseInterface.saveOrUpdateOrgnummer(orgnummer: String, juridiskOrgnummer
             ps.setString(2, juridiskOrgnummer)
             ps.setString(3, juridiskOrgnummer)
             ps.execute()
+        }
+        connection.commit()
+    }
+}
+
+fun DatabaseInterface.saveOrUpdateOrgnummer(arbeidsgiverStatuser: List<ArbeidsgiverStatus>) {
+    connection.use { connection: Connection ->
+        connection.prepareStatement(
+            """
+            insert into orgnummer(orgnummer, juridisk_orgnummer) values (?, ?) 
+            on conflict(orgnummer) do update
+            set juridisk_orgnummer = ?
+        """
+        ).use { ps ->
+            arbeidsgiverStatuser.forEach {
+                ps.setString(1, it.orgnummer)
+                ps.setString(2, it.juridiskOrgnummer)
+                ps.setString(3, it.juridiskOrgnummer)
+                ps.addBatch()
+            }
+            ps.executeBatch()
         }
         connection.commit()
     }

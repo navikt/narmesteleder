@@ -17,6 +17,7 @@ import io.ktor.client.request.get
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -25,7 +26,9 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.coroutine.Unbounded
 import no.nav.syfo.kafka.aiven.KafkaUtils
+import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
@@ -40,6 +43,8 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
 import no.nav.syfo.narmesteleder.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.narmesteleder.organisasjon.redis.OrganisasjonsinfoRedisService
+import no.nav.syfo.orgnummer.kafka.OrgnummerConsumerService
+import no.nav.syfo.orgnummer.kafka.SendtSykmelding
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -120,6 +125,14 @@ fun main() {
     val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, stsOidcClient)
     val organisasjonsinfoRedisService = OrganisasjonsinfoRedisService(jedisPool, env.redisSecret)
     val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.registerBasePath, env.eregApiKey, organisasjonsinfoRedisService)
+    val onPremConsumerProperties = loadBaseConfig(env, vaultSecrets).toConsumerConfig(env.applicationName + "-consumer", JacksonKafkaDeserializer::class).apply {
+        setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "100")
+    }
+    val onPremKafkaConsumer = KafkaConsumer(
+        onPremConsumerProperties,
+        StringDeserializer(),
+        JacksonKafkaDeserializer(SendtSykmelding::class)
+    )
 
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }.toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
@@ -163,17 +176,26 @@ fun main() {
         oppdaterNarmesteLederService,
         env.cluster
     )
+    val orgnummerConsumerService = OrgnummerConsumerService(
+        onPremKafkaConsumer, database, env.sendtSykmeldingKafkaTopic
+    )
+
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
     applicationState.ready = true
 
     startBackgroundJob(applicationState) {
+        log.info("Starting narmesteleder response consumer")
         narmesteLederResponseConsumerService.startConsumer()
+    }
+    startBackgroundJob(applicationState) {
+        log.info("Starting orgnummer consumer service")
+        orgnummerConsumerService.startConsumer()
     }
 }
 
 fun startBackgroundJob(applicationState: ApplicationState, block: suspend CoroutineScope.() -> Unit) {
-    GlobalScope.launch {
+    GlobalScope.launch(Dispatchers.Unbounded) {
         try {
             block()
         } catch (ex: Exception) {

@@ -72,7 +72,10 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         allowedOrigin = listOf("tjenester", "www"),
         redisSecret = "secret",
         tokenXWellKnownUrl = "https://tokenx",
-        narmestelederTokenXClientId = "id"
+        narmestelederTokenXClientId = "id",
+        truststore = "trustore",
+        truststorePassword = "pw",
+        kafkaBootstrapServers = "SERVERS"
     )
 
     val path = "src/test/resources/jwkset.json"
