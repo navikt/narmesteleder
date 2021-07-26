@@ -21,6 +21,7 @@ import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import no.nav.syfo.narmesteleder.sykmeldtFnr
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserArbeidsgiverApi
 import no.nav.syfo.objectMapper
+import no.nav.syfo.orgnummer.db.saveOrUpdateOrgnummer
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -49,7 +50,7 @@ class LederApiKtTest : Spek({
     } returns listOf(
         Arbeidsgiverinfo(
             orgnummer = "orgnummer",
-            juridiskOrgnummer = "123456780",
+            juridiskOrgnummer = "juridisk",
             aktivtArbeidsforhold = true
         )
     )
@@ -63,6 +64,7 @@ class LederApiKtTest : Spek({
             fnrNl = fnrLeder,
             arbeidsgiverForskutterer = true
         )
+        testDb.saveOrUpdateOrgnummer("orgnummer", "juridisk")
         coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
             Pair(
                 sykmeldtFnr,

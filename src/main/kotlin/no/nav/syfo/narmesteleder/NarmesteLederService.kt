@@ -8,6 +8,7 @@ import no.nav.syfo.db.getNarmestelederRelasjon
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.user.model.NarmesteLeder
+import no.nav.syfo.orgnummer.db.getJuridiskOrgnummerMap
 import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.util.UUID
@@ -39,11 +40,20 @@ class NarmesteLederService(
 
         val ansatte = pdlPersonService.getPersoner(fnrs = narmestelederRelasjoner.map { it.fnr }, callId = callId)
 
-        val arbeidsforold = arbeidsgiverService.getArbeidsgivere(lederFnr, token, true)
+        val juridiskeOrgnummerLeder = arbeidsgiverService.getArbeidsgivere(lederFnr, token, true)
+            .filter { it.aktivtArbeidsforhold }
+            .map { it.juridiskOrgnummer }
+            .distinct()
 
         log.info("Got ${narmestelederRelasjoner.size} relasjoner from DB")
 
-        return narmestelederRelasjoner.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
+        val orgnummerMap = database.getJuridiskOrgnummerMap(narmestelederRelasjoner.map { it.orgnummer }.distinct())
+
+        val filteredNarmesteLederRelasjoner = narmestelederRelasjoner.filter {
+            juridiskeOrgnummerLeder.contains(orgnummerMap[it.orgnummer])
+        }.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
+
+        return filteredNarmesteLederRelasjoner
     }
 
     suspend fun hentNarmesteLedereForAnsatt(sykmeldtFnr: String, callId: String): List<NarmesteLeder> {
