@@ -42,7 +42,8 @@ class ArbeidsgiverService(
         return Arbeidsgiverinfo(
             orgnummer = arbeidsforhold.arbeidsgiver.organisasjonsnummer!!,
             juridiskOrgnummer = arbeidsforhold.opplysningspliktig.organisasjonsnummer!!,
-            aktivtArbeidsforhold = arbeidsforhold.ansettelsesperiode.periode.tom == null
+            aktivtArbeidsforhold = arbeidsforhold.ansettelsesperiode.periode.tom == null ||
+                !LocalDate.now().isAfter(arbeidsforhold.ansettelsesperiode.periode.tom)
         )
     }
 }

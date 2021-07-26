@@ -7,6 +7,7 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.BrukerPrincipal
+import no.nav.syfo.application.getToken
 import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.leder.model.AnsattResponse
 import no.nav.syfo.narmesteleder.leder.model.toAnsatt
@@ -20,7 +21,7 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApiV2(
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
         val callId = UUID.randomUUID()
-        val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString())
+        val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString(), "Bearer ${call.getToken()!!}")
         call.respond(AnsattResponse(lederRelasjoner.map { it.toAnsatt() }))
     }
 }

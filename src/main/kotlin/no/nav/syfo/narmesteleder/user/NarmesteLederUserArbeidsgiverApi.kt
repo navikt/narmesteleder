@@ -27,7 +27,7 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApi(
         val principal: JWTPrincipal = call.authentication.principal()!!
         val fnr = principal.payload.subject
         val callId = UUID.randomUUID()
-        val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString())
+        val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString(), "Bearer ${call.getToken()!!}")
         call.respond(AnsattResponse(lederRelasjoner.map { it.toAnsatt() }))
     }
 
@@ -42,7 +42,7 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApi(
             return@get
         }
         val callId = UUID.randomUUID().toString()
-        when (val relasjon = narmesteLederService.getAnsatt(fnr, narmestelederId, callId)) {
+        when (val relasjon = narmesteLederService.getAnsatt(fnr, narmestelederId, callId, "Bearer ${call.getToken()!!}")) {
             null -> call.respond(HttpStatusCode.NotFound)
             else -> call.respond(relasjon.toAnsatt())
         }

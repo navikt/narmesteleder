@@ -29,7 +29,7 @@ class NarmesteLederService(
         return narmesteLederRelasjoner.map { it.copy(navn = nlPersoner[it.narmesteLederFnr]?.navn?.toFormattedNameString()) }
     }
 
-    suspend fun getAnsatte(lederFnr: String, callId: String): List<NarmesteLederRelasjon> {
+    suspend fun getAnsatte(lederFnr: String, callId: String, token: String): List<NarmesteLederRelasjon> {
 
         val narmestelederRelasjoner = database.getAnsatte(lederFnr)
         if (narmestelederRelasjoner.isEmpty()) {
@@ -38,6 +38,9 @@ class NarmesteLederService(
         }
 
         val ansatte = pdlPersonService.getPersoner(fnrs = narmestelederRelasjoner.map { it.fnr }, callId = callId)
+
+        val arbeidsforold = arbeidsgiverService.getArbeidsgivere(lederFnr, token, true)
+
         log.info("Got ${narmestelederRelasjoner.size} relasjoner from DB")
 
         return narmestelederRelasjoner.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
@@ -60,7 +63,7 @@ class NarmesteLederService(
         )
     }
 
-    suspend fun getAnsatt(fnr: String, narmestelederId: UUID, callId: String): NarmesteLederRelasjon? {
+    suspend fun getAnsatt(fnr: String, narmestelederId: UUID, callId: String, token: String): NarmesteLederRelasjon? {
         val ansatt = database.getNarmestelederRelasjon(narmestelederId, fnr)
         return when (ansatt) {
             null -> null

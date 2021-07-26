@@ -57,7 +57,7 @@ class ArbeidsgiverServiceTest : Spek({
             runBlocking {
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
-                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo false
+                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
             }
         }
         it("arbeidsgiverService filtrerer bort duplikate arbeidsforhold for samme orgnummer") {
