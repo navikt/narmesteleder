@@ -40,20 +40,25 @@ class NarmesteLederService(
 
         val ansatte = pdlPersonService.getPersoner(fnrs = narmestelederRelasjoner.map { it.fnr }, callId = callId)
 
-        val juridiskeOrgnummerLeder = arbeidsgiverService.getArbeidsgivere(lederFnr, token, true)
-            .filter { it.aktivtArbeidsforhold }
-            .map { it.juridiskOrgnummer }
-            .distinct()
+        try {
+            val juridiskeOrgnummerLeder = arbeidsgiverService.getArbeidsgivere(lederFnr, token, true)
+                .filter { it.aktivtArbeidsforhold }
+                .map { it.juridiskOrgnummer }
+                .distinct()
 
-        val orgnummerMap = database.getJuridiskOrgnummerMap(narmestelederRelasjoner.map { it.orgnummer }.distinct())
+            val orgnummerMap = database.getJuridiskOrgnummerMap(narmestelederRelasjoner.map { it.orgnummer }.distinct())
 
-        val filteredNarmesteLederRelasjoner = narmestelederRelasjoner.filter {
-            juridiskeOrgnummerLeder.contains(orgnummerMap[it.orgnummer])
-        }.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
+            val filteredNarmesteLederRelasjoner = narmestelederRelasjoner.filter {
+                juridiskeOrgnummerLeder.contains(orgnummerMap[it.orgnummer])
+            }.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
 
-        log.info("Got ${narmestelederRelasjoner.size} relasjoner from DB, Got ${filteredNarmesteLederRelasjoner.size} after filter")
-
-        return filteredNarmesteLederRelasjoner
+            log.info("Got ${narmestelederRelasjoner.size} relasjoner from DB, Got ${filteredNarmesteLederRelasjoner.size} after filter")
+            return filteredNarmesteLederRelasjoner
+        } catch (ex: Exception) {
+            log.error("error getting arbeidsgivere etc", ex)
+            log.info("Got ${narmestelederRelasjoner.size} relasjoner from DB")
+            return narmestelederRelasjoner.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
+        }
     }
 
     suspend fun hentNarmesteLedereForAnsatt(sykmeldtFnr: String, callId: String): List<NarmesteLeder> {
