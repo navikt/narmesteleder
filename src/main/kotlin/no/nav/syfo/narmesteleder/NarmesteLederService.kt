@@ -45,13 +45,13 @@ class NarmesteLederService(
             .map { it.juridiskOrgnummer }
             .distinct()
 
-        log.info("Got ${narmestelederRelasjoner.size} relasjoner from DB")
-
         val orgnummerMap = database.getJuridiskOrgnummerMap(narmestelederRelasjoner.map { it.orgnummer }.distinct())
 
         val filteredNarmesteLederRelasjoner = narmestelederRelasjoner.filter {
             juridiskeOrgnummerLeder.contains(orgnummerMap[it.orgnummer])
         }.map { it.copy(navn = ansatte[it.fnr]?.navn?.toFormattedNameString()) }
+
+        log.info("Got ${narmestelederRelasjoner.size} relasjoner from DB, Got ${filteredNarmesteLederRelasjoner.size} after filter")
 
         return filteredNarmesteLederRelasjoner
     }
