@@ -44,6 +44,27 @@ fun DatabaseInterface.saveOrUpdateOrgnummer(arbeidsgiverStatuser: List<Arbeidsgi
     }
 }
 
+fun DatabaseInterface.getJuridiskOrgnummerMap(orgnummer: List<String>): Map<String, String> {
+    return connection.use { connection ->
+        connection.prepareStatement(
+            """
+            select orgnummer, juridisk_orgnummer from orgnummer where orgnummer = ANY (?);
+        """
+        ).use { ps ->
+            ps.setArray(1, connection.createArrayOf("VARCHAR", orgnummer.toTypedArray()))
+            ps.executeQuery().toOrgnummerMap()
+        }
+    }
+}
+
+private fun ResultSet.toOrgnummerMap(): Map<String, String> {
+    return mutableMapOf<String, String>().apply {
+        while (next()) {
+            this[(getString("orgnummer"))] = getString("juridisk_orgnummer")
+        }
+    }
+}
+
 fun DatabaseInterface.getOrgnummer(juridiskOrgnummer: String): List<String> {
     return connection.use { connection ->
         connection.prepareStatement(

@@ -54,7 +54,6 @@ class OrgnummerDBKtTest : Spek({
                 ArbeidsgiverStatus("1", "10"),
             ).distinct()
 
-
             database.saveOrUpdateOrgnummer(toUpdate)
             database.getJuridiskOrgnummer("1") shouldBeEqualTo "10"
             database.getJuridiskOrgnummer("2") shouldBeEqualTo "11"
@@ -70,6 +69,28 @@ class OrgnummerDBKtTest : Spek({
             database.getOrgnummer("44") `should contain same` listOf("4", "5")
             database.getOrgnummer("66") `should contain same` listOf("6")
             database.getOrgnummer("77") `should contain same` listOf("7")
+        }
+
+        it("Get map of orgnummer and juridisk orgnummer") {
+            val toUpdate = listOf<ArbeidsgiverStatus>(
+                ArbeidsgiverStatus("1", "11"),
+                ArbeidsgiverStatus("2", "11"),
+                ArbeidsgiverStatus("2", "11"),
+                ArbeidsgiverStatus("3", "33"),
+                ArbeidsgiverStatus("4", "44"),
+                ArbeidsgiverStatus("5", "44"),
+                ArbeidsgiverStatus("6", "66"),
+                ArbeidsgiverStatus("7", "77"),
+                ArbeidsgiverStatus("1", "10"),
+            ).distinct()
+
+            database.saveOrUpdateOrgnummer(toUpdate)
+
+            val juridiskOrgnummer = database.getJuridiskOrgnummerMap(listOf("1", "3", "4"))
+            juridiskOrgnummer.size shouldBeEqualTo 3
+            juridiskOrgnummer["1"] shouldBeEqualTo "10"
+            juridiskOrgnummer["3"] shouldBeEqualTo "33"
+            juridiskOrgnummer["4"] shouldBeEqualTo "44"
         }
     }
 })
