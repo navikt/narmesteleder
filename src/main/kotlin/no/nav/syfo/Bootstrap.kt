@@ -33,6 +33,7 @@ import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
+import no.nav.syfo.narmesteleder.oppdatering.NarmesteLederIdConsumer
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
@@ -160,6 +161,15 @@ fun main() {
     )
     val narmesteLederLeesahProducer = NarmesteLederLeesahProducer(kafkaProducerNarmesteLederLeesah, env.narmesteLederLeesahTopic)
 
+    val narmesteLederIdKafkaConsumer = KafkaConsumer(
+        KafkaUtils.getAivenKafkaConfig().also {
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+            it[ConsumerConfig.GROUP_ID_CONFIG] = "narmesteleder"
+        },
+        StringDeserializer(),
+        StringDeserializer()
+    )
+
     val applicationEngine = createApplicationEngine(
         env = env,
         applicationState = applicationState,
@@ -191,6 +201,11 @@ fun main() {
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
     applicationState.ready = true
+
+    startBackgroundJob(applicationState) {
+        log.info("Starter migreringsconsumer")
+        NarmesteLederIdConsumer(narmesteLederIdKafkaConsumer, applicationState, env.narmesteLederIdTopic, narmesteLederLeesahProducer, database).startConsumer()
+    }
 
 /*    startBackgroundJob(applicationState) {
         log.info("Starting narmesteleder response consumer")

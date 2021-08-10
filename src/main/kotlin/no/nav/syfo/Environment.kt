@@ -38,6 +38,7 @@ data class Environment(
     override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val sendtSykmeldingKafkaTopic: String = "syfo-sendt-sykmelding",
+    val narmesteLederIdTopic: String = "teamsykmelding.syfo-nl-id"
 ) : KafkaConfig {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"

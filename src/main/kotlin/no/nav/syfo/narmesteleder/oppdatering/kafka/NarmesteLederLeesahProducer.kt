@@ -8,7 +8,8 @@ import org.apache.kafka.clients.producer.ProducerRecord
 class NarmesteLederLeesahProducer(private val kafkaProducer: KafkaProducer<String, NarmesteLederLeesah>, private val topicName: String) {
     fun send(narmesteLederLeesah: NarmesteLederLeesah) {
         try {
-            kafkaProducer.send(ProducerRecord(topicName, narmesteLederLeesah.narmesteLederId.toString(), narmesteLederLeesah)).get()
+            kafkaProducer.send(ProducerRecord(topicName, narmesteLederLeesah.narmesteLederId.toString(), narmesteLederLeesah))
+            // husk å legge til get etter migrering
         } catch (ex: Exception) {
             log.error("Noe gikk galt ved skriving av narmesteleder til leesah-topic for id ${narmesteLederLeesah.narmesteLederId}", ex.message)
             throw ex
