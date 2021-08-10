@@ -22,6 +22,7 @@ data class Environment(
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val nlResponseTopic: String = "teamsykmelding.syfo-narmesteleder",
     val nlRequestTopic: String = "teamsykmelding.syfo-nl-request",
+    val narmesteLederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
