@@ -6,6 +6,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
+import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.KafkaMetadata
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.model.Leder
@@ -28,8 +29,9 @@ import kotlin.test.assertFailsWith
 @KtorExperimentalAPI
 class OppdaterNarmesteLederServiceTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
+    val narmesteLederLeesahProducer = mockk<NarmesteLederLeesahProducer>(relaxed = true)
     val testDb = TestDB()
-    val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, testDb)
+    val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, testDb, narmesteLederLeesahProducer)
     val sykmeldtFnr = "fnr"
     val fnrLeder = "123"
     val fnrLeder2 = "123456"

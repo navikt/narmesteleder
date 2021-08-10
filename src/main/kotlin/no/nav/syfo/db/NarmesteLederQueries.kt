@@ -39,6 +39,18 @@ fun DatabaseInterface.getNarmestelederRelasjon(narmestelederId: UUID, fnr: Strin
     }
 }
 
+fun DatabaseInterface.getNarmestelederRelasjonForId(narmestelederId: UUID): NarmesteLederRelasjon? {
+    return connection.use { connection ->
+        connection.prepareStatement(
+            """
+            select * from narmeste_leder where narmeste_leder_id = ?;"""
+        ).use { ps ->
+            ps.setObject(1, narmestelederId)
+            ps.executeQuery().toSingleNarmesteLederRelasjon()
+        }
+    }
+}
+
 private fun ResultSet.toSingleNarmesteLederRelasjon(): NarmesteLederRelasjon? {
     return when (next()) {
         true -> toNarmesteLederRelasjon()
@@ -114,9 +126,9 @@ fun DatabaseInterface.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: N
     }
 }
 
-fun DatabaseInterface.lagreNarmesteLeder(nlResponse: NlResponse, kafkaTimestamp: OffsetDateTime) {
+fun DatabaseInterface.lagreNarmesteLeder(narmesteLederId: UUID, nlResponse: NlResponse, kafkaTimestamp: OffsetDateTime) {
     connection.use { connection ->
-        connection.lagreNarmesteleder(nlResponse, kafkaTimestamp)
+        connection.lagreNarmesteleder(narmesteLederId, nlResponse, kafkaTimestamp)
         connection.commit()
     }
 }
@@ -135,10 +147,11 @@ fun DatabaseInterface.finnForskuttering(fnr: String, orgnummer: String): Forskut
     }
 }
 
-private fun Connection.lagreNarmesteleder(nlResponse: NlResponse, kafkaTimestamp: OffsetDateTime) {
+private fun Connection.lagreNarmesteleder(narmesteLederId: UUID, nlResponse: NlResponse, kafkaTimestamp: OffsetDateTime) {
     this.prepareStatement(
         """
                 INSERT INTO narmeste_leder(
+                    narmeste_leder_id,
                     orgnummer,
                     bruker_fnr,
                     narmeste_leder_fnr,
@@ -148,23 +161,24 @@ private fun Connection.lagreNarmesteleder(nlResponse: NlResponse, kafkaTimestamp
                     aktiv_fom,
                     aktiv_tom,
                     timestamp)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                  """
     ).use {
-        it.setString(1, nlResponse.orgnummer)
-        it.setString(2, nlResponse.sykmeldt.fnr)
-        it.setString(3, nlResponse.leder.fnr)
-        it.setString(4, nlResponse.leder.mobil)
-        it.setString(5, nlResponse.leder.epost)
-        it.setObject(6, nlResponse.utbetalesLonn)
+        it.setObject(1, narmesteLederId)
+        it.setString(2, nlResponse.orgnummer)
+        it.setString(3, nlResponse.sykmeldt.fnr)
+        it.setString(4, nlResponse.leder.fnr)
+        it.setString(5, nlResponse.leder.mobil)
+        it.setString(6, nlResponse.leder.epost)
+        it.setObject(7, nlResponse.utbetalesLonn)
         it.setTimestamp(
-            7,
+            8,
             nlResponse.aktivFom?.let { Timestamp.from(nlResponse.aktivFom.toInstant()) } ?: Timestamp.from(
                 kafkaTimestamp.toInstant()
             )
         )
-        it.setObject(8, nlResponse.aktivTom?.let { Timestamp.from(nlResponse.aktivTom.toInstant()) })
-        it.setTimestamp(9, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+        it.setObject(9, nlResponse.aktivTom?.let { Timestamp.from(nlResponse.aktivTom.toInstant()) })
+        it.setTimestamp(10, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
         it.execute()
     }
 }
