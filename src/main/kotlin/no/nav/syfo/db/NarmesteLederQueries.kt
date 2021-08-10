@@ -39,18 +39,6 @@ fun DatabaseInterface.getNarmestelederRelasjon(narmestelederId: UUID, fnr: Strin
     }
 }
 
-fun DatabaseInterface.getNarmestelederRelasjonForId(narmestelederId: UUID): NarmesteLederRelasjon? {
-    return connection.use { connection ->
-        connection.prepareStatement(
-            """
-            select * from narmeste_leder where narmeste_leder_id = ?;"""
-        ).use { ps ->
-            ps.setObject(1, narmestelederId)
-            ps.executeQuery().toSingleNarmesteLederRelasjon()
-        }
-    }
-}
-
 private fun ResultSet.toSingleNarmesteLederRelasjon(): NarmesteLederRelasjon? {
     return when (next()) {
         true -> toNarmesteLederRelasjon()
