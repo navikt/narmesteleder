@@ -91,7 +91,7 @@ class OppdaterNarmesteLederService(
                         narmesteLederEpost = nlResponseKafkaMessage.nlResponse.leder.epost,
                         aktivFom = nlResponseKafkaMessage.nlResponse.aktivFom?.let { nlResponseKafkaMessage.nlResponse.aktivFom.toLocalDate() }
                             ?: nlResponseKafkaMessage.kafkaMetadata.timestamp.toLocalDate(),
-                        aktivTom = nlResponseKafkaMessage.nlResponse.aktivFom?.let { nlResponseKafkaMessage.nlResponse.aktivFom.toLocalDate() },
+                        aktivTom = nlResponseKafkaMessage.nlResponse.aktivTom?.let { nlResponseKafkaMessage.nlResponse.aktivTom.toLocalDate() },
                         arbeidsgiverForskutterer = nlResponseKafkaMessage.nlResponse.utbetalesLonn,
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC)
                     )
