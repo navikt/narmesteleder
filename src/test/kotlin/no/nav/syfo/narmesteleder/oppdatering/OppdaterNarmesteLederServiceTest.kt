@@ -3,6 +3,7 @@ package no.nav.syfo.narmesteleder.oppdatering
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
@@ -38,7 +39,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
     val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
 
     beforeEachTest {
-        clearMocks(pdlPersonService)
+        clearMocks(pdlPersonService, narmesteLederLeesahProducer)
         coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
             Pair(fnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
             Pair(fnrLeder2, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder2, "aktorid2")),
@@ -77,6 +78,8 @@ class OppdaterNarmesteLederServiceTest : Spek({
             nlListe[0].orgnummer shouldBeEqualTo "orgnummer"
             nlListe[0].narmesteLederEpost shouldBeEqualTo "epost@nav.no"
             nlListe[0].narmesteLederTelefonnummer shouldBeEqualTo "90909090"
+
+            coVerify(exactly = 1) { narmesteLederLeesahProducer.send(any()) }
         }
         it("Oppdaterer nærmeste leder hvis finnes fra før") {
             testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
@@ -103,6 +106,8 @@ class OppdaterNarmesteLederServiceTest : Spek({
             nlListe[0].orgnummer shouldBeEqualTo "orgnummer"
             nlListe[0].narmesteLederEpost shouldBeEqualTo "epost2@nav.no"
             nlListe[0].narmesteLederTelefonnummer shouldBeEqualTo "90909090"
+
+            coVerify(exactly = 1) { narmesteLederLeesahProducer.send(any()) }
         }
         it("Deaktiverer tidligere nærmeste leder hvis ny leder meldes inn for samme orgnummer") {
             testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
@@ -132,6 +137,8 @@ class OppdaterNarmesteLederServiceTest : Spek({
             nyNl?.orgnummer shouldBeEqualTo "orgnummer"
             nyNl?.narmesteLederEpost shouldBeEqualTo "epost2@nav.no"
             nyNl?.narmesteLederTelefonnummer shouldBeEqualTo "40404040"
+
+            coVerify(exactly = 2) { narmesteLederLeesahProducer.send(any()) }
         }
         it("Kan ha to aktive NL samtidig hvis ulikt orgnummer") {
             testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
@@ -220,6 +227,8 @@ class OppdaterNarmesteLederServiceTest : Spek({
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
             nlListe.size shouldBeEqualTo 1
             nlListe[0].aktivTom shouldBeEqualTo aktivTom.toLocalDate()
+
+            coVerify(exactly = 1) { narmesteLederLeesahProducer.send(any()) }
         }
         it("NlAvbrutt feiler ikke hvis det ikke er noen ledere å deaktivere, og påvirker ikke nl for andre arbeidsforhold") {
             testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer2", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
