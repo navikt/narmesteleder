@@ -40,7 +40,6 @@ class OppdaterNarmesteLederService(
                     throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
                 }
                 val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = sykmeldtFnr, orgnummer = orgnummer)
-                deaktiverTidligereLedere(narmesteLedere, OffsetDateTime.now(ZoneOffset.UTC), callId)
                 createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
             }
             nlResponseKafkaMessage.nlAvbrutt != null -> {
@@ -50,6 +49,52 @@ class OppdaterNarmesteLederService(
             else -> {
                 log.error("Har mottatt nl-response som ikke er ny eller avbrutt")
                 throw IllegalStateException("Har mottatt nl-response som ikke er ny eller avbrutt")
+            }
+        }
+    }
+
+    private fun createOrUpdateNL(ledere: List<NarmesteLederRelasjon>, nlResponseKafkaMessage: NlResponseKafkaMessage, callId: String) {
+        when (val eksisterendeLeder = getExistingLeder(ledere, nlResponseKafkaMessage.nlResponse!!.leder.fnr)) {
+            null -> {
+                deaktiverTidligereLedere(ledere, OffsetDateTime.now(ZoneOffset.UTC), callId)
+                val narmesteLederId = UUID.randomUUID()
+                database.lagreNarmesteLeder(narmesteLederId, nlResponseKafkaMessage.nlResponse, nlResponseKafkaMessage.kafkaMetadata.timestamp)
+                narmesteLederLeesahProducer.send(
+                    NarmesteLederLeesah(
+                        narmesteLederId = narmesteLederId,
+                        fnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr,
+                        orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer,
+                        narmesteLederFnr = nlResponseKafkaMessage.nlResponse.leder.fnr,
+                        narmesteLederTelefonnummer = nlResponseKafkaMessage.nlResponse.leder.mobil,
+                        narmesteLederEpost = nlResponseKafkaMessage.nlResponse.leder.epost,
+                        aktivFom = nlResponseKafkaMessage.nlResponse.aktivFom?.let { nlResponseKafkaMessage.nlResponse.aktivFom.toLocalDate() }
+                            ?: nlResponseKafkaMessage.kafkaMetadata.timestamp.toLocalDate(),
+                        aktivTom = nlResponseKafkaMessage.nlResponse.aktivTom?.let { nlResponseKafkaMessage.nlResponse.aktivTom.toLocalDate() },
+                        arbeidsgiverForskutterer = nlResponseKafkaMessage.nlResponse.utbetalesLonn,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC)
+                    )
+                )
+                log.info("Created new NL for callId $callId")
+            }
+            else -> {
+                val ledereSomSkalDeaktiveres = ledere.filter { it != eksisterendeLeder }
+                deaktiverTidligereLedere(ledereSomSkalDeaktiveres, OffsetDateTime.now(ZoneOffset.UTC), callId)
+                database.oppdaterNarmesteLeder(eksisterendeLeder.narmesteLederId, nlResponseKafkaMessage.nlResponse)
+                narmesteLederLeesahProducer.send(
+                    NarmesteLederLeesah(
+                        narmesteLederId = eksisterendeLeder.narmesteLederId,
+                        fnr = eksisterendeLeder.fnr,
+                        orgnummer = eksisterendeLeder.orgnummer,
+                        narmesteLederFnr = eksisterendeLeder.narmesteLederFnr,
+                        narmesteLederTelefonnummer = nlResponseKafkaMessage.nlResponse.leder.mobil,
+                        narmesteLederEpost = nlResponseKafkaMessage.nlResponse.leder.epost,
+                        aktivFom = eksisterendeLeder.aktivFom,
+                        aktivTom = null,
+                        arbeidsgiverForskutterer = nlResponseKafkaMessage.nlResponse.utbetalesLonn,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC)
+                    )
+                )
+                log.info("Updating existing NL with id ${eksisterendeLeder.narmesteLederId}, $callId")
             }
         }
     }
@@ -74,49 +119,6 @@ class OppdaterNarmesteLederService(
                     )
                 )
             }
-    }
-
-    private fun createOrUpdateNL(ledere: List<NarmesteLederRelasjon>, nlResponseKafkaMessage: NlResponseKafkaMessage, callId: String) {
-        when (val eksisterendeLeder = getExistingLeder(ledere, nlResponseKafkaMessage.nlResponse!!.leder.fnr)) {
-            null -> {
-                val narmesteLederId = UUID.randomUUID()
-                database.lagreNarmesteLeder(narmesteLederId, nlResponseKafkaMessage.nlResponse, nlResponseKafkaMessage.kafkaMetadata.timestamp)
-                narmesteLederLeesahProducer.send(
-                    NarmesteLederLeesah(
-                        narmesteLederId = narmesteLederId,
-                        fnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr,
-                        orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer,
-                        narmesteLederFnr = nlResponseKafkaMessage.nlResponse.leder.fnr,
-                        narmesteLederTelefonnummer = nlResponseKafkaMessage.nlResponse.leder.mobil,
-                        narmesteLederEpost = nlResponseKafkaMessage.nlResponse.leder.epost,
-                        aktivFom = nlResponseKafkaMessage.nlResponse.aktivFom?.let { nlResponseKafkaMessage.nlResponse.aktivFom.toLocalDate() }
-                            ?: nlResponseKafkaMessage.kafkaMetadata.timestamp.toLocalDate(),
-                        aktivTom = nlResponseKafkaMessage.nlResponse.aktivTom?.let { nlResponseKafkaMessage.nlResponse.aktivTom.toLocalDate() },
-                        arbeidsgiverForskutterer = nlResponseKafkaMessage.nlResponse.utbetalesLonn,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                    )
-                )
-                log.info("Created new NL for callId $callId")
-            }
-            else -> {
-                database.oppdaterNarmesteLeder(eksisterendeLeder.narmesteLederId, nlResponseKafkaMessage.nlResponse)
-                narmesteLederLeesahProducer.send(
-                    NarmesteLederLeesah(
-                        narmesteLederId = eksisterendeLeder.narmesteLederId,
-                        fnr = eksisterendeLeder.fnr,
-                        orgnummer = eksisterendeLeder.orgnummer,
-                        narmesteLederFnr = eksisterendeLeder.narmesteLederFnr,
-                        narmesteLederTelefonnummer = nlResponseKafkaMessage.nlResponse.leder.mobil,
-                        narmesteLederEpost = nlResponseKafkaMessage.nlResponse.leder.epost,
-                        aktivFom = eksisterendeLeder.aktivFom,
-                        aktivTom = null,
-                        arbeidsgiverForskutterer = nlResponseKafkaMessage.nlResponse.utbetalesLonn,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                    )
-                )
-                log.info("Updating existing NL with id ${eksisterendeLeder.narmesteLederId}, $callId")
-            }
-        }
     }
 
     private fun getExistingLeder(
