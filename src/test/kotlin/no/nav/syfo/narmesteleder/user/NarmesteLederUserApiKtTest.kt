@@ -42,7 +42,7 @@ class NarmesteLederUserApiKtTest : Spek({
         pdlPersonService,
         database
     )
-    val utvidetNarmesteLederService = NarmesteLederService(database, pdlPersonService, arbeidsgiverService)
+    val utvidetNarmesteLederService = NarmesteLederService(database, pdlPersonService)
     val syforestNarmesteLederService = SyforestNarmesteLederService(utvidetNarmesteLederService, organisasjonsinfoClient)
 
     coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()

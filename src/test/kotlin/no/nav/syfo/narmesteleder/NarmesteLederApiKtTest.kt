@@ -40,7 +40,7 @@ class NarmesteLederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
     val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)
     val testDb = TestDB()
-    val utvidetNarmesteLederService = NarmesteLederService(testDb, pdlPersonService, arbeidsgiverService)
+    val utvidetNarmesteLederService = NarmesteLederService(testDb, pdlPersonService)
 
     beforeEachTest {
         clearMocks(pdlPersonService)

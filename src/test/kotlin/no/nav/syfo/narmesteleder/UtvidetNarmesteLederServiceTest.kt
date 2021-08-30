@@ -3,10 +3,8 @@ package no.nav.syfo.narmesteleder
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
-import io.mockk.mockk
 import io.mockk.mockkClass
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -23,8 +21,7 @@ import java.time.ZoneOffset
 class UtvidetNarmesteLederServiceTest : Spek({
     val testDb = TestDB()
     val pdlPersonService = mockkClass(PdlPersonService::class)
-    val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)
-    val utvidetNarmesteLederService = NarmesteLederService(testDb, pdlPersonService, arbeidsgiverService)
+    val utvidetNarmesteLederService = NarmesteLederService(testDb, pdlPersonService)
 
     val callId = "callid"
     val fnr = "fnr"

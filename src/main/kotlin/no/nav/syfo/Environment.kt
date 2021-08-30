@@ -36,8 +36,7 @@ data class Environment(
     val narmestelederTokenXClientId: String = getEnvVar("TOKEN_X_CLIENT_ID"),
     override val truststore: String? = getEnvVar("NAV_TRUSTSTORE_PATH"),
     override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD"),
-    override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
-    val sendtSykmeldingKafkaTopic: String = "syfo-sendt-sykmelding"
+    override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL")
 ) : KafkaConfig {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
