@@ -27,7 +27,7 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApi(
         val principal: JWTPrincipal = call.authentication.principal()!!
         val fnr = principal.payload.subject
         val callId = UUID.randomUUID()
-        val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString(), "Bearer ${call.getToken()!!}")
+        val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString())
         call.respond(AnsattResponse(lederRelasjoner.map { it.toAnsatt() }))
     }
 
