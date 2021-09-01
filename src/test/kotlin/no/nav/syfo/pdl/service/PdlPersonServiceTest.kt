@@ -6,6 +6,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockkClass
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.application.client.AccessTokenClientV2
 import no.nav.syfo.client.OidcToken
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.pdl.client.PdlClient
@@ -28,9 +29,9 @@ import kotlin.test.assertFailsWith
 @KtorExperimentalAPI
 object PdlPersonServiceTest : Spek({
     val pdlClient = mockkClass(PdlClient::class)
-    val stsOidcClient = mockkClass(StsOidcClient::class)
+    val accessTokenClientV2 = mockkClass(AccessTokenClientV2::class)
     val pdlPersonRedisService = mockkClass(PdlPersonRedisService::class, relaxed = true)
-    val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService)
+    val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, "scope")
 
     val callId = "callid"
     val fnrLeder1 = "12345678910"
@@ -39,8 +40,8 @@ object PdlPersonServiceTest : Spek({
     val aktorIdLeder2 = "456"
 
     beforeEachTest {
-        clearMocks(stsOidcClient, pdlClient, pdlPersonRedisService)
-        coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
+        clearMocks(accessTokenClientV2, pdlClient, pdlPersonRedisService)
+        coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
         coEvery { pdlPersonRedisService.getPerson(any()) } returns emptyMap()
     }
 

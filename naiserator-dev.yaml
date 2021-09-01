@@ -96,6 +96,8 @@ spec:
     outbound:
       rules:
         - application: narmesteleder-redis
+      external:
+        - host: pdl-api.dev-fss-pub.nais.io
   env:
     - name: SECURITYTOKENSERVICE_URL
       value: https://api-gw-q1.oera.no/security-token-service/rest/v1/sts/token
@@ -109,3 +111,5 @@ spec:
       value: tjenester-q1.nav.no,www-gcp.dev.nav.no,narmesteleder.dev.nav.no
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
       value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
+    - name: PDL_SCOPE
+      value: api://dev-fss.pdl.pdl-api/.default

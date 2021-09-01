@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.client.AccessTokenClientV2
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.client.StsOidcClient
@@ -47,6 +48,7 @@ import no.nav.syfo.narmesteleder.organisasjon.redis.OrganisasjonsinfoRedisServic
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -56,6 +58,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
+import java.net.ProxySelector
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
@@ -92,7 +95,18 @@ fun main() {
             }
         }
     }
+    val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+        config()
+        engine {
+            customizeClient {
+                setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
+            }
+        }
+    }
     val httpClient = HttpClient(Apache, config)
+    val httpClientWithProxy = HttpClient(Apache, proxyConfig)
+
+    val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClientWithProxy)
 
     val wellKnown = getWellKnown(httpClient, env.loginserviceIdportenDiscoveryUrl)
     val jwkProviderLoginservice = JwkProviderBuilder(URL(wellKnown.jwks_uri))
@@ -119,7 +133,7 @@ fun main() {
         PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
     )
     val pdlPersonRedisService = PdlPersonRedisService(jedisPool, env.redisSecret)
-    val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService)
+    val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, env.pdlScope)
     val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath, env.aaregApiKey)
     val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, stsOidcClient)
     val organisasjonsinfoRedisService = OrganisasjonsinfoRedisService(jedisPool, env.redisSecret)
