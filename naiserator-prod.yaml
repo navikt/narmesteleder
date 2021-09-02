@@ -68,6 +68,9 @@ spec:
         - application: syfovarsel
           namespace: flex
           cluster: prod-fss
+        - application: sykepengesoknad-narmesteleder-varsler
+          namespace: flex
+          cluster: prod-gcp
         - application: syfobrukertilgang
           namespace: default
           cluster: prod-fss

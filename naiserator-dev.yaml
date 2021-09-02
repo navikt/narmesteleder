@@ -68,6 +68,9 @@ spec:
         - application: syfovarsel
           namespace: flex
           cluster: dev-fss
+        - application: sykepengesoknad-narmesteleder-varsler
+          namespace: flex
+          cluster: dev-gcp
         - application: syfobrukertilgang
           namespace: default
           cluster: dev-fss
