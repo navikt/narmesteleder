@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.client.AccessTokenClientV2
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.client.StsOidcClient
@@ -94,6 +95,8 @@ fun main() {
     }
     val httpClient = HttpClient(Apache, config)
 
+    val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClient)
+
     val wellKnown = getWellKnown(httpClient, env.loginserviceIdportenDiscoveryUrl)
     val jwkProviderLoginservice = JwkProviderBuilder(URL(wellKnown.jwks_uri))
         .cached(10, 24, TimeUnit.HOURS)
@@ -119,7 +122,7 @@ fun main() {
         PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
     )
     val pdlPersonRedisService = PdlPersonRedisService(jedisPool, env.redisSecret)
-    val pdlPersonService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService)
+    val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, env.pdlScope)
     val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath, env.aaregApiKey)
     val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, stsOidcClient)
     val organisasjonsinfoRedisService = OrganisasjonsinfoRedisService(jedisPool, env.redisSecret)

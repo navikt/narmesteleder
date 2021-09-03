@@ -14,7 +14,6 @@ class PdlClient(
     private val apiKey: String,
     private val graphQlQuery: String
 ) {
-    private val navConsumerToken = "Nav-Consumer-Token"
     private val temaHeader = "TEMA"
     private val tema = "SYM"
 
@@ -26,7 +25,6 @@ class PdlClient(
             header(HttpHeaders.Authorization, "Bearer $stsToken")
             header(temaHeader, tema)
             header(HttpHeaders.ContentType, "application/json")
-            header(navConsumerToken, "Bearer $stsToken")
         }
     }
 }

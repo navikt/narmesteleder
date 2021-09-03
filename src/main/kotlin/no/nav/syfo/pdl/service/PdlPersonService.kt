@@ -5,7 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.application.client.AccessTokenClientV2
 import no.nav.syfo.log
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.GetPersonResponse
@@ -19,8 +19,9 @@ import no.nav.syfo.pdl.redis.toPdlPersonRedisModel
 @KtorExperimentalAPI
 class PdlPersonService(
     private val pdlClient: PdlClient,
-    private val stsOidcClient: StsOidcClient,
-    private val pdlPersonRedisService: PdlPersonRedisService
+    private val accessTokenClientV2: AccessTokenClientV2,
+    private val pdlPersonRedisService: PdlPersonRedisService,
+    private val pdlScope: String
 ) {
     companion object {
         const val AKTORID = "AKTORID"
@@ -31,9 +32,9 @@ class PdlPersonService(
         val fnrsManglerIRedis = fnrs.filter { !personerFraRedis.containsKey(it) }
 
         if (fnrsManglerIRedis.isNotEmpty()) {
-            val stsToken = stsOidcClient.oidcToken().access_token
+            val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
 
-            val pdlResponse = getPersonsFromPdl(fnrsManglerIRedis, stsToken)
+            val pdlResponse = getPersonsFromPdl(fnrsManglerIRedis, accessToken)
 
             if (pdlResponse.errors != null) {
                 pdlResponse.errors.forEach {

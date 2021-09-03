@@ -75,7 +75,11 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         narmestelederTokenXClientId = "id",
         truststore = "trustore",
         truststorePassword = "pw",
-        kafkaBootstrapServers = "SERVERS"
+        kafkaBootstrapServers = "SERVERS",
+        pdlScope = "scope",
+        aadAccessTokenV2Url = "url",
+        clientIdV2 = "id",
+        clientSecretV2 = "hush"
     )
 
     val path = "src/test/resources/jwkset.json"
