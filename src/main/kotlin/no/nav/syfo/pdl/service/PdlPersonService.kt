@@ -18,10 +18,10 @@ import no.nav.syfo.pdl.redis.toPdlPersonRedisModel
 
 @KtorExperimentalAPI
 class PdlPersonService(
-        private val pdlClient: PdlClient,
-        private val accessTokenClientV2: AccessTokenClientV2,
-        private val pdlPersonRedisService: PdlPersonRedisService,
-        private val pdlScope: String
+    private val pdlClient: PdlClient,
+    private val accessTokenClientV2: AccessTokenClientV2,
+    private val pdlPersonRedisService: PdlPersonRedisService,
+    private val pdlScope: String
 ) {
     companion object {
         const val AKTORID = "AKTORID"
