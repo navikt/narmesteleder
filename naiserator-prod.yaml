@@ -69,7 +69,7 @@ spec:
           namespace: flex
           cluster: prod-fss
         - application: syfobrukertilgang
-          namespace: default
+          namespace: team-esyfo
           cluster: prod-fss
         - application: syfomoteadmin
           namespace: default
