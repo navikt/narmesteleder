@@ -48,11 +48,23 @@ class ArbeidsgiverServiceTest : Spek({
                 arbeidsgiverinformasjon.size shouldBeEqualTo 0
             }
         }
-        it("Viser arbeidsforhold som ikke aktivt hvis tom er satt for ansettelsesperiode") {
+        it("Viser arbeidsforhold som ikke aktivt hvis tom for ansettelsesperiode er tidligere enn i dag") {
             coEvery {
                 arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any())
             } returns getArbeidsgiverforhold(
-                Ansettelsesperiode(Periode(fom = LocalDate.now().minusYears(1), tom = LocalDate.now()))
+                Ansettelsesperiode(Periode(fom = LocalDate.now().minusYears(1), tom = LocalDate.now().minusDays(1)))
+            )
+            runBlocking {
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
+                arbeidsgiverinformasjon.size shouldBeEqualTo 1
+                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo false
+            }
+        }
+        it("Viser arbeidsforhold som aktivt hvis tom for ansettelsesperiode er i fremtiden") {
+            coEvery {
+                arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any())
+            } returns getArbeidsgiverforhold(
+                Ansettelsesperiode(Periode(fom = LocalDate.now().minusYears(1), tom = LocalDate.now().plusDays(10)))
             )
             runBlocking {
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
@@ -104,6 +116,29 @@ class ArbeidsgiverServiceTest : Spek({
                     Opplysningspliktig("Organisasjon", "987654321"),
                     Ansettelsesperiode(
                         Periode(fom = LocalDate.of(2020, 1, 1), tom = null)
+                    )
+                )
+            )
+            runBlocking {
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
+                arbeidsgiverinformasjon.size shouldBeEqualTo 1
+                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
+            }
+        }
+        it("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold der alle har satt tom-dato for samme orgnummer") {
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "123456789"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    Ansettelsesperiode(
+                        Periode(fom = LocalDate.now().minusYears(1), tom = LocalDate.now().minusWeeks(40))
+                    )
+                ),
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "123456789"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    Ansettelsesperiode(
+                        Periode(fom = LocalDate.now().minusWeeks(40), tom = LocalDate.now().plusDays(10))
                     )
                 )
             )
