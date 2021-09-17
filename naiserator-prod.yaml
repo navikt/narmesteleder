@@ -15,6 +15,10 @@ spec:
         databases:
           - name: narmesteleder
             envVarPrefix: NAIS_DATABASE
+        diskAutoresize: true
+        highAvailability: true
+        insights:
+          enabled: true
   replicas:
     min: 3
     max: 6
