@@ -125,7 +125,7 @@ fun DatabaseInterface.finnForskuttering(fnr: String, orgnummer: String): Forskut
     return connection.use { connection ->
         connection.prepareStatement(
             """
-           SELECT arbeidsgiver_forskutterer from narmeste_leder where bruker_fnr = ? and orgnummer = ? and aktiv_tom is null;
+           SELECT arbeidsgiver_forskutterer from narmeste_leder where bruker_fnr = ? and orgnummer = ? ORDER BY aktiv_tom DESC NULLS FIRST;
         """
         ).use {
             it.setString(1, fnr)
