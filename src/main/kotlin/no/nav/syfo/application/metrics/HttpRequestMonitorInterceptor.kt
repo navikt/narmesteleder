@@ -5,11 +5,13 @@ import io.ktor.request.path
 import io.ktor.util.pipeline.PipelineContext
 
 val REGEX = """[0-9]{9}""".toRegex()
+val UUID_REGEX = """[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}""".toRegex()
 
 fun monitorHttpRequests(): suspend PipelineContext<Unit, ApplicationCall>.(Unit) -> Unit {
     return {
         val path = context.request.path()
-        val label = REGEX.replace(path, ":orgnummer")
+        var label = UUID_REGEX.replace(path, ":id")
+        label = REGEX.replace(label, ":orgnummer")
         val timer = HTTP_HISTOGRAM.labels(label).startTimer()
         proceed()
         timer.observeDuration()
