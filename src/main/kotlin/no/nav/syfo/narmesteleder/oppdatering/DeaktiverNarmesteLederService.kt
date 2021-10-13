@@ -56,7 +56,7 @@ class DeaktiverNarmesteLederService(
                     ),
                     metadata = NlKafkaMetadata(
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        source = "user"
+                        source = getSource(forespurtAvAnsatt)
                     )
                 )
             )
@@ -65,7 +65,7 @@ class DeaktiverNarmesteLederService(
             NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    source = "user"
+                    source = getSource(forespurtAvAnsatt)
                 ),
                 nlAvbrutt = NlAvbrutt(
                     orgnummer = orgnummer,
@@ -75,5 +75,10 @@ class DeaktiverNarmesteLederService(
                 nlResponse = null
             )
         )
+    }
+
+    private fun getSource(forespurtAvAnsatt: Boolean) = when (forespurtAvAnsatt) {
+        true -> "arbeidstaker"
+        false -> "leder"
     }
 }

@@ -8,7 +8,12 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_ARBEIDSTAKER
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_ARBEIDSTAKER_INNSENDT_SYKMELDING
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_LEDER
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_NY_LEDER
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.KafkaMetadata
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NY_LEDER
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.model.Leder
 import no.nav.syfo.narmesteleder.oppdatering.model.NlAvbrutt
@@ -56,7 +61,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
     describe("OppdaterNarmesteLederService") {
         it("Oppretter ny nærmeste leder hvis ingen finnes fra før") {
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "altinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
                     "orgnummer", utbetalesLonn = true, Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
                     Sykmeldt(sykmeldtFnr, "Syk Sykesen")
@@ -84,7 +89,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
         it("Oppdaterer nærmeste leder hvis finnes fra før") {
             testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "altinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
                     "orgnummer", utbetalesLonn = false, Leder(fnrLeder, "90909090", "epost2@nav.no", "Leder", "Ledersen"),
                     Sykmeldt(sykmeldtFnr, "Syk Sykesen")
@@ -112,7 +117,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
         it("Deaktiverer tidligere nærmeste leder hvis ny leder meldes inn for samme orgnummer") {
             testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "altinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
                     "orgnummer", utbetalesLonn = false, Leder(fnrLeder2, "40404040", "epost2@nav.no", "Leder", "Ledersen"),
                     Sykmeldt(sykmeldtFnr, "Syk Sykesen")
@@ -138,12 +143,13 @@ class OppdaterNarmesteLederServiceTest : Spek({
             nyNl?.narmesteLederEpost shouldBeEqualTo "epost2@nav.no"
             nyNl?.narmesteLederTelefonnummer shouldBeEqualTo "40404040"
 
-            coVerify(exactly = 2) { narmesteLederLeesahProducer.send(any()) }
+            coVerify(exactly = 1) { narmesteLederLeesahProducer.send(match { it.narmesteLederFnr == fnrLeder && it.status == DEAKTIVERT_NY_LEDER }) }
+            coVerify(exactly = 1) { narmesteLederLeesahProducer.send(match { it.narmesteLederFnr == fnrLeder2 && it.status == NY_LEDER }) }
         }
         it("Kan ha to aktive NL samtidig hvis ulikt orgnummer") {
             testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "altinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
                     "orgnummer2", utbetalesLonn = false, Leder(fnrLeder2, "40404040", "epost2@nav.no", "Leder", "Ledersen"),
                     Sykmeldt(sykmeldtFnr, "Syk Sykesen")
@@ -173,7 +179,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
                 Pair(sykmeldtFnr, null)
             )
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "altinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
                     "orgnummer", utbetalesLonn = true, Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
                     Sykmeldt(sykmeldtFnr, "Syk Sykesen")
@@ -193,7 +199,7 @@ class OppdaterNarmesteLederServiceTest : Spek({
                 Pair(sykmeldtFnr, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2"))
             )
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "altinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
                     "orgnummer", utbetalesLonn = true, Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
                     Sykmeldt(sykmeldtFnr, "Syk Sykesen")
@@ -228,7 +234,45 @@ class OppdaterNarmesteLederServiceTest : Spek({
             nlListe.size shouldBeEqualTo 1
             nlListe[0].aktivTom shouldBeEqualTo aktivTom.toLocalDate()
 
-            coVerify(exactly = 1) { narmesteLederLeesahProducer.send(any()) }
+            coVerify(exactly = 1) { narmesteLederLeesahProducer.send(match { it.status == DEAKTIVERT_ARBEIDSTAKER_INNSENDT_SYKMELDING }) }
+        }
+        it("NlAvbrutt deaktiverer nærmeste leder av leder") {
+            testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
+            val aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
+            val nlResponseKafkaMessage = NlResponseKafkaMessage(
+                kafkaMetadata = KafkaMetadata(timestamp, "leder"),
+                nlResponse = null,
+                nlAvbrutt = NlAvbrutt(
+                    orgnummer = "orgnummer",
+                    sykmeldtFnr = sykmeldtFnr,
+                    aktivTom = aktivTom
+                )
+            )
+
+            runBlocking {
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
+            }
+
+            coVerify(exactly = 1) { narmesteLederLeesahProducer.send(match { it.status == DEAKTIVERT_LEDER }) }
+        }
+        it("NlAvbrutt deaktiverer nærmeste leder av arbeidstaker") {
+            testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
+            val aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
+            val nlResponseKafkaMessage = NlResponseKafkaMessage(
+                kafkaMetadata = KafkaMetadata(timestamp, "arbeidstaker"),
+                nlResponse = null,
+                nlAvbrutt = NlAvbrutt(
+                    orgnummer = "orgnummer",
+                    sykmeldtFnr = sykmeldtFnr,
+                    aktivTom = aktivTom
+                )
+            )
+
+            runBlocking {
+                oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
+            }
+
+            coVerify(exactly = 1) { narmesteLederLeesahProducer.send(match { it.status == DEAKTIVERT_ARBEIDSTAKER }) }
         }
         it("NlAvbrutt feiler ikke hvis det ikke er noen ledere å deaktivere, og påvirker ikke nl for andre arbeidsforhold") {
             testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer2", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))

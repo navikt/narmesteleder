@@ -29,7 +29,13 @@ class DeaktiverNarmesteLederServiceTest : Spek({
     val arbeidsgiverService = mockk<ArbeidsgiverService>()
     val pdlPersonService = mockk<PdlPersonService>()
     val testDb = TestDB()
-    val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, nlRequestProducer, arbeidsgiverService, pdlPersonService, testDb)
+    val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(
+        nlResponseProducer,
+        nlRequestProducer,
+        arbeidsgiverService,
+        pdlPersonService,
+        testDb
+    )
 
     val sykmeldtFnr = "12345678910"
     val lederFnr = "01987654321"
@@ -51,31 +57,64 @@ class DeaktiverNarmesteLederServiceTest : Spek({
     describe("DeaktiverNarmesteLederService") {
         it("Deaktiverer NL-kobling og ber om ny NL hvis arbeidsforhold er aktivt") {
             runBlocking {
-                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = true))
+                coEvery {
+                    arbeidsgiverService.getArbeidsgivere(
+                        any(),
+                        any(),
+                        any()
+                    )
+                } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = true))
 
-                deaktiverNarmesteLederService.deaktiverNarmesteLeder("orgnummer", sykmeldtFnr, "token", UUID.randomUUID())
+                deaktiverNarmesteLederService.deaktiverNarmesteLeder(
+                    "orgnummer",
+                    sykmeldtFnr,
+                    "token",
+                    UUID.randomUUID()
+                )
 
-                verify { nlResponseProducer.send(any()) }
-                verify { nlRequestProducer.send(any()) }
+                verify { nlResponseProducer.send(match { it.kafkaMetadata.source == "arbeidstaker" }) }
+                verify { nlRequestProducer.send(match { it.metadata.source == "arbeidstaker" }) }
             }
         }
         it("Deaktiverer NL-kobling uten å be om ny NL hvis arbeidsforhold ikke er aktivt") {
             runBlocking {
-                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = false))
+                coEvery {
+                    arbeidsgiverService.getArbeidsgivere(
+                        any(),
+                        any(),
+                        any()
+                    )
+                } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = false))
 
-                deaktiverNarmesteLederService.deaktiverNarmesteLeder("orgnummer", sykmeldtFnr, "token", UUID.randomUUID())
+                deaktiverNarmesteLederService.deaktiverNarmesteLeder(
+                    "orgnummer",
+                    sykmeldtFnr,
+                    "token",
+                    UUID.randomUUID()
+                )
 
-                verify { nlResponseProducer.send(any()) }
+                verify { nlResponseProducer.send(match { it.kafkaMetadata.source == "arbeidstaker" }) }
                 verify(exactly = 0) { nlRequestProducer.send(any()) }
             }
         }
         it("Deaktiverer NL-kobling uten å be om ny NL hvis arbeidsforhold ikke finnes i listen") {
             runBlocking {
-                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = true))
+                coEvery {
+                    arbeidsgiverService.getArbeidsgivere(
+                        any(),
+                        any(),
+                        any()
+                    )
+                } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", aktivtArbeidsforhold = true))
 
-                deaktiverNarmesteLederService.deaktiverNarmesteLeder("orgnummer2", sykmeldtFnr, "token", UUID.randomUUID())
+                deaktiverNarmesteLederService.deaktiverNarmesteLeder(
+                    "orgnummer2",
+                    sykmeldtFnr,
+                    "token",
+                    UUID.randomUUID()
+                )
 
-                verify { nlResponseProducer.send(any()) }
+                verify { nlResponseProducer.send(match { it.kafkaMetadata.source == "arbeidstaker" }) }
                 verify(exactly = 0) { nlRequestProducer.send(any()) }
             }
         }
@@ -92,8 +131,14 @@ class DeaktiverNarmesteLederServiceTest : Spek({
             )
 
             runBlocking {
-                deaktiverNarmesteLederService.deaktiverNarmesteLederForAnsatt(lederFnr, "orgnummer", sykmeldtFnr, "token", UUID.randomUUID())
-                verify { nlResponseProducer.send(any()) }
+                deaktiverNarmesteLederService.deaktiverNarmesteLederForAnsatt(
+                    lederFnr,
+                    "orgnummer",
+                    sykmeldtFnr,
+                    "token",
+                    UUID.randomUUID()
+                )
+                verify { nlResponseProducer.send(match { it.kafkaMetadata.source == "leder" }) }
             }
         }
         it("Deaktiverer ikke kobling hvis NL-kobling i databasen gjelder annen ansatt") {
@@ -105,7 +150,13 @@ class DeaktiverNarmesteLederServiceTest : Spek({
             )
 
             runBlocking {
-                deaktiverNarmesteLederService.deaktiverNarmesteLederForAnsatt(lederFnr, "orgnummer", sykmeldtFnr, "token", UUID.randomUUID())
+                deaktiverNarmesteLederService.deaktiverNarmesteLederForAnsatt(
+                    lederFnr,
+                    "orgnummer",
+                    sykmeldtFnr,
+                    "token",
+                    UUID.randomUUID()
+                )
                 verify(exactly = 0) { nlResponseProducer.send(any()) }
             }
         }
