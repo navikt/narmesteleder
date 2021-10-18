@@ -10,6 +10,7 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.authenticate
 import io.ktor.features.CORS
+import io.ktor.features.CallId
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
@@ -76,10 +77,15 @@ fun createApplicationEngine(
             loginserviceIssuer = loginserviceIssuer,
             tokenXIssuer = tokenXIssuer
         )
-        install(CallLogging) {
-            mdc("Nav-Callid") { call ->
-                call.request.queryParameters["Nav-Callid"] ?: UUID.randomUUID().toString()
+        install(CallId) {
+            retrieve { it.request.queryParameters["Nav-Callid"] }
+            retrieveFromHeader("Nav-Callid")
+            generate {
+                UUID.randomUUID().toString()
             }
+        }
+        install(CallLogging) {
+            mdc("Nav-Callid") { it.callId }
             mdc("Nav-Consumer-Id") { call ->
                 call.request.queryParameters["Nav-Consumer-Id"] ?: "narmesteleder"
             }
