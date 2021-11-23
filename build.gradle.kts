@@ -5,10 +5,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.4.2"
+val coroutinesVersion = "1.5.1"
 val jacksonVersion = "2.12.0"
 val kluentVersion = "1.61"
-val ktorVersion = "1.5.1"
+val ktorVersion = "1.6.4"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "6.5"
 val prometheusVersion = "0.9.0"
@@ -23,10 +23,11 @@ val hikariVersion = "3.3.0"
 val postgresEmbeddedVersion = "0.13.3"
 val swaggerUiVersion = "3.10.0"
 val jedisVersion = "3.1.0"
+val kotlinVersion = "1.6.0"
 
 plugins {
     id("org.jmailen.kotlinter") version "3.3.0"
-    kotlin("jvm") version "1.4.21"
+    kotlin("jvm") version "1.6.0"
     id("com.diffplug.spotless") version "5.8.2"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("org.hidetake.swagger.generator") version "2.18.1" apply true
@@ -87,14 +88,15 @@ dependencies {
 
     swaggerUI( "org.webjars:swagger-ui:$swaggerUiVersion")
 
-    testImplementation("org.amshove.kluent:kluent:$kluentVersion") 
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
     testImplementation("org.testcontainers:kafka:$testContainerKafkaVersion")
     testImplementation("com.opentable.components:otj-pg-embedded:$postgresEmbeddedVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
-        exclude(group = "org.eclipse.jetty") 
+        exclude(group = "org.eclipse.jetty")
     }
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
