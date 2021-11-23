@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
-import kotlin.time.toDuration
 
 @KtorExperimentalAPI
 class NarmesteLederResponseConsumerService(
