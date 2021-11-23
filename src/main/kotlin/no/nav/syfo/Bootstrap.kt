@@ -181,22 +181,7 @@ fun main() {
     applicationServer.start()
     applicationState.ready = true
 
-    startBackgroundJob(applicationState) {
-        log.info("Starting narmesteleder response consumer")
-        narmesteLederResponseConsumerService.startConsumer()
-    }
-}
-
-fun startBackgroundJob(applicationState: ApplicationState, block: suspend CoroutineScope.() -> Unit) {
-    GlobalScope.launch(Dispatchers.Unbounded) {
-        try {
-            block()
-        } catch (ex: Exception) {
-            log.error("Error in background task, restarting application")
-            applicationState.alive = false
-            applicationState.ready = false
-        }
-    }
+    narmesteLederResponseConsumerService.startConsumer()
 }
 
 fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) =
