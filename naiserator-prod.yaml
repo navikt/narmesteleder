@@ -81,9 +81,6 @@ spec:
         - application: syfooppfolgingsplanservice
           namespace: team-esyfo
           cluster: prod-fss
-        - application: modiasyforest
-          namespace: default
-          cluster: prod-fss
         - application: syfosmaltinn
         - application: sykmeldinger-arbeidsgiver
         - application: sykmeldinger-backend
@@ -94,6 +91,9 @@ spec:
         - application: isdialogmote
           namespace: teamsykefravr
           cluster: prod-gcp
+        - application: syfoservice-data-syfosmregister
+          namespace: teamsykmelding
+          cluster: prod-fss
     outbound:
       rules:
         - application: narmesteleder-redis
