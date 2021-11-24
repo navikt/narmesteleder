@@ -81,9 +81,6 @@ spec:
         - application: syfooppfolgingsplanservice
           namespace: team-esyfo
           cluster: dev-fss
-        - application: modiasyforest
-          namespace: default
-          cluster: dev-fss
         - application: syfosmaltinn
         - application: narmesteleder
         - application: sykmeldinger-arbeidsgiver
@@ -97,6 +94,9 @@ spec:
         - application: isdialogmote
           namespace: teamsykefravr
           cluster: dev-gcp
+        - application: syfoservice-data-syfosmregister
+          namespace: teamsykmelding
+          cluster: dev-fss
     outbound:
       rules:
         - application: narmesteleder-redis
