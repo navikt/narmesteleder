@@ -24,7 +24,7 @@ val postgresEmbeddedVersion = "0.13.3"
 val swaggerUiVersion = "3.10.0"
 val jedisVersion = "3.1.0"
 val kotlinVersion = "1.6.0"
-val confluentVersion = "5.0.0"
+val confluentVersion = "5.3.0"
 val avroVersion = "1.11.0"
 
 plugins {
