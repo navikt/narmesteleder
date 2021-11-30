@@ -24,10 +24,13 @@ val postgresEmbeddedVersion = "0.13.3"
 val swaggerUiVersion = "3.10.0"
 val jedisVersion = "3.1.0"
 val kotlinVersion = "1.6.0"
+val confluentVersion = "5.0.0"
+val avroVersion = "1.11.0"
 
 plugins {
     id("org.jmailen.kotlinter") version "3.3.0"
     kotlin("jvm") version "1.6.0"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
     id("com.diffplug.spotless") version "5.8.2"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("org.hidetake.swagger.generator") version "2.18.1" apply true
@@ -75,6 +78,9 @@ dependencies {
 
     implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
+
+    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
+    implementation("org.apache.avro:avro:$avroVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
