@@ -7,7 +7,7 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.5.1"
 val jacksonVersion = "2.12.0"
-val kluentVersion = "1.61"
+val kluentVersion = "1.65"
 val ktorVersion = "1.6.4"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "6.5"
@@ -24,6 +24,7 @@ val postgresEmbeddedVersion = "0.13.3"
 val swaggerUiVersion = "3.10.0"
 val jedisVersion = "3.1.0"
 val kotlinVersion = "1.6.0"
+val confluentVersion = "5.3.0"
 
 plugins {
     id("org.jmailen.kotlinter") version "3.3.0"
@@ -39,11 +40,7 @@ val githubPassword: String by project
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven(url = "https://dl.bintray.com/kotlin/ktor")
-    maven(url = "https://dl.bintray.com/spekframework/spek-dev")
     maven(url = "https://packages.confluent.io/maven/")
-    maven(url = "https://kotlin.bintray.com/kotlinx")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
         credentials {
@@ -75,6 +72,8 @@ dependencies {
 
     implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
+
+    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")

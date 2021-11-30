@@ -99,6 +99,7 @@ spec:
         - application: narmesteleder-redis
       external:
         - host: https://pdl-api.prod-fss-pub.nais.io
+        - host: kafka-schema-registry.nais.adeo.no
   env:
     - name: SECURITYTOKENSERVICE_URL
       value: https://api-gw.oera.no/security-token-service/rest/v1/sts/token
@@ -114,3 +115,5 @@ spec:
       value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: PDL_SCOPE
       value: api://prod-fss.pdl.pdl-api/.default
+    - name: KAFKA_SCHEMA_REGISTRY_URL
+      value: https://kafka-schema-registry.nais.adeo.no

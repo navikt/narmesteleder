@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
@@ -16,7 +17,6 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.get
 import io.ktor.network.sockets.SocketTimeoutException
-import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
@@ -26,7 +26,11 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.identendring.IdentendringService
+import no.nav.syfo.identendring.PdlAktorConsumer
 import no.nav.syfo.kafka.aiven.KafkaUtils
+import no.nav.syfo.kafka.envOverrides
+import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
@@ -46,6 +50,7 @@ import no.nav.syfo.narmesteleder.organisasjon.redis.OrganisasjonsinfoRedisServic
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
+import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -57,6 +62,7 @@ import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.narmesteleder")
 
@@ -67,7 +73,7 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
     configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 }
 
-@KtorExperimentalAPI
+@ExperimentalTime
 fun main() {
     val env = Environment()
     val vaultSecrets = VaultSecrets()
@@ -155,6 +161,16 @@ fun main() {
             .getAivenKafkaConfig()
             .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class)
     )
+    val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
+    kafkaBaseConfig["auto.offset.reset"] = "latest"
+    kafkaBaseConfig["specific.avro.reader"] = false
+    kafkaBaseConfig["schema.registry.url"] = env.avroSchemaRegistryUrl
+
+    val kafkaConsumerPdlAktor = KafkaConsumer<String, GenericRecord>(
+        kafkaBaseConfig.toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = KafkaAvroDeserializer::class).also {
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
+        }
+    )
     val narmesteLederLeesahProducer = NarmesteLederLeesahProducer(kafkaProducerNarmesteLederLeesah, env.narmesteLederLeesahTopic)
 
     val applicationEngine = createApplicationEngine(
@@ -182,11 +198,15 @@ fun main() {
         env.cluster
     )
 
+    val identendringService = IdentendringService(database, oppdaterNarmesteLederService)
+    val pdlAktorConsumer = PdlAktorConsumer(kafkaConsumerPdlAktor, applicationState, env.pdlAktorTopic, identendringService)
+
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
     applicationState.ready = true
 
     narmesteLederResponseConsumerService.startConsumer()
+    pdlAktorConsumer.startConsumer()
 }
 
 fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) =
