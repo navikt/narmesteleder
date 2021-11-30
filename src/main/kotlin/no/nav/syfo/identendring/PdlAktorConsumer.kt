@@ -5,20 +5,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import no.nav.person.pdl.aktor.v2.Aktor
-import no.nav.person.pdl.aktor.v2.Type
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.coroutine.Unbounded
 import no.nav.syfo.identendring.model.Ident
 import no.nav.syfo.identendring.model.IdentType
 import no.nav.syfo.log
+import org.apache.avro.generic.GenericData
+import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 class PdlAktorConsumer(
-    private val kafkaConsumer: KafkaConsumer<String, Aktor>,
+    private val kafkaConsumer: KafkaConsumer<String, GenericRecord>,
     private val applicationState: ApplicationState,
     private val topic: String,
     private val identendringService: IdentendringService
@@ -60,15 +60,15 @@ class PdlAktorConsumer(
     }
 }
 
-fun Aktor.toIdentListe(): List<Ident> {
-    return this.identifikatorer.map {
+fun GenericRecord.toIdentListe(): List<Ident> {
+    return (get("identifikatorer") as GenericData.Array<GenericRecord>).map {
         Ident(
-            idnummer = it.idnummer,
-            gjeldende = it.gjeldende,
-            type = when (it.type) {
-                Type.FOLKEREGISTERIDENT -> IdentType.FOLKEREGISTERIDENT
-                Type.AKTORID -> IdentType.AKTORID
-                Type.NPID -> IdentType.NPID
+            idnummer = it.get("idnummer").toString(),
+            gjeldende = it.get("gjeldende").toString().toBoolean(),
+            type = when (it.get("type").toString()) {
+                "FOLKEREGISTERIDENT" -> IdentType.FOLKEREGISTERIDENT
+                "AKTORID" -> IdentType.AKTORID
+                "NPID" -> IdentType.NPID
                 else -> throw IllegalStateException("Har mottatt ident med ukjent type")
             }
         )

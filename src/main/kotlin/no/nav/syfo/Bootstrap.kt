@@ -19,7 +19,6 @@ import io.ktor.client.request.get
 import io.ktor.network.sockets.SocketTimeoutException
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.runBlocking
-import no.nav.person.pdl.aktor.v2.Aktor
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.client.AccessTokenClientV2
@@ -51,6 +50,7 @@ import no.nav.syfo.narmesteleder.organisasjon.redis.OrganisasjonsinfoRedisServic
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
+import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -166,7 +166,7 @@ fun main() {
     kafkaBaseConfig["specific.avro.reader"] = false
     kafkaBaseConfig["schema.registry.url"] = env.avroSchemaRegistryUrl
 
-    val kafkaConsumerPdlAktor = KafkaConsumer<String, Aktor>(
+    val kafkaConsumerPdlAktor = KafkaConsumer<String, GenericRecord>(
         kafkaBaseConfig.toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = KafkaAvroDeserializer::class).also {
             it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
         }
