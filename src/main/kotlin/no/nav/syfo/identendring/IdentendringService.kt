@@ -1,6 +1,8 @@
 package no.nav.syfo.identendring
 
 import no.nav.syfo.application.db.DatabaseInterface
+import no.nav.syfo.application.metrics.NYTT_FNR_ANSATT_COUNTER
+import no.nav.syfo.application.metrics.NYTT_FNR_LEDER_COUNTER
 import no.nav.syfo.db.finnAktiveNarmesteledereForSykmeldt
 import no.nav.syfo.db.finnAktiveNarmestelederkoblinger
 import no.nav.syfo.identendring.model.Ident
@@ -98,12 +100,19 @@ class IdentendringService(
                 )
             }
             log.info("Har oppdatert ${erAnsattForNlKoblinger.size} NL-koblinger der endret fnr er ansatt")
+
+            if (erLederForNlKoblinger.isNotEmpty()) {
+                NYTT_FNR_LEDER_COUNTER.inc()
+            }
+            if (erAnsattForNlKoblinger.isNotEmpty()) {
+                NYTT_FNR_ANSATT_COUNTER.inc()
+            }
         }
     }
 
     private fun harEndretFnr(identListe: List<Ident>): Boolean {
         if (identListe.filter { it.type == IdentType.FOLKEREGISTERIDENT }.size < 2) {
-            log.info("Identendring inneholder ingen endring i fnr")
+            log.debug("Identendring inneholder ingen endring i fnr")
             return false
         }
         return true
