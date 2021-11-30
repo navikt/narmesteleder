@@ -164,6 +164,7 @@ fun main() {
     val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
     kafkaBaseConfig["auto.offset.reset"] = "latest"
     kafkaBaseConfig["specific.avro.reader"] = false
+    kafkaBaseConfig["schema.registry.url"] = env.avroSchemaRegistryUrl
 
     val kafkaConsumerPdlAktor = KafkaConsumer<String, Aktor>(
         kafkaBaseConfig.toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = KafkaAvroDeserializer::class).also {

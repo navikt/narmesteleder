@@ -79,7 +79,8 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         pdlScope = "scope",
         aadAccessTokenV2Url = "url",
         clientIdV2 = "id",
-        clientSecretV2 = "hush"
+        clientSecretV2 = "hush",
+        avroSchemaRegistryUrl = "schema"
     )
 
     val path = "src/test/resources/jwkset.json"
