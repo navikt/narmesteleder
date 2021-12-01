@@ -50,7 +50,9 @@ class PdlAktorConsumer(
         while (applicationState.ready) {
             kafkaConsumer.poll(Duration.ofSeconds(POLL_DURATION_SECONDS)).forEach {
                 try {
-                    identendringService.oppdaterIdent(it.value().toIdentListe())
+                    if (it.value() != null) {
+                        identendringService.oppdaterIdent(it.value().toIdentListe())
+                    }
                 } catch (e: Exception) {
                     log.error("Noe gikk galt ved mottak av pdl-aktor-melding med offset ${it.offset()}: ${e.message}")
                     throw e
