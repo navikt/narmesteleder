@@ -1,13 +1,11 @@
 package no.nav.syfo.narmesteleder.arbeidsforhold.service
 
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsforhold
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiverinfo
 import java.time.LocalDate
 
-@KtorExperimentalAPI
 class ArbeidsgiverService(
     private val arbeidsforholdClient: ArbeidsforholdClient,
     private val stsOidcClient: StsOidcClient

@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder.arbeidsforhold.service
 
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -18,7 +17,6 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 
-@KtorExperimentalAPI
 class ArbeidsgiverServiceTest : Spek({
     val arbeidsforholdClient = mockk<ArbeidsforholdClient>()
     val stsOidcToken = mockk<StsOidcClient>()

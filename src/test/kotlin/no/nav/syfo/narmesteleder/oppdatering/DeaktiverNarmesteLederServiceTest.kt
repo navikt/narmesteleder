@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder.oppdatering
 
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -22,7 +21,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
-@KtorExperimentalAPI
 class DeaktiverNarmesteLederServiceTest : Spek({
     val nlResponseProducer = mockk<NLResponseProducer>(relaxed = true)
     val nlRequestProducer = mockk<NLRequestProducer>(relaxed = true)

@@ -1,6 +1,5 @@
 package no.nav.syfo.pdl.service
 
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async

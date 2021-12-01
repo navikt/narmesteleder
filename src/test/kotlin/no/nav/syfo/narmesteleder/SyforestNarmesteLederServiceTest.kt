@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder
 
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -17,7 +16,6 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
-@KtorExperimentalAPI
 class SyforestNarmesteLederServiceTest : Spek({
     val utvidetNarmesteLederService = mockk<NarmesteLederService>()
     val organisasjonsinfoClient = mockk<OrganisasjonsinfoClient>()

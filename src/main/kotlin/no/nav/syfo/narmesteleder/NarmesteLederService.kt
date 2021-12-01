@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder
 
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.db.getAnsatte
@@ -11,7 +10,6 @@ import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.util.UUID
 
-@KtorExperimentalAPI
 class NarmesteLederService(
     private val database: DatabaseInterface,
     private val pdlPersonService: PdlPersonService

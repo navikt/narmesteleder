@@ -1,13 +1,11 @@
 package no.nav.syfo.narmesteleder
 
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.narmesteleder.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.narmesteleder.organisasjon.model.Organisasjonsinfo
 import no.nav.syfo.narmesteleder.organisasjon.model.getName
 import no.nav.syfo.narmesteleder.user.model.NarmesteLeder
 import no.nav.syfo.narmesteleder.user.model.SyforestNarmesteLeder
 
-@KtorExperimentalAPI
 class SyforestNarmesteLederService(
     private val utvidetNarmesteLederService: NarmesteLederService,
     private val organisasjonsinfoClient: OrganisasjonsinfoClient

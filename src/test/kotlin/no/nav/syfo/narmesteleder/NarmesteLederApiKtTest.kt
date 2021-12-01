@@ -8,7 +8,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -35,7 +34,6 @@ import java.util.UUID
 const val sykmeldtFnr = "fnr"
 const val fnrLeder = "123"
 
-@KtorExperimentalAPI
 class NarmesteLederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
     val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)
