@@ -16,7 +16,6 @@ import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.redis.toPdlPerson
 import no.nav.syfo.pdl.redis.toPdlPersonRedisModel
 
-@KtorExperimentalAPI
 class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,

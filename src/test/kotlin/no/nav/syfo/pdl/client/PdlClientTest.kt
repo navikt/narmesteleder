@@ -13,7 +13,7 @@ class PdlClientTest : Spek({
     val httpClient = HttpClientTest()
 
     val graphQlQuery = File("src/main/resources/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
-    val pdlClient = PdlClient(httpClient.httpClient, "graphqlend", "key", graphQlQuery)
+    val pdlClient = PdlClient(httpClient.httpClient, "graphqlend", graphQlQuery)
 
     describe("getPerson OK") {
         it("Skal få hente person fra pdl") {

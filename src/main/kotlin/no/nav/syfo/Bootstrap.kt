@@ -129,7 +129,6 @@ fun main() {
     val pdlClient = PdlClient(
         httpClient,
         env.pdlGraphqlPath,
-        env.pdlApiKey,
         PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
     )
     val pdlPersonRedisService = PdlPersonRedisService(jedisPool, env.redisSecret)
