@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder.oppdatering
 
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.deaktiverNarmesteLeder
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
@@ -22,7 +21,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
-@KtorExperimentalAPI
 class OppdaterNarmesteLederService(
     private val pdlPersonService: PdlPersonService,
     private val database: DatabaseInterface,

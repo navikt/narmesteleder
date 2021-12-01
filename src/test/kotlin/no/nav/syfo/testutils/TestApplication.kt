@@ -63,7 +63,6 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         dbPort = "",
         dbName = "",
         stsApiKey = "key",
-        pdlApiKey = "key",
         loginserviceIdportenDiscoveryUrl = "url",
         loginserviceIdportenAudience = audience,
         registerBasePath = "http://register",

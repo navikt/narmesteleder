@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder.oppdatering
 
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.finnAktiveNarmestelederkoblinger
 import no.nav.syfo.log
@@ -19,7 +18,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
-@KtorExperimentalAPI
 class DeaktiverNarmesteLederService(
     private val nlResponseProducer: NLResponseProducer,
     private val nlRequestProducer: NLRequestProducer,

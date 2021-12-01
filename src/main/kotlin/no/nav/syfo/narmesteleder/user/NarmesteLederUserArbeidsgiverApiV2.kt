@@ -5,14 +5,12 @@ import io.ktor.auth.authentication
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.leder.model.AnsattResponse
 import no.nav.syfo.narmesteleder.leder.model.toAnsatt
 import java.util.UUID
 
-@KtorExperimentalAPI
 fun Route.registrerNarmesteLederUserArbeidsgiverApiV2(
     narmesteLederService: NarmesteLederService
 ) {

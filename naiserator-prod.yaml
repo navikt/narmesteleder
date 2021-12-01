@@ -104,7 +104,7 @@ spec:
     - name: SECURITYTOKENSERVICE_URL
       value: https://api-gw.oera.no/security-token-service/rest/v1/sts/token
     - name: PDL_GRAPHQL_PATH
-      value: https://api-gw.oera.no/pdl-api/graphql
+      value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: KAFKA_CLIENT_ID
       value: narmesteleder
     - name: REGISTER_BASE_PATH

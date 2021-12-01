@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder
 
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockkClass
@@ -17,7 +16,6 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-@KtorExperimentalAPI
 class UtvidetNarmesteLederServiceTest : Spek({
     val testDb = TestDB()
     val pdlPersonService = mockkClass(PdlPersonService::class)

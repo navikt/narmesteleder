@@ -11,7 +11,6 @@ import no.nav.syfo.pdl.client.model.GetPersonVariables
 class PdlClient(
     private val httpClient: HttpClient,
     private val basePath: String,
-    private val apiKey: String,
     private val graphQlQuery: String
 ) {
     private val temaHeader = "TEMA"
@@ -21,7 +20,6 @@ class PdlClient(
         val getPersonRequest = GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(identer = fnrs))
         return httpClient.post(basePath) {
             body = getPersonRequest
-            header("x-nav-apikey", apiKey)
             header(HttpHeaders.Authorization, "Bearer $stsToken")
             header(temaHeader, tema)
             header(HttpHeaders.ContentType, "application/json")

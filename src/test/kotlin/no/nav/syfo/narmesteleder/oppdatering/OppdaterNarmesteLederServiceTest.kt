@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder.oppdatering
 
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -32,7 +31,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
 
-@KtorExperimentalAPI
 class OppdaterNarmesteLederServiceTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
     val narmesteLederLeesahProducer = mockk<NarmesteLederLeesahProducer>(relaxed = true)

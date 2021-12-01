@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder.oppdatering.kafka
 
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -15,7 +14,6 @@ import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
-@KtorExperimentalAPI
 class NarmesteLederResponseConsumerService(
     private val kafkaConsumer: KafkaConsumer<String, NlResponseKafkaMessage>,
     private val applicationState: ApplicationState,

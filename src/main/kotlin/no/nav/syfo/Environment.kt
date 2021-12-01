@@ -16,7 +16,6 @@ data class Environment(
     val dbHost: String = getEnvVar("NAIS_DATABASE_HOST"),
     val dbPort: String = getEnvVar("NAIS_DATABASE_PORT"),
     val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE"),
-    val pdlApiKey: String = getEnvVar("PDL_API_KEY"),
     val stsApiKey: String? = getEnvVar("STS_API_KEY"),
     val stsUrl: String = getEnvVar("SECURITYTOKENSERVICE_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
