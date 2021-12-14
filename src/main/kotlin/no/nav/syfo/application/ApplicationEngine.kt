@@ -42,6 +42,7 @@ import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserArbeidsgiverApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserArbeidsgiverApiV2
 import no.nav.syfo.pdl.service.PdlPersonService
+import org.slf4j.event.Level
 import java.util.UUID
 
 fun createApplicationEngine(
@@ -84,6 +85,7 @@ fun createApplicationEngine(
             }
         }
         install(CallLogging) {
+            level = Level.TRACE
             mdc("Nav-Callid") { it.callId }
             mdc("Nav-Consumer-Id") { call ->
                 call.request.queryParameters["Nav-Consumer-Id"] ?: "narmesteleder"
