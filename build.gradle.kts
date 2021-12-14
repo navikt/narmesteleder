@@ -24,7 +24,7 @@ val postgresEmbeddedVersion = "0.13.4"
 val swaggerUiVersion = "4.1.2"
 val jedisVersion = "3.6.3"
 val kotlinVersion = "1.6.0"
-val confluentVersion = "5.3.0"
+val confluentVersion = "5.5.0"
 
 plugins {
     id("org.jmailen.kotlinter") version "3.6.0"
