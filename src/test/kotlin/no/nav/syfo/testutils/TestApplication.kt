@@ -17,12 +17,14 @@ import io.ktor.server.testing.TestApplicationEngine
 import no.nav.syfo.Environment
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.log
+import org.slf4j.event.Level
 import java.nio.file.Paths
 import java.util.UUID
 
 fun TestApplicationEngine.setUpTestApplication() {
     start(true)
     application.install(CallLogging) {
+        level = Level.TRACE
         mdc("Nav-Callid") { call ->
             call.request.queryParameters["Nav-Callid"] ?: UUID.randomUUID().toString()
         }
