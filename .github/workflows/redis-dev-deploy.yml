@@ -5,7 +5,7 @@ on:
       - 'nais/redis/redis.yaml'
       - '.github/workflows/redis**'
     branches:
-      - '*'
+      - '**'
       - '!master'
 jobs:
   deploy:
