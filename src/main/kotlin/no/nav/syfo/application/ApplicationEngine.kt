@@ -11,10 +11,8 @@ import io.ktor.application.install
 import io.ktor.auth.authenticate
 import io.ktor.features.CORS
 import io.ktor.features.CallId
-import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
-import io.ktor.features.callId
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
@@ -81,12 +79,6 @@ fun createApplicationEngine(
             retrieveFromHeader("Nav-Callid")
             generate {
                 UUID.randomUUID().toString()
-            }
-        }
-        install(CallLogging) {
-            mdc("Nav-Callid") { it.callId }
-            mdc("Nav-Consumer-Id") { call ->
-                call.request.queryParameters["Nav-Consumer-Id"] ?: "narmesteleder"
             }
         }
         install(StatusPages) {
