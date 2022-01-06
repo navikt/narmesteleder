@@ -11,6 +11,7 @@ import no.nav.syfo.identendring.model.Ident
 import no.nav.syfo.identendring.model.IdentType
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
+import no.nav.syfo.pdl.error.InactiveIdentException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -22,13 +23,14 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlin.test.assertFailsWith
 
 class IdentendringServiceTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
     val narmesteLederLeesahProducer = mockk<NarmesteLederLeesahProducer>(relaxed = true)
     val testDb = TestDB()
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, testDb, narmesteLederLeesahProducer)
-    val identendringService = IdentendringService(testDb, oppdaterNarmesteLederService)
+    val identendringService = IdentendringService(testDb, oppdaterNarmesteLederService, pdlPersonService)
     val sykmeldtFnr = "12345678910"
     val nyttFnrSykmeldt = "316497852"
     val fnrLeder = "10987654321"
@@ -170,6 +172,22 @@ class IdentendringServiceTest : Spek({
                 nlListeNyttFnr[0].orgnummer shouldBeEqualTo "orgnummer"
                 nlListeNyttFnr[0].narmesteLederEpost shouldBeEqualTo "epost@nav.no"
                 nlListeNyttFnr[0].narmesteLederTelefonnummer shouldBeEqualTo "90909090"
+            }
+        }
+
+        it("Kaster feil hvis nytt fnr ikke stemmer med fnr fra PDL") {
+            val identListeMedEndringIFnr = listOf(
+                Ident(idnummer = fnrLeder, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT),
+                Ident(idnummer = nyttFnrLeder, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT)
+            )
+
+            coEvery { pdlPersonService.getPdlPerson(any()) } returns PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")
+
+            runBlocking {
+                assertFailsWith<InactiveIdentException> {
+                    identendringService.oppdaterIdent(identListeMedEndringIFnr)
+                }
+                coVerify(exactly = 0) { narmesteLederLeesahProducer.send(any()) }
             }
         }
     }

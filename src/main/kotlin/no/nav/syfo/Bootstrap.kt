@@ -197,7 +197,7 @@ fun main() {
         env.cluster
     )
 
-    val identendringService = IdentendringService(database, oppdaterNarmesteLederService)
+    val identendringService = IdentendringService(database, oppdaterNarmesteLederService, pdlPersonService)
     val pdlAktorConsumer = PdlAktorConsumer(kafkaConsumerPdlAktor, applicationState, env.pdlAktorTopic, identendringService)
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)

@@ -9,6 +9,7 @@ import no.nav.syfo.log
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.ResponseData
+import no.nav.syfo.pdl.error.PersonNotFoundException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
@@ -68,6 +69,33 @@ class PdlPersonService(
         return personerFraRedis
     }
 
+    suspend fun getPdlPerson(fnr: String, silent: Boolean = false): PdlPerson? {
+        val personerFraRedis = getPersonerFromRedis(listOf(fnr))
+
+        if (!personerFraRedis.containsKey(fnr)) {
+            val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
+
+            val pdlResponse = getPersonsFromPdl(listOf(fnr), accessToken)
+
+            if (pdlResponse.errors != null) {
+                pdlResponse.errors.forEach {
+                    when (silent) {
+                        true -> log.warn("PDL kastet error: {} ", it)
+                        false -> log.error("PDL kastet error: {} ", it)
+                    }
+                }
+            }
+            if (pdlResponse.data.hentIdenterBolk == null || pdlResponse.data.hentIdenterBolk.isNullOrEmpty()) {
+                when (silent) {
+                    true -> log.warn("Fant ikke person i PDL")
+                    false -> log.error("Fant ikke person i PDL")
+                }
+            }
+            return pdlResponse.data.toPdlPersonMap()[fnr]
+        }
+        return personerFraRedis[fnr]
+    }
+
     private suspend fun getPersonsFromPdl(
         fnrs: List<String>,
         stsToken: String
@@ -93,9 +121,9 @@ class PdlPersonService(
     }
 
     private fun ResponseData.toPdlPersonMap(): Map<String, PdlPerson?> {
-        val identMap = hentIdenterBolk!!.map { it.ident to it.identer }.toMap()
+        val identMap = hentIdenterBolk!!.associate { it.ident to it.identer }
 
-        return hentPersonBolk!!.map {
+        return hentPersonBolk!!.associate {
             it.ident to
                 if (it.person?.navn != null && it.person.navn.isNotEmpty()) {
                     PdlPerson(
@@ -106,7 +134,7 @@ class PdlPersonService(
                 } else {
                     null
                 }
-        }.toMap()
+        }
     }
 
     private fun getNavn(navn: no.nav.syfo.pdl.client.model.Navn): Navn =

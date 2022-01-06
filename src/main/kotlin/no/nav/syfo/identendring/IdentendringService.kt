@@ -15,12 +15,16 @@ import no.nav.syfo.narmesteleder.oppdatering.model.Leder
 import no.nav.syfo.narmesteleder.oppdatering.model.NlAvbrutt
 import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 import no.nav.syfo.narmesteleder.oppdatering.model.Sykmeldt
+import no.nav.syfo.pdl.error.InactiveIdentException
+import no.nav.syfo.pdl.error.PersonNotFoundException
+import no.nav.syfo.pdl.service.PdlPersonService
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class IdentendringService(
     private val database: DatabaseInterface,
-    private val oppdaterNarmesteLederService: OppdaterNarmesteLederService
+    private val oppdaterNarmesteLederService: OppdaterNarmesteLederService,
+    private val pdlService: PdlPersonService
 ) {
     suspend fun oppdaterIdent(identListe: List<Ident>) {
         if (harEndretFnr(identListe)) {
@@ -29,6 +33,10 @@ class IdentendringService(
             val tidligereFnr = identListe.filter { it.type == IdentType.FOLKEREGISTERIDENT && !it.gjeldende }
             val erLederForNlKoblinger = tidligereFnr.flatMap { database.finnAktiveNarmestelederkoblinger(it.idnummer) }
             val erAnsattForNlKoblinger = tidligereFnr.flatMap { database.finnAktiveNarmesteledereForSykmeldt(it.idnummer) }
+
+            if (erLederForNlKoblinger.isNotEmpty() || erAnsattForNlKoblinger.isNotEmpty()) {
+                sjekkPDL(nyttFnr)
+            }
 
             erLederForNlKoblinger.forEach {
                 oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
@@ -106,6 +114,18 @@ class IdentendringService(
             }
             if (erAnsattForNlKoblinger.isNotEmpty()) {
                 NYTT_FNR_ANSATT_COUNTER.inc()
+            }
+        }
+    }
+
+    private suspend fun sjekkPDL(nyttFnr: String) {
+        val pdlPerson = pdlService.getPdlPerson(nyttFnr, silent = true)
+        when {
+            pdlPerson == null -> {
+                throw PersonNotFoundException("Fant ikke person i PDL")
+            }
+            pdlPerson.fnr != nyttFnr -> {
+                throw InactiveIdentException("Nytt FNR er ikke aktivt FNR i PDL API")
             }
         }
     }
