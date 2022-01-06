@@ -181,7 +181,7 @@ class IdentendringServiceTest : Spek({
                 Ident(idnummer = nyttFnrLeder, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT)
             )
 
-            coEvery { pdlPersonService.getPdlPerson(any()) } returns PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")
+            coEvery { pdlPersonService.getPerson(any()) } returns PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")
 
             runBlocking {
                 assertFailsWith<InactiveIdentException> {

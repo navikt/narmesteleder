@@ -183,10 +183,15 @@ object PdlPersonServiceTest : Spek({
         }
 
         it("Skal feile når person ikke finnes") {
-            coEvery { pdlClient.getPersoner(any(), any()) } returns GetPersonResponse(ResponseData(hentPersonBolk = emptyList(), hentIdenterBolk = emptyList()), errors = null)
+            coEvery { pdlClient.getPersoner(any(), any()) } returns
+                GetPersonResponse(
+                    ResponseData(hentPersonBolk = emptyList(), hentIdenterBolk = emptyList()),
+                    errors = null
+                )
+
             val exception = assertFailsWith<PersonNotFoundException> {
                 runBlocking {
-                    pdlPersonService.getPdlPerson("123")
+                    pdlPersonService.getPerson("123")
                 }
             }
             exception.message shouldBeEqualTo "Fant ikke person i PDL"

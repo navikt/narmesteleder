@@ -69,7 +69,7 @@ class PdlPersonService(
         return personerFraRedis
     }
 
-    suspend fun getPdlPerson(fnr: String, silent: Boolean = false): PdlPerson? {
+    suspend fun getPerson(fnr: String, silent: Boolean = false): PdlPerson? {
         val personerFraRedis = getPersonerFromRedis(listOf(fnr))
 
         if (!personerFraRedis.containsKey(fnr)) {
@@ -90,6 +90,7 @@ class PdlPersonService(
                     true -> log.warn("Fant ikke person i PDL")
                     false -> log.error("Fant ikke person i PDL")
                 }
+                throw PersonNotFoundException("Fant ikke person i PDL")
             }
             return pdlResponse.data.toPdlPersonMap()[fnr]
         }
