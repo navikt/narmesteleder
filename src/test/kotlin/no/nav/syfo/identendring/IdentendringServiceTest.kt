@@ -26,7 +26,7 @@ import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
 
 class IdentendringServiceTest : Spek({
-    val pdlPersonService = mockk<PdlPersonService>()
+    val pdlPersonService = mockk<PdlPersonService>(relaxed = true)
     val narmesteLederLeesahProducer = mockk<NarmesteLederLeesahProducer>(relaxed = true)
     val testDb = TestDB()
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, testDb, narmesteLederLeesahProducer)
@@ -96,12 +96,17 @@ class IdentendringServiceTest : Spek({
                 ).minusYears(1)
             )
 
+            val aktorId = "1111"
             val identListe = listOf(
                 Ident(idnummer = nyttFnrLeder, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),
-                Ident(idnummer = "1111", gjeldende = true, type = IdentType.AKTORID),
+                Ident(idnummer = aktorId, gjeldende = true, type = IdentType.AKTORID),
                 Ident(idnummer = fnrLeder, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT)
+
             )
+            coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(Navn("Leder", null, "Ledersen"), nyttFnrLeder, aktorId)
+
             runBlocking {
+
                 identendringService.oppdaterIdent(identListe)
 
                 coVerify { pdlPersonService.getPersoner(any(), any()) }
@@ -146,6 +151,9 @@ class IdentendringServiceTest : Spek({
                 ).minusYears(1)
             )
 
+            coEvery { pdlPersonService.getPerson(nyttFnrSykmeldt, any()) } returns PdlPerson(Navn("Sykmeldt", null, "Sykmeldtsen"), nyttFnrSykmeldt, "1111")
+            coEvery { pdlPersonService.getPerson("1111", any()) } returns PdlPerson(Navn("Sykmeldt", null, "Sykmeldtsen"), nyttFnrSykmeldt, "1111")
+
             val identListe = listOf(
                 Ident(idnummer = nyttFnrSykmeldt, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),
                 Ident(idnummer = "1111", gjeldende = true, type = IdentType.AKTORID),
@@ -179,6 +187,13 @@ class IdentendringServiceTest : Spek({
             val identListeMedEndringIFnr = listOf(
                 Ident(idnummer = fnrLeder, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT),
                 Ident(idnummer = nyttFnrLeder, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT)
+            )
+
+            testDb.connection.lagreNarmesteleder(
+                orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true,
+                aktivFom = OffsetDateTime.now(
+                    ZoneOffset.UTC
+                ).minusYears(1)
             )
 
             coEvery { pdlPersonService.getPerson(any()) } returns PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")

@@ -1,31 +1,52 @@
 package no.nav.syfo.testutils
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import no.nav.syfo.Environment
+import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.db.DatabaseInterface
-import org.flywaydb.core.Flyway
+import no.nav.syfo.log
+import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.Connection
 import java.sql.Timestamp
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-class TestDB : DatabaseInterface {
-    private var pg: EmbeddedPostgres? = null
-    override val connection: Connection
-        get() = pg!!.postgresDatabase.connection.apply { autoCommit = false }
+class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
 
-    init {
-        pg = EmbeddedPostgres.start()
-        pg!!.postgresDatabase.connection.use {
-            connection ->
-            connection.prepareStatement("create role cloudsqliamuser;").executeUpdate()
-        }
-        Flyway.configure().run {
-            dataSource(pg?.postgresDatabase).load().migrate()
+class TestDB : DatabaseInterface {
+
+    companion object {
+        private var database: DatabaseInterface
+        private val psqlContainer: PsqlContainer = PsqlContainer()
+            .withExposedPorts(5432)
+            .withUsername("username")
+            .withPassword("password")
+            .withDatabaseName("database")
+            .withInitScript("db/test-db.sql")
+
+        init {
+            psqlContainer.start()
+            val mockEnv = mockk<Environment>(relaxed = true)
+            coEvery { mockEnv.databasePassword } returns "password"
+            coEvery { mockEnv.databaseUsername } returns "username"
+            every { mockEnv.jdbcUrl() } returns psqlContainer.jdbcUrl
+
+            database = try {
+                Database(mockEnv)
+            } catch (ex: Exception) {
+                log.error("error", ex)
+                Database(mockEnv)
+            }
         }
     }
 
+    override val connection: Connection
+        get() = database.connection
+
     fun stop() {
-        pg?.close()
+        this.connection.dropData()
     }
 }
 
