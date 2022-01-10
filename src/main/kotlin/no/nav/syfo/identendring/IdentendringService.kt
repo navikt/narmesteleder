@@ -15,7 +15,6 @@ import no.nav.syfo.narmesteleder.oppdatering.model.Leder
 import no.nav.syfo.narmesteleder.oppdatering.model.NlAvbrutt
 import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 import no.nav.syfo.narmesteleder.oppdatering.model.Sykmeldt
-import no.nav.syfo.pdl.error.InactiveIdentException
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -34,7 +33,7 @@ class IdentendringService(
             val erAnsattForNlKoblinger = tidligereFnr.flatMap { database.finnAktiveNarmesteledereForSykmeldt(it.idnummer) }
 
             if (erLederForNlKoblinger.isNotEmpty() || erAnsattForNlKoblinger.isNotEmpty()) {
-                sjekkPDL(nyttFnr)
+                pdlService.erIdentAktiv(nyttFnr)
             }
 
             erLederForNlKoblinger.forEach {
@@ -114,13 +113,6 @@ class IdentendringService(
             if (erAnsattForNlKoblinger.isNotEmpty()) {
                 NYTT_FNR_ANSATT_COUNTER.inc()
             }
-        }
-    }
-
-    private suspend fun sjekkPDL(nyttFnr: String) {
-        val pdlPerson = pdlService.getPerson(nyttFnr, silent = true)
-        if (pdlPerson?.fnr != nyttFnr) {
-            throw InactiveIdentException("Nytt FNR er ikke aktivt FNR i PDL API")
         }
     }
 

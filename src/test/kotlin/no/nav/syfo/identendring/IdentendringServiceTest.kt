@@ -11,7 +11,6 @@ import no.nav.syfo.identendring.model.Ident
 import no.nav.syfo.identendring.model.IdentType
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
-import no.nav.syfo.pdl.error.InactiveIdentException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -23,7 +22,6 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import kotlin.test.assertFailsWith
 
 class IdentendringServiceTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>(relaxed = true)
@@ -103,7 +101,7 @@ class IdentendringServiceTest : Spek({
                 Ident(idnummer = fnrLeder, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT)
 
             )
-            coEvery { pdlPersonService.getPerson(any(), any()) } returns PdlPerson(Navn("Leder", null, "Ledersen"), nyttFnrLeder, aktorId)
+            coEvery { pdlPersonService.erIdentAktiv(any()) } returns true
 
             runBlocking {
 
@@ -151,8 +149,8 @@ class IdentendringServiceTest : Spek({
                 ).minusYears(1)
             )
 
-            coEvery { pdlPersonService.getPerson(nyttFnrSykmeldt, any()) } returns PdlPerson(Navn("Sykmeldt", null, "Sykmeldtsen"), nyttFnrSykmeldt, "1111")
-            coEvery { pdlPersonService.getPerson("1111", any()) } returns PdlPerson(Navn("Sykmeldt", null, "Sykmeldtsen"), nyttFnrSykmeldt, "1111")
+            coEvery { pdlPersonService.erIdentAktiv(nyttFnrSykmeldt) } returns true
+            coEvery { pdlPersonService.erIdentAktiv("1111") } returns true
 
             val identListe = listOf(
                 Ident(idnummer = nyttFnrSykmeldt, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),
@@ -180,29 +178,6 @@ class IdentendringServiceTest : Spek({
                 nlListeNyttFnr[0].orgnummer shouldBeEqualTo "orgnummer"
                 nlListeNyttFnr[0].narmesteLederEpost shouldBeEqualTo "epost@nav.no"
                 nlListeNyttFnr[0].narmesteLederTelefonnummer shouldBeEqualTo "90909090"
-            }
-        }
-
-        it("Kaster feil hvis nytt fnr ikke stemmer med fnr fra PDL") {
-            val identListeMedEndringIFnr = listOf(
-                Ident(idnummer = fnrLeder, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT),
-                Ident(idnummer = nyttFnrLeder, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT)
-            )
-
-            testDb.connection.lagreNarmesteleder(
-                orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true,
-                aktivFom = OffsetDateTime.now(
-                    ZoneOffset.UTC
-                ).minusYears(1)
-            )
-
-            coEvery { pdlPersonService.getPerson(any()) } returns PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")
-
-            runBlocking {
-                assertFailsWith<InactiveIdentException> {
-                    identendringService.oppdaterIdent(identListeMedEndringIFnr)
-                }
-                coVerify(exactly = 0) { narmesteLederLeesahProducer.send(any()) }
             }
         }
     }

@@ -9,6 +9,7 @@ import no.nav.syfo.log
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.ResponseData
+import no.nav.syfo.pdl.error.InactiveIdentException
 import no.nav.syfo.pdl.error.PersonNotFoundException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
@@ -69,32 +70,26 @@ class PdlPersonService(
         return personerFraRedis
     }
 
-    suspend fun getPerson(fnr: String, silent: Boolean = false): PdlPerson? {
-        val personerFraRedis = getPersonerFromRedis(listOf(fnr))
+    suspend fun erIdentAktiv(fnr: String): Boolean {
 
-        if (!personerFraRedis.containsKey(fnr)) {
-            val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
+        val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
+        val pdlResponse = getPersonsFromPdl(listOf(fnr), accessToken)
 
-            val pdlResponse = getPersonsFromPdl(listOf(fnr), accessToken)
-
-            if (pdlResponse.errors != null) {
-                pdlResponse.errors.forEach {
-                    when (silent) {
-                        true -> log.warn("PDL kastet error: {} ", it)
-                        false -> log.error("PDL kastet error: {} ", it)
-                    }
-                }
+        if (pdlResponse.errors != null) {
+            pdlResponse.errors.forEach {
+                log.warn("PDL kastet error: {} ", it)
             }
-            if (pdlResponse.data.hentIdenterBolk == null || pdlResponse.data.hentIdenterBolk.isNullOrEmpty()) {
-                when (silent) {
-                    true -> log.warn("Fant ikke person i PDL")
-                    false -> log.error("Fant ikke person i PDL")
-                }
-                throw PersonNotFoundException("Fant ikke person i PDL")
-            }
-            return pdlResponse.data.toPdlPersonMap()[fnr]
         }
-        return personerFraRedis[fnr]
+        if (pdlResponse.data.hentIdenterBolk == null || pdlResponse.data.hentIdenterBolk.isNullOrEmpty()) {
+            log.warn("Fant ikke person i PDL")
+            throw PersonNotFoundException("Fant ikke person i PDL")
+        }
+        // Spørring mot PDL er satt opp til å bare returnere aktive identer, og denne sjekken forutsetter dette
+        if (!pdlResponse.data.toPdlPersonMap().containsKey(fnr)) {
+            throw InactiveIdentException("PDL svarer men ident er ikke aktiv")
+        }
+
+        return true
     }
 
     private suspend fun getPersonsFromPdl(
