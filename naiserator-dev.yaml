@@ -97,6 +97,9 @@ spec:
         - application: syfoservice-data-syfosmregister
           namespace: teamsykmelding
           cluster: dev-fss
+        - application: esyfovarsel
+          namespace: team-esyfo
+          cluster: dev-fss
     outbound:
       rules:
         - application: narmesteleder-redis
