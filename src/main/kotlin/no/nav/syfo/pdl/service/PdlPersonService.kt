@@ -9,6 +9,8 @@ import no.nav.syfo.log
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.ResponseData
+import no.nav.syfo.pdl.error.InactiveIdentException
+import no.nav.syfo.pdl.error.PersonNotFoundException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
@@ -68,6 +70,28 @@ class PdlPersonService(
         return personerFraRedis
     }
 
+    suspend fun erIdentAktiv(fnr: String): Boolean {
+
+        val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
+        val pdlResponse = getPersonsFromPdl(listOf(fnr), accessToken)
+
+        if (pdlResponse.errors != null) {
+            pdlResponse.errors.forEach {
+                log.warn("PDL kastet error: {} ", it)
+            }
+        }
+        if (pdlResponse.data.hentIdenterBolk == null || pdlResponse.data.hentIdenterBolk.isNullOrEmpty()) {
+            log.warn("Fant ikke person i PDL")
+            throw PersonNotFoundException("Fant ikke person i PDL")
+        }
+        // Spørring mot PDL er satt opp til å bare returnere aktive identer, og denne sjekken forutsetter dette
+        if (!pdlResponse.data.toPdlPersonMap().containsKey(fnr)) {
+            throw InactiveIdentException("PDL svarer men ident er ikke aktiv")
+        }
+
+        return true
+    }
+
     private suspend fun getPersonsFromPdl(
         fnrs: List<String>,
         stsToken: String
@@ -93,9 +117,9 @@ class PdlPersonService(
     }
 
     private fun ResponseData.toPdlPersonMap(): Map<String, PdlPerson?> {
-        val identMap = hentIdenterBolk!!.map { it.ident to it.identer }.toMap()
+        val identMap = hentIdenterBolk!!.associate { it.ident to it.identer }
 
-        return hentPersonBolk!!.map {
+        return hentPersonBolk!!.associate {
             it.ident to
                 if (it.person?.navn != null && it.person.navn.isNotEmpty()) {
                     PdlPerson(
@@ -106,7 +130,7 @@ class PdlPersonService(
                 } else {
                     null
                 }
-        }.toMap()
+        }
     }
 
     private fun getNavn(navn: no.nav.syfo.pdl.client.model.Navn): Navn =

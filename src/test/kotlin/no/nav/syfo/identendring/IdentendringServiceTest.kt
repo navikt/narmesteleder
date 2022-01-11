@@ -24,11 +24,11 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class IdentendringServiceTest : Spek({
-    val pdlPersonService = mockk<PdlPersonService>()
+    val pdlPersonService = mockk<PdlPersonService>(relaxed = true)
     val narmesteLederLeesahProducer = mockk<NarmesteLederLeesahProducer>(relaxed = true)
     val testDb = TestDB()
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, testDb, narmesteLederLeesahProducer)
-    val identendringService = IdentendringService(testDb, oppdaterNarmesteLederService)
+    val identendringService = IdentendringService(testDb, oppdaterNarmesteLederService, pdlPersonService)
     val sykmeldtFnr = "12345678910"
     val nyttFnrSykmeldt = "316497852"
     val fnrLeder = "10987654321"
@@ -94,12 +94,17 @@ class IdentendringServiceTest : Spek({
                 ).minusYears(1)
             )
 
+            val aktorId = "1111"
             val identListe = listOf(
                 Ident(idnummer = nyttFnrLeder, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),
-                Ident(idnummer = "1111", gjeldende = true, type = IdentType.AKTORID),
+                Ident(idnummer = aktorId, gjeldende = true, type = IdentType.AKTORID),
                 Ident(idnummer = fnrLeder, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT)
+
             )
+            coEvery { pdlPersonService.erIdentAktiv(any()) } returns true
+
             runBlocking {
+
                 identendringService.oppdaterIdent(identListe)
 
                 coVerify { pdlPersonService.getPersoner(any(), any()) }
@@ -143,6 +148,9 @@ class IdentendringServiceTest : Spek({
                     ZoneOffset.UTC
                 ).minusYears(1)
             )
+
+            coEvery { pdlPersonService.erIdentAktiv(nyttFnrSykmeldt) } returns true
+            coEvery { pdlPersonService.erIdentAktiv("1111") } returns true
 
             val identListe = listOf(
                 Ident(idnummer = nyttFnrSykmeldt, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),

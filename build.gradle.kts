@@ -20,7 +20,7 @@ val testContainerKafkaVersion = "1.16.2"
 val postgresVersion = "42.3.1"
 val flywayVersion = "8.1.0"
 val hikariVersion = "5.0.0"
-val postgresEmbeddedVersion = "0.13.4"
+val testContainerPostgresVersion = "1.16.2"
 val swaggerUiVersion = "4.1.2"
 val jedisVersion = "3.6.3"
 val kotlinVersion = "1.6.0"
@@ -93,7 +93,7 @@ dependencies {
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
     testImplementation("org.testcontainers:kafka:$testContainerKafkaVersion")
-    testImplementation("com.opentable.components:otj-pg-embedded:$postgresEmbeddedVersion")
+    testImplementation("org.testcontainers:postgresql:$testContainerPostgresVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }

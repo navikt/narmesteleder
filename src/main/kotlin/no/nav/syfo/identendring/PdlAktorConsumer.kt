@@ -10,6 +10,8 @@ import no.nav.syfo.coroutine.Unbounded
 import no.nav.syfo.identendring.model.Ident
 import no.nav.syfo.identendring.model.IdentType
 import no.nav.syfo.log
+import no.nav.syfo.pdl.error.InactiveIdentException
+import no.nav.syfo.pdl.error.PersonNotFoundException
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -36,7 +38,17 @@ class PdlAktorConsumer(
                 try {
                     runConsumer()
                 } catch (ex: Exception) {
-                    log.error("Error running kafka consumer for pdl-aktor, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
+                    when (ex) {
+                        is InactiveIdentException -> {
+                            log.warn("New ident is inactive in PDL, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
+                        }
+                        is PersonNotFoundException -> {
+                            log.warn("Person not found in PDL, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
+                        }
+                        else -> {
+                            log.error("Error running kafka consumer for pdl-aktor, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
+                        }
+                    }
                     kafkaConsumer.unsubscribe()
                     delay(DELAY_ON_ERROR_SECONDS.seconds)
                 }
@@ -49,13 +61,8 @@ class PdlAktorConsumer(
         log.info("Starting consuming topic $topic")
         while (applicationState.ready) {
             kafkaConsumer.poll(Duration.ofSeconds(POLL_DURATION_SECONDS)).forEach {
-                try {
-                    if (it.value() != null) {
-                        identendringService.oppdaterIdent(it.value().toIdentListe())
-                    }
-                } catch (e: Exception) {
-                    log.error("Noe gikk galt ved mottak av pdl-aktor-melding med offset ${it.offset()}: ${e.message}")
-                    throw e
+                if (it.value() != null) {
+                    identendringService.oppdaterIdent(it.value().toIdentListe())
                 }
             }
         }

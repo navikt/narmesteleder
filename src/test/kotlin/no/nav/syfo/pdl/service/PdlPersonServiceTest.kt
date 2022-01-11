@@ -13,6 +13,8 @@ import no.nav.syfo.pdl.client.model.HentPersonBolk
 import no.nav.syfo.pdl.client.model.PdlIdent
 import no.nav.syfo.pdl.client.model.Person
 import no.nav.syfo.pdl.client.model.ResponseData
+import no.nav.syfo.pdl.error.InactiveIdentException
+import no.nav.syfo.pdl.error.PersonNotFoundException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.redis.NavnRedisModel
@@ -179,6 +181,59 @@ object PdlPersonServiceTest : Spek({
 
                 personer.size shouldBeEqualTo 1001
             }
+        }
+
+        it("Skal feile når person ikke finnes") {
+            coEvery { pdlClient.getPersoner(any(), any()) } returns
+                GetPersonResponse(
+                    ResponseData(hentPersonBolk = emptyList(), hentIdenterBolk = emptyList()),
+                    errors = null
+                )
+
+            val exception = assertFailsWith<PersonNotFoundException> {
+                runBlocking {
+                    pdlPersonService.erIdentAktiv("123")
+                }
+            }
+            exception.message shouldBeEqualTo "Fant ikke person i PDL"
+        }
+
+        it("Skal feile når ident ikke er aktiv") {
+            coEvery { pdlClient.getPersoner(any(), any()) } returns
+                GetPersonResponse(
+                    data = ResponseData(
+                        hentPersonBolk = listOf(
+                            HentPersonBolk(
+                                "123",
+                                Person(
+                                    navn = listOf(
+                                        no.nav.syfo.pdl.client.model.Navn(
+                                            "Fornavn",
+                                            "Mellomnanv",
+                                            "Etternavn"
+                                        )
+                                    )
+                                ),
+                                code = "ok"
+                            )
+                        ),
+                        hentIdenterBolk = listOf(
+                            HentIdenterBolk(
+                                "123",
+                                listOf(PdlIdent("123", "FOLKEREGISTERIDENT"), PdlIdent("234", PdlPersonService.AKTORID)),
+                                code = "ok"
+                            )
+                        )
+                    ),
+                    emptyList()
+                )
+
+            val exception = assertFailsWith<InactiveIdentException> {
+                runBlocking {
+                    pdlPersonService.erIdentAktiv("999")
+                }
+            }
+            exception.message shouldBeEqualTo "PDL svarer men ident er ikke aktiv"
         }
     }
 })
