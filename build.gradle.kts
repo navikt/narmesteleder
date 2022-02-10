@@ -5,22 +5,22 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.5.1"
-val jacksonVersion = "2.13.0"
+val coroutinesVersion = "1.6.0"
+val jacksonVersion = "2.13.1"
 val kluentVersion = "1.68"
-val ktorVersion = "1.6.6"
-val logbackVersion = "1.2.7"
+val ktorVersion = "1.6.7"
+val logbackVersion = "1.2.10"
 val logstashEncoderVersion = "7.0.1"
-val prometheusVersion = "0.12.0"
+val prometheusVersion = "0.14.1"
 val spekVersion = "2.0.17"
 val smCommonVersion = "1.a92720c"
-val mockkVersion = "1.12.1"
-val nimbusdsVersion = "9.15.2"
-val testContainerKafkaVersion = "1.16.2"
-val postgresVersion = "42.3.1"
-val flywayVersion = "8.1.0"
-val hikariVersion = "5.0.0"
-val testContainerPostgresVersion = "1.16.2"
+val mockkVersion = "1.12.2"
+val nimbusdsVersion = "9.18"
+val testContainerKafkaVersion = "1.16.3"
+val postgresVersion = "42.3.2"
+val flywayVersion = "8.4.3"
+val hikariVersion = "5.0.1"
+val testContainerPostgresVersion = "1.16.3"
 val swaggerUiVersion = "4.1.2"
 val jedisVersion = "3.6.3"
 val kotlinVersion = "1.6.0"
@@ -30,7 +30,7 @@ plugins {
     id("org.jmailen.kotlinter") version "3.6.0"
     kotlin("jvm") version "1.6.0"
     id("com.diffplug.spotless") version "5.16.0"
-    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
     id("org.hidetake.swagger.generator") version "2.18.2" apply true
     jacoco
 }
@@ -131,7 +131,7 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "16"
+        kotlinOptions.jvmTarget = "17"
     }
 
     withType<org.hidetake.gradle.swagger.generator.GenerateSwaggerUI> {
