@@ -44,7 +44,13 @@ fun Application.setupAuth(
             verifier(jwkProviderLoginservice, loginserviceIssuer)
             validate { credentials ->
                 when {
-                    hasLoginserviceIdportenClientIdAudience(credentials, env.loginserviceIdportenAudience) && erNiva4(credentials) -> JWTPrincipal(credentials.payload)
+                    hasLoginserviceIdportenClientIdAudience(credentials, env.loginserviceIdportenAudience) && erNiva4(credentials) -> {
+                        val principal = JWTPrincipal(credentials.payload)
+                        BrukerPrincipal(
+                            fnr = finnFnrFraToken(principal),
+                            principal = principal
+                        )
+                    }
                     else -> unauthorized(credentials)
                 }
             }

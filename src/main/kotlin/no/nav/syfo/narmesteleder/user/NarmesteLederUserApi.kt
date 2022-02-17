@@ -2,12 +2,12 @@ package no.nav.syfo.narmesteleder.user
 
 import io.ktor.application.call
 import io.ktor.auth.authentication
-import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
+import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.application.getToken
 import no.nav.syfo.application.metrics.DEAKTIVERT_AV_ANSATT_COUNTER
 import no.nav.syfo.log
@@ -22,8 +22,8 @@ fun Route.registrerNarmesteLederUserApi(
     syforestNarmesteLederService: SyforestNarmesteLederService
 ) {
     post("/{orgnummer}/avkreft") {
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
         val token = call.getToken()!!
         val orgnummer = call.parameters["orgnummer"]?.takeIf { it.isNotEmpty() }
             ?: throw IllegalArgumentException("orgnummer mangler")
@@ -42,8 +42,8 @@ fun Route.registrerNarmesteLederUserApi(
     }
 
     get("/user/sykmeldt/narmesteledere") {
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
         val callId = UUID.randomUUID()
 
         call.respond(
@@ -56,8 +56,8 @@ fun Route.registrerNarmesteLederUserApi(
 
     // tilbyr data på samme format som syforest og vil bli fjernet i fremtiden
     get("/syforest/narmesteledere") {
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
         val callId = UUID.randomUUID()
 
         call.respond(
