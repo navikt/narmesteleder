@@ -45,8 +45,6 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequestKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
-import no.nav.syfo.narmesteleder.organisasjon.client.OrganisasjonsinfoClient
-import no.nav.syfo.narmesteleder.organisasjon.redis.OrganisasjonsinfoRedisService
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -135,8 +133,6 @@ fun main() {
     val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, env.pdlScope)
     val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath, env.aaregApiKey)
     val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, stsOidcClient)
-    val organisasjonsinfoRedisService = OrganisasjonsinfoRedisService(jedisPool, env.redisSecret)
-    val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.registerBasePath, env.eregApiKey, organisasjonsinfoRedisService)
 
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }.toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
@@ -184,8 +180,7 @@ fun main() {
         pdlPersonService = pdlPersonService,
         nlResponseProducer = nlResponseProducer,
         nlRequestProducer = nlRequestProducer,
-        arbeidsgiverService = arbeidsgiverService,
-        organisasjonsinfoClient = organisasjonsinfoClient
+        arbeidsgiverService = arbeidsgiverService
     )
 
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, database, narmesteLederLeesahProducer)

@@ -12,14 +12,12 @@ import no.nav.syfo.application.getToken
 import no.nav.syfo.application.metrics.DEAKTIVERT_AV_ANSATT_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederService
-import no.nav.syfo.narmesteleder.SyforestNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import java.util.UUID
 
 fun Route.registrerNarmesteLederUserApi(
     deaktiverNarmesteLederService: DeaktiverNarmesteLederService,
-    utvidetNarmesteLederService: NarmesteLederService,
-    syforestNarmesteLederService: SyforestNarmesteLederService
+    utvidetNarmesteLederService: NarmesteLederService
 ) {
     post("/{orgnummer}/avkreft") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
@@ -49,20 +47,6 @@ fun Route.registrerNarmesteLederUserApi(
         call.respond(
             utvidetNarmesteLederService.hentNarmesteLedereForAnsatt(
                 sykmeldtFnr = fnr,
-                callId = callId.toString()
-            )
-        )
-    }
-
-    // tilbyr data på samme format som syforest og vil bli fjernet i fremtiden
-    get("/syforest/narmesteledere") {
-        val principal: BrukerPrincipal = call.authentication.principal()!!
-        val fnr = principal.fnr
-        val callId = UUID.randomUUID()
-
-        call.respond(
-            syforestNarmesteLederService.hentAktiveNarmesteLedere(
-                fnr = fnr,
                 callId = callId.toString()
             )
         )
