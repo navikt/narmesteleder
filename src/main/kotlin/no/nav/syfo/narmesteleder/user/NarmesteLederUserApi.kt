@@ -2,28 +2,26 @@ package no.nav.syfo.narmesteleder.user
 
 import io.ktor.application.call
 import io.ktor.auth.authentication
-import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
+import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.application.getToken
 import no.nav.syfo.application.metrics.DEAKTIVERT_AV_ANSATT_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederService
-import no.nav.syfo.narmesteleder.SyforestNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import java.util.UUID
 
 fun Route.registrerNarmesteLederUserApi(
     deaktiverNarmesteLederService: DeaktiverNarmesteLederService,
-    utvidetNarmesteLederService: NarmesteLederService,
-    syforestNarmesteLederService: SyforestNarmesteLederService
+    utvidetNarmesteLederService: NarmesteLederService
 ) {
     post("/{orgnummer}/avkreft") {
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
         val token = call.getToken()!!
         val orgnummer = call.parameters["orgnummer"]?.takeIf { it.isNotEmpty() }
             ?: throw IllegalArgumentException("orgnummer mangler")
@@ -42,27 +40,13 @@ fun Route.registrerNarmesteLederUserApi(
     }
 
     get("/user/sykmeldt/narmesteledere") {
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
         val callId = UUID.randomUUID()
 
         call.respond(
             utvidetNarmesteLederService.hentNarmesteLedereForAnsatt(
                 sykmeldtFnr = fnr,
-                callId = callId.toString()
-            )
-        )
-    }
-
-    // tilbyr data på samme format som syforest og vil bli fjernet i fremtiden
-    get("/syforest/narmesteledere") {
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject
-        val callId = UUID.randomUUID()
-
-        call.respond(
-            syforestNarmesteLederService.hentAktiveNarmesteLedere(
-                fnr = fnr,
                 callId = callId.toString()
             )
         )

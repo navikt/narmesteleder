@@ -122,23 +122,6 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
-  /syforest/narmesteledere:
-    get:
-      summary: henter nærmeste ledere for fnr i access_token på syforest-format
-      operationId: getNarmestelederForSykmeldtUserSyforest
-      tags:
-        - Narmesteleder sykmeldt api
-      security:
-        - bearerAuth: [ ]
-      responses:
-        '200':
-          $ref: '#/components/responses/SyforestNarmesteLederListeResponse'
-        '400':
-          description: Bad request
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
   /arbeidsgiver/{orgnummer}/avkreft:
     post:
       summary: avkrefter aktiv leder-relasjon for angitt orgnummer og sykmeldt-fnr for leder-fnr i access_token
@@ -257,14 +240,6 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/NarmesteLeder'
-    SyforestNarmesteLederListeResponse:
-      description: "SyforestNarmesteLeder response"
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/SyforestNarmesteLeder'
     AnsatteResponse:
       description: "Ansatte response"
       content:
@@ -418,34 +393,6 @@ components:
         narmestelederId:
           type: string
           description: ID på denne koblingen mellom ansatt og leder
-
-    SyforestNarmesteLeder:
-      type: object
-      required:
-        - aktoerId
-        - navn
-        - epost
-        - mobil
-        - orgnummer
-        - organisasjonsnavn
-      properties:
-        aktoerId:
-          type: string
-        navn:
-          type: string
-        epost:
-          type: string
-        mobil:
-          type: string
-        orgnummer:
-          type: string
-        organisasjonsnavn:
-          type: string
-        aktivTom:
-          $ref: '#/components/schemas/Date'
-        arbeidsgiverForskuttererLoenn:
-          type: boolean
-
     Forskuttering:
       type: string
       enum: [JA,

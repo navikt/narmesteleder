@@ -2,12 +2,12 @@ package no.nav.syfo.narmesteleder.user
 
 import io.ktor.application.call
 import io.ktor.auth.authentication
-import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
+import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.application.getToken
 import no.nav.syfo.application.metrics.DEAKTIVERT_AV_LEDER_COUNTER
 import no.nav.syfo.log
@@ -22,16 +22,16 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApi(
     narmesteLederService: NarmesteLederService
 ) {
     get("/arbeidsgiver/ansatte") {
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
         val callId = UUID.randomUUID()
         val lederRelasjoner = narmesteLederService.getAnsatte(fnr, callId.toString())
         call.respond(AnsattResponse(lederRelasjoner.map { it.toAnsatt() }))
     }
 
     get("/arbeidsgiver/ansatt/{narmestelederId}") {
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject!!
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
         val narmestelederId = try {
             UUID.fromString(call.parameters["narmestelederId"])
         } catch (ex: IllegalArgumentException) {
@@ -47,8 +47,8 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApi(
     }
 
     post("/arbeidsgiver/{orgnummer}/avkreft") {
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnrLeder = principal.payload.subject
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnrLeder = principal.fnr
         val token = call.getToken()!!
         val orgnummer = call.parameters["orgnummer"]?.takeIf { it.isNotEmpty() }
             ?: throw IllegalArgumentException("orgnummer mangler")

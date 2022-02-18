@@ -31,12 +31,10 @@ import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.forskuttering.registrerForskutteringApi
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederService
-import no.nav.syfo.narmesteleder.SyforestNarmesteLederService
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
-import no.nav.syfo.narmesteleder.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.narmesteleder.registrerNarmesteLederApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserArbeidsgiverApi
@@ -57,8 +55,7 @@ fun createApplicationEngine(
     pdlPersonService: PdlPersonService,
     nlResponseProducer: NLResponseProducer,
     nlRequestProducer: NLRequestProducer,
-    arbeidsgiverService: ArbeidsgiverService,
-    organisasjonsinfoClient: OrganisasjonsinfoClient
+    arbeidsgiverService: ArbeidsgiverService
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -112,7 +109,6 @@ fun createApplicationEngine(
 
         val narmesteLederService = NarmesteLederService(database, pdlPersonService)
         val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, nlRequestProducer, arbeidsgiverService, pdlPersonService, database)
-        val syforestNarmesteLederService = SyforestNarmesteLederService(narmesteLederService, organisasjonsinfoClient)
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {
@@ -123,7 +119,7 @@ fun createApplicationEngine(
                 registrerNarmesteLederApi(database, narmesteLederService)
             }
             authenticate("loginservice") {
-                registrerNarmesteLederUserApi(deaktiverNarmesteLederService, narmesteLederService, syforestNarmesteLederService)
+                registrerNarmesteLederUserApi(deaktiverNarmesteLederService, narmesteLederService)
                 registrerNarmesteLederUserArbeidsgiverApi(deaktiverNarmesteLederService, narmesteLederService)
             }
             authenticate("tokenx") {
