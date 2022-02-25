@@ -6,6 +6,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.getAnsatte
@@ -21,6 +22,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
+@DelicateCoroutinesApi
 class NarmesteLederServiceTest : Spek({
 
     val database = mockk<DatabaseInterface>(relaxed = true)

@@ -23,6 +23,7 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
@@ -31,9 +32,7 @@ import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.forskuttering.registrerForskutteringApi
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederService
-import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
-import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.registrerNarmesteLederApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApi
@@ -43,6 +42,7 @@ import no.nav.syfo.pdl.service.PdlPersonService
 import org.slf4j.event.Level
 import java.util.UUID
 
+@DelicateCoroutinesApi
 fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
@@ -53,9 +53,7 @@ fun createApplicationEngine(
     tokenXIssuer: String,
     database: Database,
     pdlPersonService: PdlPersonService,
-    nlResponseProducer: NLResponseProducer,
-    nlRequestProducer: NLRequestProducer,
-    arbeidsgiverService: ArbeidsgiverService
+    nlResponseProducer: NLResponseProducer
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -108,7 +106,7 @@ fun createApplicationEngine(
         }
 
         val narmesteLederService = NarmesteLederService(database, pdlPersonService)
-        val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, nlRequestProducer, arbeidsgiverService, pdlPersonService, database)
+        val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, database)
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {

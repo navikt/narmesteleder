@@ -11,6 +11,7 @@ import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.Navn
@@ -34,6 +35,7 @@ import java.util.UUID
 const val sykmeldtFnr = "fnr"
 const val fnrLeder = "123"
 
+@DelicateCoroutinesApi
 class NarmesteLederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
     val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)

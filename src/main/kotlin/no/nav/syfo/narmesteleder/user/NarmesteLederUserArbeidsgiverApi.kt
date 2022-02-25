@@ -7,8 +7,8 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
+import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.BrukerPrincipal
-import no.nav.syfo.application.getToken
 import no.nav.syfo.application.metrics.DEAKTIVERT_AV_LEDER_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederService
@@ -17,6 +17,7 @@ import no.nav.syfo.narmesteleder.leder.model.toAnsatt
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import java.util.UUID
 
+@DelicateCoroutinesApi
 fun Route.registrerNarmesteLederUserArbeidsgiverApi(
     deaktiverNarmesteLederService: DeaktiverNarmesteLederService,
     narmesteLederService: NarmesteLederService
@@ -40,7 +41,7 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApi(
             return@get
         }
         val callId = UUID.randomUUID().toString()
-        when (val relasjon = narmesteLederService.getAnsatt(fnr, narmestelederId, callId, "Bearer ${call.getToken()!!}")) {
+        when (val relasjon = narmesteLederService.getAnsatt(fnr, narmestelederId, callId)) {
             null -> call.respond(HttpStatusCode.NotFound)
             else -> call.respond(relasjon.toAnsatt())
         }
@@ -49,7 +50,6 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApi(
     post("/arbeidsgiver/{orgnummer}/avkreft") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnrLeder = principal.fnr
-        val token = call.getToken()!!
         val orgnummer = call.parameters["orgnummer"]?.takeIf { it.isNotEmpty() }
             ?: throw IllegalArgumentException("orgnummer mangler")
         val fnrSykmeldt: String = call.request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
@@ -60,7 +60,6 @@ fun Route.registrerNarmesteLederUserArbeidsgiverApi(
             fnrLeder = fnrLeder,
             orgnummer = orgnummer,
             fnrSykmeldt = fnrSykmeldt,
-            token = "Bearer $token",
             callId = callId
         )
         log.info("Nærmeste leder har deaktivert NL-kobling for orgnummer $orgnummer, $callId")

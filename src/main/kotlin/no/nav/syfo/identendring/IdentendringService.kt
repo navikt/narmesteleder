@@ -1,5 +1,6 @@
 package no.nav.syfo.identendring
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.application.metrics.NYTT_FNR_ANSATT_COUNTER
 import no.nav.syfo.application.metrics.NYTT_FNR_LEDER_COUNTER
@@ -19,6 +20,7 @@ import no.nav.syfo.pdl.service.PdlPersonService
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
+@DelicateCoroutinesApi
 class IdentendringService(
     private val database: DatabaseInterface,
     private val oppdaterNarmesteLederService: OppdaterNarmesteLederService,

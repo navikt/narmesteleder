@@ -4,12 +4,15 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.db.finnAktiveNarmestelederkoblinger
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.identendring.model.Ident
 import no.nav.syfo.identendring.model.IdentType
+import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
+import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
@@ -23,11 +26,14 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
+@DelicateCoroutinesApi
 class IdentendringServiceTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>(relaxed = true)
     val narmesteLederLeesahProducer = mockk<NarmesteLederLeesahProducer>(relaxed = true)
+    val nlRequestProducer = mockk<NLRequestProducer>(relaxed = true)
+    val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)
     val testDb = TestDB()
-    val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, testDb, narmesteLederLeesahProducer)
+    val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, arbeidsgiverService, testDb, narmesteLederLeesahProducer, nlRequestProducer)
     val identendringService = IdentendringService(testDb, oppdaterNarmesteLederService, pdlPersonService)
     val sykmeldtFnr = "12345678910"
     val nyttFnrSykmeldt = "316497852"
@@ -35,13 +41,14 @@ class IdentendringServiceTest : Spek({
     val nyttFnrLeder = "89764521"
 
     beforeEachTest {
-        clearMocks(pdlPersonService, narmesteLederLeesahProducer)
+        clearMocks(pdlPersonService, arbeidsgiverService, narmesteLederLeesahProducer, nlRequestProducer)
         coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
             Pair(fnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
             Pair(nyttFnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
             Pair(sykmeldtFnr, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2")),
             Pair(nyttFnrSykmeldt, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2"))
         )
+        coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()
     }
     afterEachTest {
         testDb.connection.dropData()

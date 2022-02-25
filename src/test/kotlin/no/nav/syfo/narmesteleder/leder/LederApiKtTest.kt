@@ -10,6 +10,7 @@ import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.db.getAnsatte
 import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiverinfo
@@ -38,6 +39,7 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.util.UUID
 
+@DelicateCoroutinesApi
 class LederApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
     val testDb = TestDB()
@@ -208,8 +210,8 @@ class LederApiKtTest : Spek({
                     val relasjon: Ansatt? = response.content?.let { objectMapper.readValue(it) }
                     relasjon shouldNotBe null
                     relasjon!!.narmestelederId shouldBeEqualTo nlId
-                    relasjon!!.fnr shouldBeEqualTo sykmeldtFnr
-                    relasjon!!.orgnummer shouldBeEqualTo "orgnummer"
+                    relasjon.fnr shouldBeEqualTo sykmeldtFnr
+                    relasjon.orgnummer shouldBeEqualTo "orgnummer"
                 }
             }
 

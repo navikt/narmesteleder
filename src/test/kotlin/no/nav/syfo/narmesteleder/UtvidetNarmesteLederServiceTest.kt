@@ -3,6 +3,7 @@ package no.nav.syfo.narmesteleder
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockkClass
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
@@ -16,6 +17,7 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
+@DelicateCoroutinesApi
 class UtvidetNarmesteLederServiceTest : Spek({
     val testDb = TestDB()
     val pdlPersonService = mockkClass(PdlPersonService::class)

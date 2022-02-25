@@ -1,6 +1,7 @@
 package no.nav.syfo.narmesteleder.arbeidsforhold.service
 
 import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsforhold
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiverinfo
@@ -10,13 +11,17 @@ class ArbeidsgiverService(
     private val arbeidsforholdClient: ArbeidsforholdClient,
     private val stsOidcClient: StsOidcClient
 ) {
-    suspend fun getArbeidsgivere(fnr: String, token: String, forespurtAvAnsatt: Boolean): List<Arbeidsgiverinfo> {
+    suspend fun getArbeidsgivere(fnr: String, token: String?, forespurtAvAnsatt: Boolean): List<Arbeidsgiverinfo> {
+        if (forespurtAvAnsatt && token == null) {
+            log.error("Mangler token for henting av arbeidsgivere")
+            throw IllegalStateException("Mangler token for henting av arbeidsgivere")
+        }
         val stsToken = stsOidcClient.oidcToken()
         val ansettelsesperiodeFom = LocalDate.now().minusMonths(4)
         val arbeidsgivere = arbeidsforholdClient.getArbeidsforhold(
             fnr = fnr,
             ansettelsesperiodeFom = ansettelsesperiodeFom,
-            token = if (forespurtAvAnsatt) { token } else { "Bearer ${stsToken.access_token}" },
+            token = if (forespurtAvAnsatt) { token!! } else { "Bearer ${stsToken.access_token}" },
             stsToken = stsToken.access_token
         )
 

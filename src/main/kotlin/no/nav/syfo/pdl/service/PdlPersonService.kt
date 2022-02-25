@@ -1,5 +1,6 @@
 package no.nav.syfo.pdl.service
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -17,6 +18,7 @@ import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.redis.toPdlPerson
 import no.nav.syfo.pdl.redis.toPdlPersonRedisModel
 
+@DelicateCoroutinesApi
 class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,
