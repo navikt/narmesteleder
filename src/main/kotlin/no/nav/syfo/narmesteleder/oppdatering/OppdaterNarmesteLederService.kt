@@ -1,5 +1,6 @@
 package no.nav.syfo.narmesteleder.oppdatering
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.deaktiverNarmesteLeder
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
@@ -7,6 +8,8 @@ import no.nav.syfo.db.lagreNarmesteLeder
 import no.nav.syfo.db.oppdaterNarmesteLeder
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
+import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
+import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_ARBEIDSFORHOLD
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_ARBEIDSTAKER
@@ -15,16 +18,23 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_LEDER
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_NY_LEDER
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NY_LEDER
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NarmesteLederLeesah
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlKafkaMetadata
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequest
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequestKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
+import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
+@DelicateCoroutinesApi
 class OppdaterNarmesteLederService(
     private val pdlPersonService: PdlPersonService,
+    private val arbeidsgiverService: ArbeidsgiverService,
     private val database: DatabaseInterface,
-    private val narmesteLederLeesahProducer: NarmesteLederLeesahProducer
+    private val narmesteLederLeesahProducer: NarmesteLederLeesahProducer,
+    private val nlRequestProducer: NLRequestProducer
 ) {
 
     suspend fun handterMottattNarmesteLederOppdatering(
@@ -48,7 +58,7 @@ class OppdaterNarmesteLederService(
             }
             nlResponseKafkaMessage.nlAvbrutt != null -> {
                 val narmesteLedere = database.finnAlleNarmesteledereForSykmeldt(fnr = nlResponseKafkaMessage.nlAvbrutt.sykmeldtFnr, orgnummer = nlResponseKafkaMessage.nlAvbrutt.orgnummer)
-                deaktiverTidligereLedere(narmesteLedere, nlResponseKafkaMessage.nlAvbrutt.aktivTom, callId, nlResponseKafkaMessage.kafkaMetadata.source)
+                deaktiverTidligereLedereVedAvbryting(narmesteLedere, nlResponseKafkaMessage.nlAvbrutt.aktivTom, callId, nlResponseKafkaMessage.kafkaMetadata.source)
             }
             else -> {
                 log.error("Har mottatt nl-response som ikke er ny eller avbrutt")
@@ -125,6 +135,52 @@ class OppdaterNarmesteLederService(
                         status = getStatusFromSource(source)
                     )
                 )
+            }
+    }
+
+    private suspend fun deaktiverTidligereLedereVedAvbryting(narmesteLedere: List<NarmesteLederRelasjon>, aktivTom: OffsetDateTime, callId: String, source: String) {
+        log.info("Deaktiverer ${narmesteLedere.size} nærmeste ledere som følge av avbryting $callId")
+        narmesteLedere.filter { it.aktivTom == null }
+            .forEach {
+                val aktivtArbeidsforhold = arbeidsgiverService.getArbeidsgivere(fnr = it.fnr, token = null, forespurtAvAnsatt = false)
+                    .firstOrNull { arbeidsgiverinfo -> arbeidsgiverinfo.orgnummer == it.orgnummer && arbeidsgiverinfo.aktivtArbeidsforhold }
+
+                database.deaktiverNarmesteLeder(narmesteLederId = it.narmesteLederId, aktivTom = aktivTom)
+                narmesteLederLeesahProducer.send(
+                    NarmesteLederLeesah(
+                        narmesteLederId = it.narmesteLederId,
+                        fnr = it.fnr,
+                        orgnummer = it.orgnummer,
+                        narmesteLederFnr = it.narmesteLederFnr,
+                        narmesteLederTelefonnummer = it.narmesteLederTelefonnummer,
+                        narmesteLederEpost = it.narmesteLederEpost,
+                        aktivFom = it.aktivFom,
+                        aktivTom = aktivTom.toLocalDate(),
+                        arbeidsgiverForskutterer = it.arbeidsgiverForskutterer,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                        status = getStatusFromSource(source)
+                    )
+                )
+                if (aktivtArbeidsforhold != null) {
+                    log.info("Ber om ny nærmeste leder siden arbeidsforhold er aktivt, $callId")
+                    val navn = pdlPersonService.getPersoner(fnrs = listOf(it.fnr), callId = callId)[it.fnr]?.navn
+
+                    nlRequestProducer.send(
+                        NlRequestKafkaMessage(
+                            nlRequest = NlRequest(
+                                requestId = UUID.fromString(callId),
+                                sykmeldingId = null,
+                                fnr = it.fnr,
+                                orgnr = it.orgnummer,
+                                name = navn?.toFormattedNameString() ?: throw RuntimeException("Fant ikke navn på ansatt i PDL $callId")
+                            ),
+                            metadata = NlKafkaMetadata(
+                                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                                source = source
+                            )
+                        )
+                    )
+                }
             }
     }
 

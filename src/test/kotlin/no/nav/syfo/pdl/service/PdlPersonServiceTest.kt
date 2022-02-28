@@ -4,6 +4,7 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockkClass
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.client.AccessTokenClientV2
 import no.nav.syfo.pdl.client.PdlClient
@@ -25,6 +26,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertFailsWith
 
+@DelicateCoroutinesApi
 object PdlPersonServiceTest : Spek({
     val pdlClient = mockkClass(PdlClient::class)
     val accessTokenClientV2 = mockkClass(AccessTokenClientV2::class)

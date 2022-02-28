@@ -21,7 +21,7 @@ fun Navn.toFormattedNameString(): String {
 }
 
 private fun capitalizeFirstLetter(string: String): String {
-    return string.toLowerCase()
+    return string.lowercase()
         .split(" ").joinToString(" ") { it.capitalize() }
         .split("-").joinToString("-") { it.capitalize() }.trimEnd()
 }

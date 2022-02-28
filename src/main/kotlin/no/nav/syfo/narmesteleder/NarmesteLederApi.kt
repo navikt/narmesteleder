@@ -5,6 +5,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
+import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.db.finnAktiveNarmestelederkoblinger
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
@@ -12,6 +13,7 @@ import no.nav.syfo.db.finnNarmestelederForSykmeldt
 import no.nav.syfo.log
 import org.slf4j.MDC
 
+@DelicateCoroutinesApi
 fun Route.registrerNarmesteLederApi(
     database: DatabaseInterface,
     utvidetNarmesteLederService: NarmesteLederService

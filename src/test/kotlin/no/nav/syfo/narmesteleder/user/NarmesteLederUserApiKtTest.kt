@@ -6,13 +6,11 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.narmesteleder.NarmesteLederService
-import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
-import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.testutils.generateJWTLoginservice
@@ -22,22 +20,16 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
+@DelicateCoroutinesApi
 class NarmesteLederUserApiKtTest : Spek({
     val nlResponseProducer = mockk<NLResponseProducer>(relaxed = true)
-    val nlRequestProducer = mockk<NLRequestProducer>(relaxed = true)
-    val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)
     val pdlPersonService = mockk<PdlPersonService>()
     val database = mockk<DatabaseInterface>()
     val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(
         nlResponseProducer,
-        nlRequestProducer,
-        arbeidsgiverService,
-        pdlPersonService,
         database
     )
     val utvidetNarmesteLederService = NarmesteLederService(database, pdlPersonService)
-
-    coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()
 
     describe("API for å deaktivere den sykmeldtes nærmeste leder - autentisering") {
         with(TestApplicationEngine()) {

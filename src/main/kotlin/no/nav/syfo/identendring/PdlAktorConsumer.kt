@@ -19,6 +19,7 @@ import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
+@DelicateCoroutinesApi
 class PdlAktorConsumer(
     private val kafkaConsumer: KafkaConsumer<String, GenericRecord>,
     private val applicationState: ApplicationState,
@@ -31,7 +32,6 @@ class PdlAktorConsumer(
     }
 
     @ExperimentalTime
-    @DelicateCoroutinesApi
     fun startConsumer() {
         GlobalScope.launch(Dispatchers.Unbounded) {
             while (applicationState.ready) {

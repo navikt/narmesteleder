@@ -18,6 +18,7 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.get
 import io.ktor.network.sockets.SocketTimeoutException
 import io.prometheus.client.hotspot.DefaultExports
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
@@ -71,6 +72,7 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
     configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 }
 
+@DelicateCoroutinesApi
 @ExperimentalTime
 fun main() {
     val env = Environment()
@@ -178,12 +180,10 @@ fun main() {
         tokenXIssuer = wellKnownTokenX.issuer,
         database = database,
         pdlPersonService = pdlPersonService,
-        nlResponseProducer = nlResponseProducer,
-        nlRequestProducer = nlRequestProducer,
-        arbeidsgiverService = arbeidsgiverService
+        nlResponseProducer = nlResponseProducer
     )
 
-    val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, database, narmesteLederLeesahProducer)
+    val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, arbeidsgiverService, database, narmesteLederLeesahProducer, nlRequestProducer)
     val narmesteLederResponseConsumerService = NarmesteLederResponseConsumerService(
         kafkaConsumer,
         applicationState,

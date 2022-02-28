@@ -1,5 +1,6 @@
 package no.nav.syfo.narmesteleder.oppdatering.kafka
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -14,6 +15,7 @@ import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
+@DelicateCoroutinesApi
 class NarmesteLederResponseConsumerService(
     private val kafkaConsumer: KafkaConsumer<String, NlResponseKafkaMessage>,
     private val applicationState: ApplicationState,
@@ -28,7 +30,7 @@ class NarmesteLederResponseConsumerService(
         private const val POLL_DURATION_SECONDS = 10L
     }
 
-    @OptIn(ExperimentalTime::class)
+    @ExperimentalTime
     fun startConsumer() {
         GlobalScope.launch(Dispatchers.Unbounded) {
             while (applicationState.ready) {
@@ -37,7 +39,7 @@ class NarmesteLederResponseConsumerService(
                 } catch (ex: Exception) {
                     log.error("Error running kafka consumer, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
                     kafkaConsumer.unsubscribe()
-                    delay(seconds(DELAY_ON_ERROR_SECONDS))
+                    delay(DELAY_ON_ERROR_SECONDS.seconds)
                 }
             }
         }
