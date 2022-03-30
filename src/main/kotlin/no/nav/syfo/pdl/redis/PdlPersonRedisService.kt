@@ -10,7 +10,7 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(PdlPersonRedisService::class.java)
-        private const val redisTimeoutSeconds: Int = 3600
+        private const val redisTimeoutSeconds: Long = 3600
         private const val prefix = "PDL"
     }
 

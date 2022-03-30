@@ -26,7 +26,6 @@ import no.nav.syfo.application.client.AccessTokenClientV2
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.exception.ServiceUnavailableException
-import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.identendring.IdentendringService
 import no.nav.syfo.identendring.PdlAktorConsumer
 import no.nav.syfo.kafka.aiven.KafkaUtils
@@ -120,12 +119,6 @@ fun main() {
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
-    val stsOidcClient = StsOidcClient(
-        username = vaultSecrets.serviceuserUsername,
-        password = vaultSecrets.serviceuserPassword,
-        stsUrl = env.stsUrl,
-        apiKey = env.stsApiKey
-    )
     val pdlClient = PdlClient(
         httpClient,
         env.pdlGraphqlPath,
@@ -133,8 +126,8 @@ fun main() {
     )
     val pdlPersonRedisService = PdlPersonRedisService(jedisPool, env.redisSecret)
     val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, env.pdlScope)
-    val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath, env.aaregApiKey)
-    val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, stsOidcClient)
+    val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl)
+    val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, accessTokenClientV2, env.aaregScope)
 
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }.toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
