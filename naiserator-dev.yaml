@@ -106,15 +106,16 @@ spec:
       external:
         - host: pdl-api.dev-fss-pub.nais.io
         - host: kafka-schema-registry.nais-q.adeo.no
+        - host: aareg-services-q1.dev-fss-pub.nais.io
   env:
-    - name: SECURITYTOKENSERVICE_URL
-      value: https://api-gw-q1.oera.no/security-token-service/rest/v1/sts/token
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
     - name: KAFKA_CLIENT_ID
       value: narmesteleder
-    - name: REGISTER_BASE_PATH
-      value: https://api-gw-q1.oera.no
+    - name: AAREG_URL
+      value: https://aareg-services-q1.dev-fss-pub.nais.io
+    - name: AAREG_SCOPE
+      value: api://dev-fss.arbeidsforhold.aareg-services-nais-q1/.default
     - name: ALLOWED_ORIGIN
       value: tjenester-q1.nav.no,www-gcp.dev.nav.no,narmesteleder.dev.nav.no
     - name: KAFKA_BOOTSTRAP_SERVERS_URL

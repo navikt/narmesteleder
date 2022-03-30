@@ -4,8 +4,7 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.OidcToken
-import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.application.client.AccessTokenClientV2
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Ansettelsesperiode
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsforhold
@@ -19,10 +18,10 @@ import java.time.LocalDate
 
 class ArbeidsgiverServiceTest : Spek({
     val arbeidsforholdClient = mockk<ArbeidsforholdClient>()
-    val stsOidcToken = mockk<StsOidcClient>()
-    val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, stsOidcToken)
+    val accessTokenClientV2 = mockk<AccessTokenClientV2>()
+    val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, accessTokenClientV2, "scope")
 
-    coEvery { stsOidcToken.oidcToken() } returns OidcToken("token", "jwt", 1L)
+    coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
 
     beforeEachTest {
         clearMocks(arbeidsforholdClient)
@@ -30,7 +29,7 @@ class ArbeidsgiverServiceTest : Spek({
 
     describe("Test ArbeidsgiverService") {
         it("arbeidsgiverService returnerer arbeidsforhold") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns getArbeidsgiverforhold()
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns getArbeidsgiverforhold()
             runBlocking {
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
@@ -40,7 +39,7 @@ class ArbeidsgiverServiceTest : Spek({
             }
         }
         it("arbeidsgiverService returnerer tom liste hvis bruker ikke har arbeidsforhold") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns emptyList()
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns emptyList()
             runBlocking {
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", forespurtAvAnsatt = true)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 0
@@ -48,7 +47,7 @@ class ArbeidsgiverServiceTest : Spek({
         }
         it("Viser arbeidsforhold som ikke aktivt hvis tom for ansettelsesperiode er tidligere enn i dag") {
             coEvery {
-                arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any())
+                arbeidsforholdClient.getArbeidsforhold(any(), any(), any())
             } returns getArbeidsgiverforhold(
                 Ansettelsesperiode(Periode(fom = LocalDate.now().minusYears(1), tom = LocalDate.now().minusDays(1)))
             )
@@ -60,7 +59,7 @@ class ArbeidsgiverServiceTest : Spek({
         }
         it("Viser arbeidsforhold som aktivt hvis tom for ansettelsesperiode er i fremtiden") {
             coEvery {
-                arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any())
+                arbeidsforholdClient.getArbeidsforhold(any(), any(), any())
             } returns getArbeidsgiverforhold(
                 Ansettelsesperiode(Periode(fom = LocalDate.now().minusYears(1), tom = LocalDate.now().plusDays(10)))
             )
@@ -71,7 +70,7 @@ class ArbeidsgiverServiceTest : Spek({
             }
         }
         it("arbeidsgiverService filtrerer bort duplikate arbeidsforhold for samme orgnummer") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
@@ -101,7 +100,7 @@ class ArbeidsgiverServiceTest : Spek({
             }
         }
         it("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold for samme orgnummer") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
@@ -124,7 +123,7 @@ class ArbeidsgiverServiceTest : Spek({
             }
         }
         it("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold der alle har satt tom-dato for samme orgnummer") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
