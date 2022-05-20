@@ -37,8 +37,6 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.registrerNarmesteLederApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApiV2
-import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserArbeidsgiverApi
-import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserArbeidsgiverApiV2
 import no.nav.syfo.pdl.service.PdlPersonService
 import org.slf4j.event.Level
 import java.util.UUID
@@ -107,7 +105,7 @@ fun createApplicationEngine(
         }
 
         val narmesteLederService = NarmesteLederService(database, pdlPersonService)
-        val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer, database)
+        val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer)
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {
@@ -119,10 +117,8 @@ fun createApplicationEngine(
             }
             authenticate("loginservice") {
                 registrerNarmesteLederUserApi(deaktiverNarmesteLederService, narmesteLederService)
-                registrerNarmesteLederUserArbeidsgiverApi(deaktiverNarmesteLederService, narmesteLederService)
             }
             authenticate("tokenx") {
-                registrerNarmesteLederUserArbeidsgiverApiV2(narmesteLederService)
                 registrerNarmesteLederUserApiV2(deaktiverNarmesteLederService, narmesteLederService)
             }
         }

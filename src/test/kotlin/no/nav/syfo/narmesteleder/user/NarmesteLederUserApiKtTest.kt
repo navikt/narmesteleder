@@ -26,8 +26,7 @@ class NarmesteLederUserApiKtTest : Spek({
     val pdlPersonService = mockk<PdlPersonService>()
     val database = mockk<DatabaseInterface>()
     val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(
-        nlResponseProducer,
-        database
+        nlResponseProducer
     )
     val utvidetNarmesteLederService = NarmesteLederService(database, pdlPersonService)
 
