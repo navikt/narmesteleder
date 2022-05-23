@@ -26,26 +26,6 @@ fun DatabaseInterface.finnAktiveNarmestelederkoblinger(narmesteLederFnr: String)
     }
 }
 
-fun DatabaseInterface.getNarmestelederRelasjon(narmestelederId: UUID, fnr: String): NarmesteLederRelasjon? {
-    return connection.use { connection ->
-        connection.prepareStatement(
-            """
-            select * from narmeste_leder where narmeste_leder_id = ? and narmeste_leder_fnr = ? and aktiv_tom is null;"""
-        ).use { ps ->
-            ps.setObject(1, narmestelederId)
-            ps.setString(2, fnr)
-            ps.executeQuery().toSingleNarmesteLederRelasjon()
-        }
-    }
-}
-
-private fun ResultSet.toSingleNarmesteLederRelasjon(): NarmesteLederRelasjon? {
-    return when (next()) {
-        true -> toNarmesteLederRelasjon()
-        false -> null
-    }
-}
-
 fun DatabaseInterface.finnNarmestelederForSykmeldt(fnr: String, orgnummer: String): NarmesteLederRelasjon? {
     return connection.use { connection ->
         connection.prepareStatement(
