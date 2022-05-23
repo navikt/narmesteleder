@@ -1,5 +1,6 @@
 package no.nav.syfo.pdl.service
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -22,12 +23,10 @@ import no.nav.syfo.pdl.redis.NavnRedisModel
 import no.nav.syfo.pdl.redis.PdlPersonRedisModel
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertFailsWith
 
 @DelicateCoroutinesApi
-object PdlPersonServiceTest : Spek({
+class PdlPersonServiceTest : FunSpec({
     val pdlClient = mockkClass(PdlClient::class)
     val accessTokenClientV2 = mockkClass(AccessTokenClientV2::class)
     val pdlPersonRedisService = mockkClass(PdlPersonRedisService::class, relaxed = true)
@@ -39,14 +38,14 @@ object PdlPersonServiceTest : Spek({
     val aktorIdLeder1 = "123"
     val aktorIdLeder2 = "456"
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(accessTokenClientV2, pdlClient, pdlPersonRedisService)
         coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
         coEvery { pdlPersonRedisService.getPerson(any()) } returns emptyMap()
     }
 
-    describe("Test av PdlPersonService") {
-        it("Henter navn og aktørid for to ledere") {
+    context("Test av PdlPersonService") {
+        test("Henter navn og aktørid for to ledere") {
             coEvery { pdlClient.getPersoner(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentPersonBolk = listOf(
@@ -61,15 +60,13 @@ object PdlPersonServiceTest : Spek({
                 errors = null
             )
 
-            runBlocking {
-                val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
+            val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
 
-                personer[fnrLeder1] shouldBeEqualTo PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
-                personer[fnrLeder2] shouldBeEqualTo PdlPerson(Navn("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
-            }
+            personer[fnrLeder1] shouldBeEqualTo PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
+            personer[fnrLeder2] shouldBeEqualTo PdlPerson(Navn("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
             coVerify(exactly = 2) { pdlPersonRedisService.updatePerson(any(), any()) }
         }
-        it("Person er null hvis navn ikke finnes i PDL") {
+        test("Person er null hvis navn ikke finnes i PDL") {
             coEvery { pdlClient.getPersoner(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentPersonBolk = listOf(
@@ -84,15 +81,13 @@ object PdlPersonServiceTest : Spek({
                 errors = null
             )
 
-            runBlocking {
-                val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
+            val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
 
-                personer[fnrLeder1] shouldBeEqualTo null
-                personer[fnrLeder2] shouldBeEqualTo PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder2, aktorIdLeder2)
-            }
+            personer[fnrLeder1] shouldBeEqualTo null
+            personer[fnrLeder2] shouldBeEqualTo PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder2, aktorIdLeder2)
             coVerify(exactly = 1) { pdlPersonRedisService.updatePerson(any(), any()) }
         }
-        it("Skal feile når ingen personer finnes") {
+        test("Skal feile når ingen personer finnes") {
             coEvery { pdlClient.getPersoner(any(), any()) } returns GetPersonResponse(ResponseData(hentPersonBolk = emptyList(), hentIdenterBolk = emptyList()), errors = null)
 
             assertFailsWith<IllegalStateException> {
@@ -101,22 +96,20 @@ object PdlPersonServiceTest : Spek({
                 }
             }
         }
-        it("Henter navn og aktørid for to ledere fra redis") {
+        test("Henter navn og aktørid for to ledere fra redis") {
             coEvery { pdlPersonRedisService.getPerson(eq(listOf(fnrLeder1, fnrLeder2))) } returns mapOf(
                 fnrLeder1 to PdlPersonRedisModel(NavnRedisModel("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1),
                 fnrLeder2 to PdlPersonRedisModel(NavnRedisModel("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
             )
 
-            runBlocking {
-                val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
+            val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
 
-                personer[fnrLeder1] shouldBeEqualTo PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
-                personer[fnrLeder2] shouldBeEqualTo PdlPerson(Navn("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
-            }
+            personer[fnrLeder1] shouldBeEqualTo PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
+            personer[fnrLeder2] shouldBeEqualTo PdlPerson(Navn("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
             coVerify(exactly = 0) { pdlClient.getPersoner(any(), any()) }
             coVerify(exactly = 0) { pdlPersonRedisService.updatePerson(any(), any()) }
         }
-        it("Henter navn og aktørid for to ledere, en fra redis og en fra PDL") {
+        test("Henter navn og aktørid for to ledere, en fra redis og en fra PDL") {
             coEvery { pdlPersonRedisService.getPerson(eq(listOf(fnrLeder1, fnrLeder2))) } returns mapOf(
                 fnrLeder1 to PdlPersonRedisModel(NavnRedisModel("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1),
                 fnrLeder2 to null
@@ -133,16 +126,14 @@ object PdlPersonServiceTest : Spek({
                 errors = null
             )
 
-            runBlocking {
-                val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
+            val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
 
-                personer[fnrLeder1] shouldBeEqualTo PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
-                personer[fnrLeder2] shouldBeEqualTo PdlPerson(Navn("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
-            }
+            personer[fnrLeder1] shouldBeEqualTo PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
+            personer[fnrLeder2] shouldBeEqualTo PdlPerson(Navn("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
             coVerify(exactly = 1) { pdlClient.getPersoner(eq(listOf(fnrLeder2)), any()) }
             coVerify(exactly = 1) { pdlPersonRedisService.updatePerson(any(), any()) }
         }
-        it("Skal hente 1000 narmesteldere") {
+        test("Skal hente 1000 narmesteldere") {
             coEvery { pdlPersonRedisService.getPerson(any()) } returns emptyMap()
             val total = 1001
             val fnrs = (0 until total).map { it.toString() }
@@ -177,15 +168,13 @@ object PdlPersonServiceTest : Spek({
                 )
             }
 
-            runBlocking {
-                val personer = pdlPersonService.getPersoner(fnrs = fnrs, "callid")
-                coVerify(exactly = 11) { pdlClient.getPersoner(any(), any()) }
+            val personer = pdlPersonService.getPersoner(fnrs = fnrs, "callid")
+            coVerify(exactly = 11) { pdlClient.getPersoner(any(), any()) }
 
-                personer.size shouldBeEqualTo 1001
-            }
+            personer.size shouldBeEqualTo 1001
         }
 
-        it("Skal feile når person ikke finnes") {
+        test("Skal feile når person ikke finnes") {
             coEvery { pdlClient.getPersoner(any(), any()) } returns
                 GetPersonResponse(
                     ResponseData(hentPersonBolk = emptyList(), hentIdenterBolk = emptyList()),
@@ -200,7 +189,7 @@ object PdlPersonServiceTest : Spek({
             exception.message shouldBeEqualTo "Fant ikke person i PDL"
         }
 
-        it("Skal feile når ident ikke er aktiv") {
+        test("Skal feile når ident ikke er aktiv") {
             coEvery { pdlClient.getPersoner(any(), any()) } returns
                 GetPersonResponse(
                     data = ResponseData(
