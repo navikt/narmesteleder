@@ -1,6 +1,7 @@
 package no.nav.syfo.narmesteleder
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -12,7 +13,6 @@ import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.DelicateCoroutinesApi
-import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
@@ -25,8 +25,6 @@ import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -36,24 +34,22 @@ const val sykmeldtFnr = "fnr"
 const val fnrLeder = "123"
 
 @DelicateCoroutinesApi
-class NarmesteLederApiKtTest : Spek({
+class NarmesteLederApiKtTest : FunSpec({
     val pdlPersonService = mockk<PdlPersonService>()
-    val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)
     val testDb = TestDB()
     val utvidetNarmesteLederService = NarmesteLederService(testDb, pdlPersonService)
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(pdlPersonService)
+        testDb.connection.dropData()
         testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true)
     }
-    afterEachTest {
-        testDb.connection.dropData()
-    }
-    afterGroup {
+
+    afterSpec {
         testDb.stop()
     }
 
-    describe("API for å hente alle den sykmeldtes nærmeste ledere") {
+    context("API for å hente alle den sykmeldtes nærmeste ledere") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
@@ -62,7 +58,7 @@ class NarmesteLederApiKtTest : Spek({
                     registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
                 }
             }
-            it("Returnerer nærmeste ledere") {
+            test("Returnerer nærmeste ledere") {
                 with(
                     handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
                         addHeader("Sykmeldt-Fnr", sykmeldtFnr)
@@ -86,7 +82,7 @@ class NarmesteLederApiKtTest : Spek({
                     erLike(narmesteLeder, forventetNarmesteLeder()) shouldBeEqualTo true
                 }
             }
-            it("Returnerer inaktiv nærmeste leder") {
+            test("Returnerer inaktiv nærmeste leder") {
                 testDb.connection.lagreNarmesteleder(
                     orgnummer = "orgnummer2", fnr = sykmeldtFnr, fnrNl = "fnrLeder2", arbeidsgiverForskutterer = true,
                     aktivTom = OffsetDateTime.now(
@@ -114,7 +110,7 @@ class NarmesteLederApiKtTest : Spek({
                     narmesteLedere.size shouldBeEqualTo 2
                 }
             }
-            it("Returnerer tom liste hvis bruker ikke har noen nærmeste ledere") {
+            test("Returnerer tom liste hvis bruker ikke har noen nærmeste ledere") {
                 with(
                     handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
                         addHeader("Sykmeldt-Fnr", "sykmeldtFnrUtenNl")
@@ -136,7 +132,7 @@ class NarmesteLederApiKtTest : Spek({
                     narmesteLedere.size shouldBeEqualTo 0
                 }
             }
-            it("Setter navn på lederne hvis utvidet == ja") {
+            test("Setter navn på lederne hvis utvidet == ja") {
                 coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
                     Pair(
                         fnrLeder,
@@ -172,7 +168,7 @@ class NarmesteLederApiKtTest : Spek({
         }
     }
 
-    describe("Feilhåndtering narmestelederapi") {
+    context("Feilhåndtering narmestelederapi") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
@@ -181,7 +177,7 @@ class NarmesteLederApiKtTest : Spek({
                     registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
                 }
             }
-            it("Returnerer feilmelding hvis fnr for den sykmeldte mangler") {
+            test("Returnerer feilmelding hvis fnr for den sykmeldte mangler") {
                 with(
                     handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
                         addHeader(
@@ -201,7 +197,7 @@ class NarmesteLederApiKtTest : Spek({
                     response.content shouldNotBeEqualTo null
                 }
             }
-            it("Feil audience gir feilmelding") {
+            test("Feil audience gir feilmelding") {
                 with(
                     handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
                         addHeader("Sykmeldt-Fnr", sykmeldtFnr)

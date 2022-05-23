@@ -1,5 +1,6 @@
 package no.nav.syfo.forskuttering
 
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -15,26 +16,24 @@ import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-object ForskutteringApiSpek : Spek({
+class ForskutteringApiSpek : FunSpec({
     val fnr = "12345678910"
     val fnrNl = "01987654321"
     val orgnummer = "33339999"
     val testDb = TestDB()
 
-    afterEachTest {
+    afterTest {
         testDb.connection.dropData()
     }
 
-    afterGroup {
+    afterSpec {
         testDb.stop()
     }
 
-    describe("Forskutteringsapi returnerer gyldig svar for gyldig request") {
+    context("Forskutteringsapi returnerer gyldig svar for gyldig request") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
@@ -43,7 +42,7 @@ object ForskutteringApiSpek : Spek({
                     registrerForskutteringApi(testDb)
                 }
             }
-            it("Returnerer JA hvis arbeidsgiver forskutterer") {
+            test("Returnerer JA hvis arbeidsgiver forskutterer") {
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = false, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2), aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = true)
                 with(
@@ -65,7 +64,7 @@ object ForskutteringApiSpek : Spek({
                     response.content?.shouldBeEqualTo("{\"forskuttering\":\"JA\"}")
                 }
             }
-            it("Returnerer NEI hvis arbeidsgiver ikke forskutterer") {
+            test("Returnerer NEI hvis arbeidsgiver ikke forskutterer") {
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = false)
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
@@ -86,7 +85,7 @@ object ForskutteringApiSpek : Spek({
                     response.content?.shouldBeEqualTo("{\"forskuttering\":\"NEI\"}")
                 }
             }
-            it("Returnerer UKJENT hvis vi ikke vet om arbeidsgiver forskutterer") {
+            test("Returnerer UKJENT hvis vi ikke vet om arbeidsgiver forskutterer") {
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = null)
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
@@ -107,7 +106,7 @@ object ForskutteringApiSpek : Spek({
                     response.content?.shouldBeEqualTo("{\"forskuttering\":\"UKJENT\"}")
                 }
             }
-            it("Returnerer UKJENT hvis bruker ikke har noen nærmeste leder") {
+            test("Returnerer UKJENT hvis bruker ikke har noen nærmeste leder") {
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
                         addHeader("Sykmeldt-Fnr", fnr)
@@ -127,7 +126,7 @@ object ForskutteringApiSpek : Spek({
                     response.content?.shouldBeEqualTo("{\"forskuttering\":\"UKJENT\"}")
                 }
             }
-            it("Returnerer forskutteringsstatus for siste nærmeste leder i samme orgnummer hvis nærmeste leder ikke er aktiv") {
+            test("Returnerer forskutteringsstatus for siste nærmeste leder i samme orgnummer hvis nærmeste leder ikke er aktiv") {
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = false, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2), aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1))
                 testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = true, aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1), aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(2))
                 with(
@@ -152,7 +151,7 @@ object ForskutteringApiSpek : Spek({
         }
     }
 
-    describe("Feilhåndtering forskutteringsapi") {
+    context("Feilhåndtering forskutteringsapi") {
         testDb.connection.lagreNarmesteleder(orgnummer, fnr, fnrNl, arbeidsgiverForskutterer = true)
         with(TestApplicationEngine()) {
             setUpTestApplication()
@@ -162,7 +161,7 @@ object ForskutteringApiSpek : Spek({
                     registrerForskutteringApi(testDb)
                 }
             }
-            it("Returnerer feilmelding hvis fnr mangler") {
+            test("Returnerer feilmelding hvis fnr mangler") {
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=333") {
                         addHeader(
@@ -182,7 +181,7 @@ object ForskutteringApiSpek : Spek({
                     response.content shouldNotBeEqualTo null
                 }
             }
-            it("Returnerer feilmelding hvis orgnummer mangler") {
+            test("Returnerer feilmelding hvis orgnummer mangler") {
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer") {
                         addHeader("Sykmeldt-Fnr", fnr)
@@ -203,7 +202,7 @@ object ForskutteringApiSpek : Spek({
                     response.content shouldNotBeEqualTo null
                 }
             }
-            it("Feil audience gir feilmelding") {
+            test("Feil audience gir feilmelding") {
                 with(
                     handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=333") {
                         addHeader("Sykmeldt-Fnr", fnr)
