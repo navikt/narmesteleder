@@ -1,12 +1,12 @@
 package no.nav.syfo.narmesteleder.user
 
-import io.ktor.application.call
-import io.ktor.auth.authentication
 import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.get
-import io.ktor.routing.post
+import io.ktor.server.application.call
+import io.ktor.server.auth.authentication
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.application.metrics.DEAKTIVERT_AV_ANSATT_COUNTER

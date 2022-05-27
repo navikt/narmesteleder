@@ -5,24 +5,23 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.ApplicationCallPipeline
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.auth.authenticate
-import io.ktor.features.CORS
-import io.ktor.features.CallId
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
-import io.ktor.features.callId
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
-import io.ktor.response.respond
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.ApplicationCallPipeline
+import io.ktor.server.application.install
+import io.ktor.server.auth.authenticate
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.callid.CallId
+import io.ktor.server.plugins.callid.callId
+import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.cors.routing.CORS
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.response.respond
+import io.ktor.server.routing.routing
 import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
@@ -86,20 +85,20 @@ fun createApplicationEngine(
             }
         }
         install(StatusPages) {
-            exception<Throwable> { cause ->
+            exception<Throwable> { call, cause ->
                 log.error("Caught exception", cause)
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
             }
         }
         install(CORS) {
-            method(HttpMethod.Get)
-            method(HttpMethod.Post)
-            method(HttpMethod.Options)
+            allowMethod(HttpMethod.Get)
+            allowMethod(HttpMethod.Post)
+            allowMethod(HttpMethod.Options)
             env.allowedOrigin.forEach {
                 hosts.add("https://$it")
             }
-            header("nav_csrf_protection")
-            header("Sykmeldt-Fnr")
+            allowHeader("nav_csrf_protection")
+            allowHeader("Sykmeldt-Fnr")
             allowCredentials = true
             allowNonSimpleContentTypes = true
         }

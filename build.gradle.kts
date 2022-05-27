@@ -8,12 +8,12 @@ version = "1.0.0"
 val coroutinesVersion = "1.6.1"
 val jacksonVersion = "2.13.3"
 val kluentVersion = "1.68"
-val ktorVersion = "1.6.8"
+val ktorVersion = "2.0.1"
 val logbackVersion = "1.2.11"
 val logstashEncoderVersion = "7.1.1"
 val prometheusVersion = "0.15.0"
 val kotestVersion = "5.3.0"
-val smCommonVersion = "1.a92720c"
+val smCommonVersion = "1.f132f2b"
 val mockkVersion = "1.12.4"
 val nimbusdsVersion = "9.22"
 val testContainerKafkaVersion = "1.17.1"
@@ -58,13 +58,18 @@ dependencies {
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-id:$ktorVersion")
+    implementation("io.ktor:ktor-server-cors:$ktorVersion")
+    implementation("io.ktor:ktor-server-auth:$ktorVersion")
+    implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-jackson:$ktorVersion")
-    implementation("io.ktor:ktor-jackson:$ktorVersion")
-    implementation("io.ktor:ktor-auth:$ktorVersion")
-    implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")

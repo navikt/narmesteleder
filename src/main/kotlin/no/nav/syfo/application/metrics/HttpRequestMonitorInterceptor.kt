@@ -1,7 +1,7 @@
 package no.nav.syfo.application.metrics
 
-import io.ktor.application.ApplicationCall
-import io.ktor.request.path
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.request.path
 import io.ktor.util.pipeline.PipelineContext
 
 val REGEX = """[0-9]{9}""".toRegex()

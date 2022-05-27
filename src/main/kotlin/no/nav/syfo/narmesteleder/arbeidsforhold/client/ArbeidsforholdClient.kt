@@ -1,6 +1,7 @@
 package no.nav.syfo.narmesteleder.arbeidsforhold.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
@@ -24,6 +25,6 @@ class ArbeidsforholdClient(private val httpClient: HttpClient, private val url: 
         ) {
             header(navPersonident, fnr)
             header(HttpHeaders.Authorization, token)
-        }
+        }.body()
     }
 }
