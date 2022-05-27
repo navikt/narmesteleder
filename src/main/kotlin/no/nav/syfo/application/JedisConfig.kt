@@ -6,21 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import redis.clients.jedis.JedisPoolConfig
-
-class JedisConfig : JedisPoolConfig() {
-    init {
-        testWhileIdle = true
-        minEvictableIdleTimeMillis = 300000
-        timeBetweenEvictionRunsMillis = 60000
-        numTestsPerEvictionRun = -1
-        maxTotal = 20
-        maxIdle = 20
-        maxWaitMillis = 1000
-        minIdle = 10
-        blockWhenExhausted = true
-    }
-}
 
 val jedisObjectMapper: ObjectMapper = ObjectMapper().apply {
     registerKotlinModule()
