@@ -87,6 +87,9 @@ spec:
         - application: sykmeldinger-backend
           namespace: teamsykmelding
           cluster: dev-fss
+        - application: sykmeldinger-backend
+          namespace: teamsykmelding
+          cluster: dev-gcp
         - application: debug-dings
           namespace: plattformsikkerhet
         - application: notifikasjon-bruker-api
