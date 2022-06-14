@@ -100,6 +100,9 @@ spec:
         - application: esyfovarsel
           namespace: team-esyfo
           cluster: prod-fss
+        - application: esyfovarsel
+          namespace: team-esyfo
+          cluster: prod-gcp
     outbound:
       rules:
         - application: narmesteleder-redis
