@@ -103,6 +103,9 @@ spec:
         - application: esyfovarsel
           namespace: team-esyfo
           cluster: dev-fss
+        - application: esyfovarsel
+          namespace: team-esyfo
+          cluster: dev-gcp
     outbound:
       rules:
         - application: narmesteleder-redis
