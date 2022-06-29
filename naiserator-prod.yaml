@@ -69,9 +69,6 @@ spec:
         - application: sykepengesoknad-backend
           namespace: flex
           cluster: prod-gcp
-        - application: syfovarsel
-          namespace: flex
-          cluster: prod-fss
         - application: syfobrukertilgang
           namespace: team-esyfo
           cluster: prod-fss
