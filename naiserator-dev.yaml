@@ -72,18 +72,12 @@ spec:
         - application: syfobrukertilgang
           namespace: team-esyfo
           cluster: dev-fss
-        - application: syfomoteadmin
-          namespace: default
-          cluster: dev-fss
         - application: syfooppfolgingsplanservice
           namespace: team-esyfo
           cluster: dev-fss
         - application: syfosmaltinn
         - application: narmesteleder
         - application: sykmeldinger-arbeidsgiver
-        - application: sykmeldinger-backend
-          namespace: teamsykmelding
-          cluster: dev-fss
         - application: sykmeldinger-backend
           namespace: teamsykmelding
           cluster: dev-gcp

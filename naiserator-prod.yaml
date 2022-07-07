@@ -72,17 +72,11 @@ spec:
         - application: syfobrukertilgang
           namespace: team-esyfo
           cluster: prod-fss
-        - application: syfomoteadmin
-          namespace: default
-          cluster: prod-fss
         - application: syfooppfolgingsplanservice
           namespace: team-esyfo
           cluster: prod-fss
         - application: syfosmaltinn
         - application: sykmeldinger-arbeidsgiver
-        - application: sykmeldinger-backend
-          namespace: teamsykmelding
-          cluster: prod-fss
         - application: sykmeldinger-backend
           namespace: teamsykmelding
           cluster: prod-gcp
