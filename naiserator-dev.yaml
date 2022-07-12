@@ -97,6 +97,9 @@ spec:
         - application: esyfovarsel
           namespace: team-esyfo
           cluster: dev-gcp
+        - application: ditt-sykefravaer
+          namespace: flex
+          cluster: dev-gcp
     outbound:
       rules:
         - application: narmesteleder-redis

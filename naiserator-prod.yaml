@@ -94,6 +94,9 @@ spec:
         - application: esyfovarsel
           namespace: team-esyfo
           cluster: prod-gcp
+        - application: ditt-sykefravaer
+          namespace: flex
+          cluster: prod-gcp
     outbound:
       rules:
         - application: narmesteleder-redis
@@ -105,7 +108,7 @@ spec:
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: KAFKA_CLIENT_ID
-      value: narmesteleder
+      value: narmestelederss
     - name: AAREG_URL
       value: https://aareg-services.prod-fss-pub.nais.io
     - name: AAREG_SCOPE
