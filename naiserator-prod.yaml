@@ -108,7 +108,7 @@ spec:
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: KAFKA_CLIENT_ID
-      value: narmestelederss
+      value: narmesteleders
     - name: AAREG_URL
       value: https://aareg-services.prod-fss-pub.nais.io
     - name: AAREG_SCOPE
