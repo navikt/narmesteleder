@@ -88,9 +88,9 @@ spec:
         - application: isdialogmote
           namespace: teamsykefravr
           cluster: dev-gcp
-        - application: syfoservice-data-syfosmregister
+        - application: macgyver
           namespace: teamsykmelding
-          cluster: dev-fss
+          cluster: dev-gcp
         - application: esyfovarsel
           namespace: team-esyfo
           cluster: dev-fss
