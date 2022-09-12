@@ -5,34 +5,33 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.6.1"
-val jacksonVersion = "2.13.3"
+val coroutinesVersion = "1.6.4"
+val jacksonVersion = "2.13.4"
 val kluentVersion = "1.68"
-val ktorVersion = "2.0.1"
-val logbackVersion = "1.2.11"
-val logstashEncoderVersion = "7.1.1"
-val prometheusVersion = "0.15.0"
-val kotestVersion = "5.3.0"
+val ktorVersion = "2.1.0"
+val logbackVersion = "1.4.0"
+val logstashEncoderVersion = "7.2"
+val prometheusVersion = "0.16.0"
+val kotestVersion = "5.4.2"
 val smCommonVersion = "1.f132f2b"
-val mockkVersion = "1.12.4"
-val nimbusdsVersion = "9.22"
-val testContainerKafkaVersion = "1.17.1"
-val postgresVersion = "42.4.1"
-val flywayVersion = "8.5.10"
+val mockkVersion = "1.12.7"
+val nimbusdsVersion = "9.24.3"
+val testContainerKafkaVersion = "1.17.3"
+val postgresVersion = "42.5.0"
+val flywayVersion = "9.2.2"
 val hikariVersion = "5.0.1"
-val testContainerPostgresVersion = "1.17.1"
-val swaggerUiVersion = "4.10.3"
+val testContainerPostgresVersion = "1.17.3"
+val swaggerUiVersion = "4.14.0"
 val jedisVersion = "4.2.3"
-val kotlinVersion = "1.6.21"
-val confluentVersion = "7.0.1"
+val kotlinVersion = "1.7.10"
+val confluentVersion = "7.2.1"
 
 plugins {
     id("org.jmailen.kotlinter") version "3.10.0"
-    kotlin("jvm") version "1.6.21"
+    kotlin("jvm") version "1.7.10"
     id("com.diffplug.spotless") version "6.5.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.hidetake.swagger.generator") version "2.18.2" apply true
-    jacoco
 }
 
 val githubUser: String by project
@@ -110,14 +109,6 @@ swaggerSources {
     }
 }
 
-tasks.jacocoTestReport {
-    reports {
-        xml.isEnabled = true
-        html.isEnabled = true
-    }
-}
-
-
 tasks {
     withType<Jar> {
         manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
@@ -136,13 +127,6 @@ tasks {
         outputDir = File(buildDir.path + "/resources/main/api")
     }
 
-    withType<JacocoReport> {
-        classDirectories.setFrom(
-                sourceSets.main.get().output.asFileTree.matching {
-                    exclude()
-                }
-        )
-    }
     withType<ShadowJar> {
         transform(ServiceFileTransformer::class.java) {
             setPath("META-INF/cxf")
