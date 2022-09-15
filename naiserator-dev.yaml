@@ -66,9 +66,6 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        - application: sykepengesoknad-backend
-          namespace: flex
-          cluster: dev-gcp
         - application: syfobrukertilgang
           namespace: team-esyfo
           cluster: dev-fss
