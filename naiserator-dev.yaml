@@ -54,7 +54,8 @@ spec:
   ingresses:
     - "https://narmesteleder.dev.nav.no"
     - "https://narmesteleder.dev.intern.nav.no"
-  webproxy: true
+  webproxy: false
+  leaderElection: true
   kafka:
     pool: nav-dev
   azure:

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
@@ -27,6 +28,7 @@ import no.nav.syfo.application.client.AccessTokenClientV2
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.exception.ServiceUnavailableException
+import no.nav.syfo.application.leaderelection.LeaderElection
 import no.nav.syfo.identendring.IdentendringService
 import no.nav.syfo.identendring.PdlAktorConsumer
 import no.nav.syfo.kafka.aiven.KafkaUtils
@@ -187,7 +189,8 @@ fun main() {
     )
 
     val identendringService = IdentendringService(database, oppdaterNarmesteLederService, pdlPersonService)
-    val pdlAktorConsumer = PdlAktorConsumer(kafkaConsumerPdlAktor, applicationState, env.pdlAktorTopic, identendringService)
+    val leaderElection = LeaderElection(httpClient, env.electorPath)
+    val pdlAktorConsumer = PdlAktorConsumer(kafkaConsumerPdlAktor, getKafkaConsumerAivenPdlAktor(env), applicationState, env.pdlAktorTopic, env.pdlAktorV2Topic, leaderElection, identendringService)
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
@@ -195,6 +198,23 @@ fun main() {
     pdlAktorConsumer.startConsumer()
 
     applicationServer.start()
+}
+
+fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<String, GenericRecord> {
+    val consumerProperties = KafkaUtils.getAivenKafkaConfig().apply {
+        setProperty(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, environment.schemaRegistryUrl)
+        setProperty(KafkaAvroSerializerConfig.USER_INFO_CONFIG, "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}")
+        setProperty(KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO")
+    }.toConsumerConfig(
+        "${environment.applicationName}-consumer",
+        valueDeserializer = KafkaAvroDeserializer::class
+    ).also {
+        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
+        it["specific.avro.reader"] = false
+        it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
+    }
+
+    return KafkaConsumer<String, GenericRecord>(consumerProperties)
 }
 
 fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) =
