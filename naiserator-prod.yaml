@@ -48,7 +48,6 @@ spec:
   vault:
     enabled: false
   envFrom:
-    - secret: narmesteleder-secret
     - secret: narmesteleder-redis-password
     - configmap: loginservice-idporten
   ingresses:
@@ -113,9 +112,5 @@ spec:
       value: api://prod-fss.arbeidsforhold.aareg-services-nais/.default
     - name: ALLOWED_ORIGIN
       value: tjenester.nav.no,www.nav.no
-    - name: KAFKA_BOOTSTRAP_SERVERS_URL
-      value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: PDL_SCOPE
       value: api://prod-fss.pdl.pdl-api/.default
-    - name: KAFKA_SCHEMA_REGISTRY_URL
-      value: https://kafka-schema-registry.nais.adeo.no

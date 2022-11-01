@@ -22,10 +22,8 @@ import kotlin.time.ExperimentalTime
 
 @DelicateCoroutinesApi
 class PdlAktorConsumer(
-    private val kafkaConsumer: KafkaConsumer<String, GenericRecord>,
     private val kafkaConsumerAiven: KafkaConsumer<String, GenericRecord>,
     private val applicationState: ApplicationState,
-    private val topic: String,
     private val aivenTopic: String,
     private val leaderElection: LeaderElection,
     private val identendringService: IdentendringService
@@ -57,7 +55,6 @@ class PdlAktorConsumer(
                             log.error("Error running kafka consumer for pdl-aktor, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
                         }
                     }
-                    kafkaConsumer.unsubscribe()
                     kafkaConsumerAiven.unsubscribe()
                     delay(DELAY_ON_ERROR_SECONDS.seconds)
                 }
@@ -66,23 +63,15 @@ class PdlAktorConsumer(
     }
 
     private suspend fun runConsumer() {
-        kafkaConsumer.subscribe(listOf(topic))
-        log.info("Starting consuming topic $topic")
         kafkaConsumerAiven.subscribe(listOf(aivenTopic))
         log.info("Starting consuming topic $aivenTopic")
         while (applicationState.ready && leaderElection.isLeader()) {
-            kafkaConsumer.poll(Duration.ofSeconds(POLL_DURATION_SECONDS)).forEach {
-                if (it.value() != null) {
-                    identendringService.oppdaterIdent(it.value().toIdentListe())
-                }
-            }
             kafkaConsumerAiven.poll(Duration.ofSeconds(POLL_DURATION_SECONDS)).forEach {
                 if (it.value() != null) {
                     identendringService.oppdaterIdent(it.value().toIdentListe())
                 }
             }
         }
-        kafkaConsumer.unsubscribe()
         kafkaConsumerAiven.unsubscribe()
     }
 }

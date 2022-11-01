@@ -1,12 +1,9 @@
 package no.nav.syfo
 
-import no.nav.syfo.kafka.KafkaConfig
-import no.nav.syfo.kafka.KafkaCredentials
-
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "narmesteleder"),
-    override val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val clientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val jwkKeysUrl: String = getEnvVar("AZURE_OPENID_CONFIG_JWKS_URI"),
@@ -34,28 +31,16 @@ data class Environment(
     val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val clientIdV2: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val clientSecretV2: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
-    override val truststore: String? = getEnvVar("NAV_TRUSTSTORE_PATH"),
-    override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD"),
-    override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
-    val pdlAktorTopic: String = "aapen-person-pdl-aktor-v1",
     val pdlAktorV2Topic: String = "pdl.aktor-v2",
-    val avroSchemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_URL"),
     val schemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
     val kafkaSchemaRegistryUsername: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
     val kafkaSchemaRegistryPassword: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
     val electorPath: String = getEnvVar("ELECTOR_PATH")
-) : KafkaConfig {
+) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
     }
 }
-
-data class VaultSecrets(
-    val serviceuserUsername: String = getEnvVar("SERVICEUSER_USERNAME"),
-    val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD"),
-    override val kafkaPassword: String = serviceuserPassword,
-    override val kafkaUsername: String = serviceuserUsername
-) : KafkaCredentials
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
