@@ -32,8 +32,6 @@ import no.nav.syfo.application.leaderelection.LeaderElection
 import no.nav.syfo.identendring.IdentendringService
 import no.nav.syfo.identendring.PdlAktorConsumer
 import no.nav.syfo.kafka.aiven.KafkaUtils
-import no.nav.syfo.kafka.envOverrides
-import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
@@ -78,7 +76,6 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
 @ExperimentalTime
 fun main() {
     val env = Environment()
-    val vaultSecrets = VaultSecrets()
     val jwkProvider = JwkProviderBuilder(URL(env.jwkKeysUrl))
         .cached(10, 24, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
@@ -154,16 +151,6 @@ fun main() {
             .getAivenKafkaConfig()
             .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class)
     )
-    val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
-    kafkaBaseConfig["auto.offset.reset"] = "latest"
-    kafkaBaseConfig["specific.avro.reader"] = false
-    kafkaBaseConfig["schema.registry.url"] = env.avroSchemaRegistryUrl
-
-    val kafkaConsumerPdlAktor = KafkaConsumer<String, GenericRecord>(
-        kafkaBaseConfig.toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = KafkaAvroDeserializer::class).also {
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
-        }
-    )
     val narmesteLederLeesahProducer = NarmesteLederLeesahProducer(kafkaProducerNarmesteLederLeesah, env.narmesteLederLeesahTopic)
 
     val applicationEngine = createApplicationEngine(
@@ -190,7 +177,7 @@ fun main() {
 
     val identendringService = IdentendringService(database, oppdaterNarmesteLederService, pdlPersonService)
     val leaderElection = LeaderElection(httpClient, env.electorPath)
-    val pdlAktorConsumer = PdlAktorConsumer(kafkaConsumerPdlAktor, getKafkaConsumerAivenPdlAktor(env), applicationState, env.pdlAktorTopic, env.pdlAktorV2Topic, leaderElection, identendringService)
+    val pdlAktorConsumer = PdlAktorConsumer(getKafkaConsumerAivenPdlAktor(env), applicationState, env.pdlAktorV2Topic, leaderElection, identendringService)
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
@@ -209,7 +196,7 @@ fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<Strin
         "${environment.applicationName}-consumer",
         valueDeserializer = KafkaAvroDeserializer::class
     ).also {
-        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
+        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
         it["specific.avro.reader"] = false
         it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
     }
