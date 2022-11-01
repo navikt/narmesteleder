@@ -16,6 +16,7 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_ARBEIDSTAKER
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_ARBEIDSTAKER_INNSENDT_SYKMELDING
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_LEDER
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_NY_LEDER
+import no.nav.syfo.narmesteleder.oppdatering.kafka.model.IDENTENDRING
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NY_LEDER
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NarmesteLederLeesah
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlKafkaMetadata
@@ -190,6 +191,7 @@ class OppdaterNarmesteLederService(
         "narmesteleder-arbeidsforhold" -> DEAKTIVERT_ARBEIDSFORHOLD
         "syfosmaltinn" -> DEAKTIVERT_ARBEIDSTAKER_INNSENDT_SYKMELDING
         "syfonlaltinn" -> DEAKTIVERT_NY_LEDER
+        "PDL" -> IDENTENDRING
         "user" -> null
         else -> {
             log.warn("Invalid source $source")
