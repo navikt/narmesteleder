@@ -77,7 +77,11 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
         aadAccessTokenV2Url = "url",
         clientIdV2 = "id",
         clientSecretV2 = "hush",
-        avroSchemaRegistryUrl = "schema"
+        avroSchemaRegistryUrl = "schema",
+        schemaRegistryUrl = "schemaAiven",
+        kafkaSchemaRegistryUsername = "user",
+        kafkaSchemaRegistryPassword = "pw",
+        electorPath = "elector"
     )
 
     val path = "src/test/resources/jwkset.json"

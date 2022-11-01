@@ -38,7 +38,12 @@ data class Environment(
     override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val pdlAktorTopic: String = "aapen-person-pdl-aktor-v1",
-    val avroSchemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_URL")
+    val pdlAktorV2Topic: String = "pdl.aktor-v2",
+    val avroSchemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_URL"),
+    val schemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
+    val kafkaSchemaRegistryUsername: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
+    val kafkaSchemaRegistryPassword: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
+    val electorPath: String = getEnvVar("ELECTOR_PATH")
 ) : KafkaConfig {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
