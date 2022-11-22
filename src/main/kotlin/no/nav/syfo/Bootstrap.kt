@@ -14,7 +14,9 @@ import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.network.sockets.SocketTimeoutException
@@ -102,6 +104,26 @@ fun main() {
                 }
             }
         }
+        install(HttpRequestRetry) {
+            constantDelay(50, 0, false)
+            retryOnExceptionIf(3) { request, throwable ->
+                log.warn("Caught exception ${throwable.message}, for url ${request.url}")
+                true
+            }
+            retryIf(maxRetries) { request, response ->
+                if (response.status.value.let { it in 500..599 }) {
+                    log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+                    true
+                } else {
+                    false
+                }
+            }
+        }
+        install(HttpTimeout) {
+            socketTimeoutMillis = 20_000
+            connectTimeoutMillis = 20_000
+            requestTimeoutMillis = 20_000
+        }
     }
     val httpClient = HttpClient(Apache, config)
 
@@ -122,7 +144,7 @@ fun main() {
     val pdlClient = PdlClient(
         httpClient,
         env.pdlGraphqlPath,
-        PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
+        PdlClient::class.java.getResource("/graphql/getPerson.graphql")!!.readText().replace(Regex("[\n\t]"), "")
     )
     val pdlPersonRedisService = PdlPersonRedisService(jedisPool, env.redisSecret)
     val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, env.pdlScope)
