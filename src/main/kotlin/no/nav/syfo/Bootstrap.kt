@@ -67,6 +67,8 @@ import kotlin.time.ExperimentalTime
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.narmesteleder")
 
+val securelog = LoggerFactory.getLogger("securelog")
+
 val objectMapper: ObjectMapper = ObjectMapper().apply {
     registerKotlinModule()
     registerModule(JavaTimeModule())

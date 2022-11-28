@@ -25,6 +25,7 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequestKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.securelog
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
@@ -51,6 +52,10 @@ class OppdaterNarmesteLederService(
                 val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
                 val personMap = pdlPersonService.getPersoner(listOf(sykmeldtFnr, nlFnr), callId)
                 if (personMap[sykmeldtFnr] == null || personMap[nlFnr] == null) {
+                    securelog.info(
+                        "Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL callId $callId, " +
+                            "sykmeldtFnr: $sykmeldtFnr nlFnr: $nlFnr orgnummer: $orgnummer"
+                    )
                     log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL callId $callId partition: $partition, offset: $offset")
                     throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
                 }
