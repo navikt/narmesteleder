@@ -122,9 +122,9 @@ fun main() {
             }
         }
         install(HttpTimeout) {
-            socketTimeoutMillis = 20_000
-            connectTimeoutMillis = 20_000
-            requestTimeoutMillis = 20_000
+            socketTimeoutMillis = 40_000
+            connectTimeoutMillis = 40_000
+            requestTimeoutMillis = 40_000
         }
     }
     val httpClient = HttpClient(Apache, config)
