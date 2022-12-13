@@ -10,10 +10,15 @@ val UUID_REGEX = """[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-
 fun monitorHttpRequests(): suspend PipelineContext<Unit, ApplicationCall>.(Unit) -> Unit {
     return {
         val path = context.request.path()
-        var label = UUID_REGEX.replace(path, ":id")
-        label = REGEX.replace(label, ":orgnummer")
+        val label = getLabel(path)
         val timer = HTTP_HISTOGRAM.labels(label).startTimer()
         proceed()
         timer.observeDuration()
     }
+}
+
+fun getLabel(path: String): String {
+    var label = UUID_REGEX.replace(path, ":id")
+    label = REGEX.replace(label, ":orgnummer")
+    return label
 }
