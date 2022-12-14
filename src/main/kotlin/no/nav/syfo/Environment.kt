@@ -1,5 +1,8 @@
 package no.nav.syfo
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.syfo.application.metrics.PreAuthorizedApp
+
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "narmesteleder"),
@@ -35,7 +38,9 @@ data class Environment(
     val schemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
     val kafkaSchemaRegistryUsername: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
     val kafkaSchemaRegistryPassword: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
-    val electorPath: String = getEnvVar("ELECTOR_PATH")
+    val electorPath: String = getEnvVar("ELECTOR_PATH"),
+    val preAuthorizedApp: List<PreAuthorizedApp> = System.getenv("AZURE_APP_PRE_AUTHORIZED_APPS")?.let { objectMapper.readValue(it) } ?: emptyList()
+
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"

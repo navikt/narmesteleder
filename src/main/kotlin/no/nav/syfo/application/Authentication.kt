@@ -11,8 +11,11 @@ import io.ktor.server.auth.jwt.JWTCredential
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.request.header
+import io.ktor.server.request.path
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.Environment
+import no.nav.syfo.application.metrics.APP_ID_PATH_COUNTER
+import no.nav.syfo.application.metrics.getLabel
 import no.nav.syfo.log
 
 fun Application.setupAuth(
@@ -29,7 +32,16 @@ fun Application.setupAuth(
             realm = "Narmesteleder"
             validate { credentials ->
                 when {
-                    harTilgang(credentials, env.clientId) -> JWTPrincipal(credentials.payload)
+                    harTilgang(credentials, env.clientId) -> {
+                        val appid: String = credentials.payload.getClaim("azp").asString()
+                        val app = env.preAuthorizedApp.firstOrNull() { it.clientId == appid }
+                        if (app != null) {
+                            APP_ID_PATH_COUNTER.labels(app.team, app.appName, getLabel(this.request.path())).inc()
+                        } else {
+                            log.warn("App not in pre authorized list: $appid")
+                        }
+                        JWTPrincipal(credentials.payload)
+                    }
                     else -> unauthorized(credentials)
                 }
             }

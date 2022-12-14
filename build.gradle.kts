@@ -17,7 +17,7 @@ val smCommonVersion = "1.ea531b3"
 val mockkVersion = "1.13.2"
 val nimbusdsVersion = "9.25.6"
 val testContainerKafkaVersion = "1.17.4"
-val postgresVersion = "42.5.0"
+val postgresVersion = "42.5.1"
 val flywayVersion = "9.5.1"
 val hikariVersion = "5.0.1"
 val testContainerPostgresVersion = "1.17.4"
@@ -25,6 +25,7 @@ val swaggerUiVersion = "4.15.0"
 val jedisVersion = "4.3.1"
 val kotlinVersion = "1.7.21"
 val confluentVersion = "7.2.1"
+val nettyCodecVersion = "4.1.86.Final"
 
 plugins {
     id("org.jmailen.kotlinter") version "3.10.0"
@@ -69,6 +70,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.netty:netty-codec:$nettyCodecVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
