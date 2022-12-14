@@ -25,6 +25,7 @@ val swaggerUiVersion = "4.15.0"
 val jedisVersion = "4.3.1"
 val kotlinVersion = "1.7.21"
 val confluentVersion = "7.2.1"
+val nettyCodecVersion = "4.1.86.Final"
 
 plugins {
     id("org.jmailen.kotlinter") version "3.10.0"
@@ -69,6 +70,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.netty:netty-codec:$nettyCodecVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
