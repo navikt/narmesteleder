@@ -72,11 +72,30 @@ spec:
         - application: syfooppfolgingsplanservice
           namespace: team-esyfo
           cluster: dev-fss
+        - application: syfosmaltinn
+        - application: narmesteleder
+        - application: sykmeldinger-arbeidsgiver
+        - application: sykmeldinger-backend
+          namespace: teamsykmelding
+          cluster: dev-gcp
+        - application: debug-dings
+          namespace: plattformsikkerhet
+        - application: notifikasjon-bruker-api
+          namespace: fager
+        - application: isdialogmote
+          namespace: teamsykefravr
+          cluster: dev-gcp
         - application: macgyver
           namespace: teamsykmelding
           cluster: dev-gcp
         - application: esyfovarsel
           namespace: team-esyfo
+          cluster: dev-fss
+        - application: esyfovarsel
+          namespace: team-esyfo
+          cluster: dev-gcp
+        - application: ditt-sykefravaer
+          namespace: flex
           cluster: dev-gcp
     outbound:
       rules:

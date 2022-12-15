@@ -72,11 +72,27 @@ spec:
         - application: syfooppfolgingsplanservice
           namespace: team-esyfo
           cluster: prod-fss
+        - application: syfosmaltinn
+        - application: sykmeldinger-arbeidsgiver
+        - application: sykmeldinger-backend
+          namespace: teamsykmelding
+          cluster: prod-gcp
+        - application: notifikasjon-bruker-api
+          namespace: fager
+        - application: isdialogmote
+          namespace: teamsykefravr
+          cluster: prod-gcp
         - application: macgyver
           namespace: teamsykmelding
           cluster: prod-gcp
         - application: esyfovarsel
           namespace: team-esyfo
+          cluster: prod-fss
+        - application: esyfovarsel
+          namespace: team-esyfo
+          cluster: prod-gcp
+        - application: ditt-sykefravaer
+          namespace: flex
           cluster: prod-gcp
     outbound:
       rules:
