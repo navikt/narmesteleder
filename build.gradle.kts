@@ -1,19 +1,20 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.hidetake.gradle.swagger.generator.GenerateSwaggerUI
 
 group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val jacksonVersion = "2.14.0"
+val jacksonVersion = "2.14.2"
 val kluentVersion = "1.72"
-val ktorVersion = "2.1.3"
+val ktorVersion = "2.2.4"
 val logbackVersion = "1.4.4"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.5.2"
-val smCommonVersion = "1.ea531b3"
+val smCommonVersion = "1.dec4861"
 val mockkVersion = "1.13.2"
 val nimbusdsVersion = "9.25.6"
 val testContainerKafkaVersion = "1.17.4"
@@ -23,13 +24,14 @@ val hikariVersion = "5.0.1"
 val testContainerPostgresVersion = "1.17.4"
 val swaggerUiVersion = "4.15.0"
 val jedisVersion = "4.3.1"
-val kotlinVersion = "1.7.21"
+val kotlinVersion = "1.8.10"
 val confluentVersion = "7.2.1"
 val nettyCodecVersion = "4.1.86.Final"
+val commonsCodecVersion = "1.15"
 
 plugins {
     id("org.jmailen.kotlinter") version "3.10.0"
-    kotlin("jvm") version "1.7.21"
+    kotlin("jvm") version "1.8.10"
     id("com.diffplug.spotless") version "6.5.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.hidetake.swagger.generator") version "2.18.2" apply true
@@ -69,6 +71,8 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    //This is to override version that is in io.ktor:ktor-client-apache
+    implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.netty:netty-codec:$nettyCodecVersion")
 
@@ -122,10 +126,11 @@ tasks {
     }
 
     withType<KotlinCompile> {
+        dependsOn("generateSwaggerUI")
         kotlinOptions.jvmTarget = "17"
     }
 
-    withType<org.hidetake.gradle.swagger.generator.GenerateSwaggerUI> {
+    withType<GenerateSwaggerUI> {
         outputDir = File(buildDir.path + "/resources/main/api")
     }
 
@@ -134,7 +139,6 @@ tasks {
             setPath("META-INF/cxf")
             include("bus-extensions.txt")
         }
-        dependsOn("generateSwaggerUI")
     }
 
     withType<Test> {

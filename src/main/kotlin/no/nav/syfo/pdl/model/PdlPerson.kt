@@ -1,5 +1,7 @@
 package no.nav.syfo.pdl.model
 
+import java.util.*
+
 data class PdlPerson(
     val navn: Navn,
     val fnr: String?,
@@ -22,6 +24,6 @@ fun Navn.toFormattedNameString(): String {
 
 private fun capitalizeFirstLetter(string: String): String {
     return string.lowercase()
-        .split(" ").joinToString(" ") { it.capitalize() }
-        .split("-").joinToString("-") { it.capitalize() }.trimEnd()
+        .split(" ").joinToString(" ") { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
+        .split("-").joinToString("-") { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }.trimEnd()
 }

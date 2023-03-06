@@ -95,6 +95,11 @@ class OppdaterNarmesteLederService(
                         status = NY_LEDER
                     )
                 )
+                securelog.info(
+                    "Created new NL for bruker_fnr ${nlResponseKafkaMessage.nlResponse.sykmeldt.fnr}, " +
+                        "for narmeste_leder_fnr: ${ nlResponseKafkaMessage.nlResponse.leder.fnr}, " +
+                        "narmesteLederId $narmesteLederId"
+                )
                 log.info("Created new NL for callId $callId")
             }
             else -> {

@@ -138,10 +138,10 @@ class PdlPersonServiceTest : FunSpec({
             val total = 1001
             val fnrs = (0 until total).map { it.toString() }
             coEvery { pdlClient.getPersoner(any(), any()) } answers {
-                val fnrs = args[0] as List<String>
+                val fnrList = args[0] as List<String>
                 GetPersonResponse(
                     data = ResponseData(
-                        hentPersonBolk = fnrs.map {
+                        hentPersonBolk = fnrList.map {
                             HentPersonBolk(
                                 it,
                                 Person(
