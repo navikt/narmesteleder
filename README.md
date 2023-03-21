@@ -52,7 +52,7 @@ To build locally and run the integration tests you can simply run
 ``` bash
 ./gradlew shadowJar
 ```
-or  on windows 
+or on windows 
 `gradlew.bat shadowJar`
 
 #### Creating a docker image
