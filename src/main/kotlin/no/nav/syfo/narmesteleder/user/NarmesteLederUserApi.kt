@@ -18,7 +18,7 @@ import java.util.UUID
 @DelicateCoroutinesApi
 fun Route.registrerNarmesteLederUserApi(
     deaktiverNarmesteLederService: DeaktiverNarmesteLederService,
-    utvidetNarmesteLederService: NarmesteLederService
+    utvidetNarmesteLederService: NarmesteLederService,
 ) {
     post("/{orgnummer}/avkreft") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
@@ -29,7 +29,7 @@ fun Route.registrerNarmesteLederUserApi(
         val callId = UUID.randomUUID()
         deaktiverNarmesteLederService.deaktiverNarmesteLeder(
             orgnummer = orgnummer,
-            fnrSykmeldt = fnr
+            fnrSykmeldt = fnr,
         )
         log.info("Den ansatte har deaktivert NL-kobling for orgnummer $orgnummer, $callId")
         DEAKTIVERT_AV_ANSATT_COUNTER.inc()
@@ -45,8 +45,8 @@ fun Route.registrerNarmesteLederUserApi(
         call.respond(
             utvidetNarmesteLederService.hentNarmesteLedereForAnsatt(
                 sykmeldtFnr = fnr,
-                callId = callId.toString()
-            )
+                callId = callId.toString(),
+            ),
         )
     }
 }

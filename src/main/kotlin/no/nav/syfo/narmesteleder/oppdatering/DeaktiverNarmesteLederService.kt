@@ -8,22 +8,22 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class DeaktiverNarmesteLederService(
-    private val nlResponseProducer: NLResponseProducer
+    private val nlResponseProducer: NLResponseProducer,
 ) {
     fun deaktiverNarmesteLeder(orgnummer: String, fnrSykmeldt: String, forespurtAvAnsatt: Boolean = true) {
         nlResponseProducer.send(
             NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    source = getSource(forespurtAvAnsatt)
+                    source = getSource(forespurtAvAnsatt),
                 ),
                 nlAvbrutt = NlAvbrutt(
                     orgnummer = orgnummer,
                     sykmeldtFnr = fnrSykmeldt,
-                    aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
+                    aktivTom = OffsetDateTime.now(ZoneOffset.UTC),
                 ),
-                nlResponse = null
-            )
+                nlResponse = null,
+            ),
         )
     }
 

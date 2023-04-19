@@ -10,7 +10,7 @@ import java.time.LocalDate
 class ArbeidsgiverService(
     private val arbeidsforholdClient: ArbeidsforholdClient,
     private val accessTokenClientV2: AccessTokenClientV2,
-    private val scope: String
+    private val scope: String,
 ) {
     suspend fun getArbeidsgivere(fnr: String, token: String?, forespurtAvAnsatt: Boolean): List<Arbeidsgiverinfo> {
         if (forespurtAvAnsatt && token == null) {
@@ -21,7 +21,7 @@ class ArbeidsgiverService(
         val arbeidsgivere = arbeidsforholdClient.getArbeidsforhold(
             fnr = fnr,
             ansettelsesperiodeFom = ansettelsesperiodeFom,
-            token = if (forespurtAvAnsatt) { token!! } else { "Bearer ${accessTokenClientV2.getAccessTokenV2(scope)}" }
+            token = if (forespurtAvAnsatt) { token!! } else { "Bearer ${accessTokenClientV2.getAccessTokenV2(scope)}" },
         )
 
         if (arbeidsgivere.isEmpty()) {
@@ -32,7 +32,7 @@ class ArbeidsgiverService(
         }.sortedWith(
             compareByDescending(nullsLast()) {
                 it.ansettelsesperiode.periode.tom
-            }
+            },
         ).distinctBy {
             it.arbeidsgiver.organisasjonsnummer
         }.map {
@@ -41,13 +41,13 @@ class ArbeidsgiverService(
     }
 
     private fun toArbeidsgiverInfo(
-        arbeidsforhold: Arbeidsforhold
+        arbeidsforhold: Arbeidsforhold,
     ): Arbeidsgiverinfo {
         return Arbeidsgiverinfo(
             orgnummer = arbeidsforhold.arbeidsgiver.organisasjonsnummer!!,
             juridiskOrgnummer = arbeidsforhold.opplysningspliktig.organisasjonsnummer!!,
             aktivtArbeidsforhold = arbeidsforhold.ansettelsesperiode.periode.tom == null ||
-                !LocalDate.now().isAfter(arbeidsforhold.ansettelsesperiode.periode.tom)
+                !LocalDate.now().isAfter(arbeidsforhold.ansettelsesperiode.periode.tom),
         )
     }
 }

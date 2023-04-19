@@ -23,5 +23,5 @@ data class NarmesteLederLeesah(
     val aktivTom: LocalDate?,
     val arbeidsgiverForskutterer: Boolean?,
     val timestamp: OffsetDateTime,
-    val status: String? = null
+    val status: String? = null,
 )

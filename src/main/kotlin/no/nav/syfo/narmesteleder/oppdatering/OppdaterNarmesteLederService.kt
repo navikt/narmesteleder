@@ -36,13 +36,13 @@ class OppdaterNarmesteLederService(
     private val arbeidsgiverService: ArbeidsgiverService,
     private val database: DatabaseInterface,
     private val narmesteLederLeesahProducer: NarmesteLederLeesahProducer,
-    private val nlRequestProducer: NLRequestProducer
+    private val nlRequestProducer: NLRequestProducer,
 ) {
 
     suspend fun handterMottattNarmesteLederOppdatering(
         nlResponseKafkaMessage: NlResponseKafkaMessage,
         partition: Int,
-        offset: Long
+        offset: Long,
     ) {
         val callId = UUID.randomUUID().toString()
         when {
@@ -54,7 +54,7 @@ class OppdaterNarmesteLederService(
                 if (personMap[sykmeldtFnr] == null || personMap[nlFnr] == null) {
                     securelog.info(
                         "Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL callId $callId, " +
-                            "sykmeldtFnr: $sykmeldtFnr nlFnr: $nlFnr orgnummer: $orgnummer"
+                            "sykmeldtFnr: $sykmeldtFnr nlFnr: $nlFnr orgnummer: $orgnummer",
                     )
                     log.error("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL callId $callId partition: $partition, offset: $offset")
                     throw IllegalStateException("Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL")
@@ -92,13 +92,13 @@ class OppdaterNarmesteLederService(
                         aktivTom = null,
                         arbeidsgiverForskutterer = nlResponseKafkaMessage.nlResponse.utbetalesLonn,
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        status = NY_LEDER
-                    )
+                        status = NY_LEDER,
+                    ),
                 )
                 securelog.info(
                     "Created new NL for bruker_fnr ${nlResponseKafkaMessage.nlResponse.sykmeldt.fnr}, " +
                         "for narmeste_leder_fnr: ${ nlResponseKafkaMessage.nlResponse.leder.fnr}, " +
-                        "narmesteLederId $narmesteLederId"
+                        "narmesteLederId $narmesteLederId",
                 )
                 log.info("Created new NL for callId $callId")
             }
@@ -118,8 +118,8 @@ class OppdaterNarmesteLederService(
                         aktivTom = null,
                         arbeidsgiverForskutterer = nlResponseKafkaMessage.nlResponse.utbetalesLonn,
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        status = NY_LEDER
-                    )
+                        status = NY_LEDER,
+                    ),
                 )
                 log.info("Updating existing NL with id ${eksisterendeLeder.narmesteLederId}, $callId")
             }
@@ -143,8 +143,8 @@ class OppdaterNarmesteLederService(
                         aktivTom = aktivTom.toLocalDate(),
                         arbeidsgiverForskutterer = it.arbeidsgiverForskutterer,
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        status = getStatusFromSource(source)
-                    )
+                        status = getStatusFromSource(source),
+                    ),
                 )
             }
     }
@@ -169,8 +169,8 @@ class OppdaterNarmesteLederService(
                         aktivTom = aktivTom.toLocalDate(),
                         arbeidsgiverForskutterer = it.arbeidsgiverForskutterer,
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        status = getStatusFromSource(source)
-                    )
+                        status = getStatusFromSource(source),
+                    ),
                 )
                 if (aktivtArbeidsforhold != null) {
                     log.info("Ber om ny nærmeste leder siden arbeidsforhold er aktivt, $callId")
@@ -183,13 +183,13 @@ class OppdaterNarmesteLederService(
                                 sykmeldingId = null,
                                 fnr = it.fnr,
                                 orgnr = it.orgnummer,
-                                name = navn?.toFormattedNameString() ?: throw RuntimeException("Fant ikke navn på ansatt i PDL $callId")
+                                name = navn?.toFormattedNameString() ?: throw RuntimeException("Fant ikke navn på ansatt i PDL $callId"),
                             ),
                             metadata = NlKafkaMetadata(
                                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                                source = source
-                            )
-                        )
+                                source = source,
+                            ),
+                        ),
                     )
                 }
             }
@@ -211,7 +211,7 @@ class OppdaterNarmesteLederService(
 
     private fun getExistingLeder(
         ledere: List<NarmesteLederRelasjon>,
-        nlFnr: String
+        nlFnr: String,
     ): NarmesteLederRelasjon? {
         return ledere.maxByOrNull { it.aktivFom }.takeIf { it?.narmesteLederFnr == nlFnr }
     }

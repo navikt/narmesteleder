@@ -21,7 +21,7 @@ class ArbeidsforholdClient(private val httpClient: HttpClient, private val url: 
             "$arbeidsforholdPath?" +
                 "$ansettelsesperiodeFomQueryParam=$ansettelsesperiodeFom&" +
                 "$ansettelsesperiodeTomQueryParam=$iMorgen&" +
-                "$sporingsinformasjon=false"
+                "$sporingsinformasjon=false",
         ) {
             header(navPersonident, fnr)
             header(HttpHeaders.Authorization, token)

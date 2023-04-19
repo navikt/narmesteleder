@@ -21,7 +21,7 @@ class NarmesteLederResponseConsumerService(
     private val applicationState: ApplicationState,
     private val topic: String,
     private val oppdaterNarmesteLederService: OppdaterNarmesteLederService,
-    private val cluster: String
+    private val cluster: String,
 ) {
 
     companion object {
@@ -54,7 +54,7 @@ class NarmesteLederResponseConsumerService(
                     oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                         it.value(),
                         it.partition(),
-                        it.offset()
+                        it.offset(),
                     )
                 } catch (e: Exception) {
                     if (cluster == "dev-gcp") {

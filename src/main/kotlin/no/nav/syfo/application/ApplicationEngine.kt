@@ -51,7 +51,7 @@ fun createApplicationEngine(
     tokenXIssuer: String,
     database: Database,
     pdlPersonService: PdlPersonService,
-    nlResponseProducer: NLResponseProducer
+    nlResponseProducer: NLResponseProducer,
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -68,7 +68,7 @@ fun createApplicationEngine(
             jwkProviderTokenX = jwkProviderTokenX,
             env = env,
             loginserviceIssuer = loginserviceIssuer,
-            tokenXIssuer = tokenXIssuer
+            tokenXIssuer = tokenXIssuer,
         )
         install(CallId) {
             retrieve { it.request.queryParameters["Nav-Callid"] }

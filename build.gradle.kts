@@ -26,7 +26,6 @@ val swaggerUiVersion = "4.18.2"
 val jedisVersion = "4.3.2"
 val kotlinVersion = "1.8.20"
 val confluentVersion = "7.3.3"
-val nettyCodecVersion = "4.1.86.Final"
 val commonsCodecVersion = "1.15"
 
 plugins {
@@ -73,7 +72,6 @@ dependencies {
     //This is to override version that is in io.ktor:ktor-client-apache
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.netty:netty-codec:$nettyCodecVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")

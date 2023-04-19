@@ -23,7 +23,7 @@ class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,
     private val pdlPersonRedisService: PdlPersonRedisService,
-    private val pdlScope: String
+    private val pdlScope: String,
 ) {
     companion object {
         const val AKTORID = "AKTORID"
@@ -73,7 +73,6 @@ class PdlPersonService(
     }
 
     suspend fun erIdentAktiv(fnr: String): Boolean {
-
         val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
         val pdlResponse = getPersonsFromPdl(listOf(fnr), accessToken)
 
@@ -96,7 +95,7 @@ class PdlPersonService(
 
     private suspend fun getPersonsFromPdl(
         fnrs: List<String>,
-        stsToken: String
+        stsToken: String,
     ): GetPersonResponse {
         val listFnrs = fnrs.chunked(100).map {
             GlobalScope.async(context = Dispatchers.IO) {
@@ -112,9 +111,9 @@ class PdlPersonService(
         return GetPersonResponse(
             ResponseData(
                 hentPersonBolk = personBolk,
-                hentIdenterBolk = identer
+                hentIdenterBolk = identer,
             ),
-            errors = errors
+            errors = errors,
         )
     }
 
@@ -127,7 +126,7 @@ class PdlPersonService(
                     PdlPerson(
                         navn = getNavn(it.person.navn.first()),
                         fnr = it.ident,
-                        aktorId = identMap[it.ident]?.firstOrNull { ident -> ident.gruppe == AKTORID }?.ident
+                        aktorId = identMap[it.ident]?.firstOrNull { ident -> ident.gruppe == AKTORID }?.ident,
                     )
                 } else {
                     null

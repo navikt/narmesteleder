@@ -65,7 +65,7 @@ fun Connection.lagreNarmesteleder(
     arbeidsgiverForskutterer: Boolean?,
     aktivFom: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
     aktivTom: OffsetDateTime? = null,
-    timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
+    timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
 ) {
     use { connection ->
         connection.prepareStatement(
@@ -81,7 +81,7 @@ fun Connection.lagreNarmesteleder(
                     aktiv_tom,
                     timestamp)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                 """
+                 """,
         ).use {
             it.setString(1, orgnummer)
             it.setString(2, fnr)

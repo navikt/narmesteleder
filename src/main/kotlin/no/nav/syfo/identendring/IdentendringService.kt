@@ -24,7 +24,7 @@ import java.time.ZoneOffset
 class IdentendringService(
     private val database: DatabaseInterface,
     private val oppdaterNarmesteLederService: OppdaterNarmesteLederService,
-    private val pdlService: PdlPersonService
+    private val pdlService: PdlPersonService,
 ) {
     suspend fun oppdaterIdent(identListe: List<Ident>) {
         if (harEndretFnr(identListe)) {
@@ -50,19 +50,19 @@ class IdentendringService(
                                 mobil = it.narmesteLederTelefonnummer,
                                 epost = it.narmesteLederEpost,
                                 fornavn = null,
-                                etternavn = null
+                                etternavn = null,
                             ),
                             sykmeldt = Sykmeldt(
                                 fnr = it.fnr,
-                                navn = null
+                                navn = null,
                             ),
                             aktivFom = it.aktivFom.atStartOfDay().atOffset(ZoneOffset.UTC),
-                            aktivTom = null
+                            aktivTom = null,
                         ),
-                        nlAvbrutt = null
+                        nlAvbrutt = null,
                     ),
                     partition = 0,
-                    offset = 0
+                    offset = 0,
                 )
             }
             log.info("Har oppdatert ${erLederForNlKoblinger.size} NL-koblinger der endret fnr er leder")
@@ -75,11 +75,11 @@ class IdentendringService(
                         nlAvbrutt = NlAvbrutt(
                             orgnummer = it.orgnummer,
                             sykmeldtFnr = it.fnr,
-                            aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
-                        )
+                            aktivTom = OffsetDateTime.now(ZoneOffset.UTC),
+                        ),
                     ),
                     partition = 0,
-                    offset = 0
+                    offset = 0,
                 )
                 oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                     nlResponseKafkaMessage = NlResponseKafkaMessage(
@@ -92,19 +92,19 @@ class IdentendringService(
                                 mobil = it.narmesteLederTelefonnummer,
                                 epost = it.narmesteLederEpost,
                                 fornavn = null,
-                                etternavn = null
+                                etternavn = null,
                             ),
                             sykmeldt = Sykmeldt(
                                 fnr = nyttFnr,
-                                navn = null
+                                navn = null,
                             ),
                             aktivFom = it.aktivFom.atStartOfDay().atOffset(ZoneOffset.UTC),
-                            aktivTom = null
+                            aktivTom = null,
                         ),
-                        nlAvbrutt = null
+                        nlAvbrutt = null,
                     ),
                     partition = 0,
-                    offset = 0
+                    offset = 0,
                 )
             }
             log.info("Har oppdatert ${erAnsattForNlKoblinger.size} NL-koblinger der endret fnr er ansatt")

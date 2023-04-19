@@ -65,15 +65,15 @@ class NarmesteLederApiKtTest : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     val narmesteLedere = objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
@@ -84,10 +84,13 @@ class NarmesteLederApiKtTest : FunSpec({
             }
             test("Returnerer inaktiv nærmeste leder") {
                 testDb.connection.lagreNarmesteleder(
-                    orgnummer = "orgnummer2", fnr = sykmeldtFnr, fnrNl = "fnrLeder2", arbeidsgiverForskutterer = true,
+                    orgnummer = "orgnummer2",
+                    fnr = sykmeldtFnr,
+                    fnrNl = "fnrLeder2",
+                    arbeidsgiverForskutterer = true,
                     aktivTom = OffsetDateTime.now(
-                        ZoneOffset.UTC
-                    ).minusDays(2)
+                        ZoneOffset.UTC,
+                    ).minusDays(2),
                 )
                 with(
                     handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
@@ -95,15 +98,15 @@ class NarmesteLederApiKtTest : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     val narmesteLedere = objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
@@ -117,15 +120,15 @@ class NarmesteLederApiKtTest : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     val narmesteLedere = objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
@@ -136,27 +139,27 @@ class NarmesteLederApiKtTest : FunSpec({
                 coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
                     Pair(
                         fnrLeder,
-                        PdlPerson(Navn("Fornavn", null, "Etternavn"), fnrLeder, "aktorid")
-                    )
+                        PdlPerson(Navn("Fornavn", null, "Etternavn"), fnrLeder, "aktorid"),
+                    ),
                 )
                 with(
                     handleRequest(
                         HttpMethod.Get,
-                        "/sykmeldt/narmesteledere?utvidet=ja"
+                        "/sykmeldt/narmesteledere?utvidet=ja",
                     ) {
                         addHeader("Sykmeldt-Fnr", sykmeldtFnr)
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     val narmesteLedere = objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
@@ -183,15 +186,15 @@ class NarmesteLederApiKtTest : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                     response.content shouldNotBeEqualTo null
@@ -204,15 +207,15 @@ class NarmesteLederApiKtTest : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "feil",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "feil",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -240,5 +243,5 @@ private fun forventetNarmesteLeder(navn: String? = null): NarmesteLederRelasjon 
         skrivetilgang = true,
         tilganger = listOf(Tilgang.SYKMELDING, Tilgang.SYKEPENGESOKNAD, Tilgang.MOTE, Tilgang.OPPFOLGINGSPLAN),
         navn = navn,
-        timestamp = OffsetDateTime.now(ZoneOffset.UTC)
+        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
     )

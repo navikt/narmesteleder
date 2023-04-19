@@ -51,15 +51,15 @@ class ForskutteringApiSpek : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.content?.shouldBeEqualTo("{\"forskuttering\":\"JA\"}")
                 }
@@ -72,15 +72,15 @@ class ForskutteringApiSpek : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.content?.shouldBeEqualTo("{\"forskuttering\":\"NEI\"}")
                 }
@@ -93,15 +93,15 @@ class ForskutteringApiSpek : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.content?.shouldBeEqualTo("{\"forskuttering\":\"UKJENT\"}")
                 }
@@ -113,15 +113,15 @@ class ForskutteringApiSpek : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.content?.shouldBeEqualTo("{\"forskuttering\":\"UKJENT\"}")
                 }
@@ -135,15 +135,15 @@ class ForskutteringApiSpek : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.content?.shouldBeEqualTo("{\"forskuttering\":\"JA\"}")
                 }
@@ -167,15 +167,15 @@ class ForskutteringApiSpek : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                     response.content shouldNotBeEqualTo null
@@ -188,15 +188,15 @@ class ForskutteringApiSpek : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "narmesteleder",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                     response.content shouldNotBeEqualTo null
@@ -209,15 +209,15 @@ class ForskutteringApiSpek : FunSpec({
                         addHeader(
                             HttpHeaders.Authorization,
                             "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "feil",
-                                subject = "123",
-                                issuer = env.jwtIssuer
-                            )
-                            }"
+                                generateJWT(
+                                    "syfosmaltinn",
+                                    "feil",
+                                    subject = "123",
+                                    issuer = env.jwtIssuer,
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }

@@ -40,7 +40,7 @@ class NarmesteLederUserApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Post, "/9999/avkreft") {
                         addHeader("Authorization", "Bearer ${generateJWTLoginservice(audience = "loginserviceId1", subject = "12345678901", issuer = "issuer")}")
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
@@ -49,7 +49,7 @@ class NarmesteLederUserApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Post, "/9999/avkreft") {
                         addHeader("Authorization", "Bearer ${generateJWTLoginservice(audience = "loginserviceId1", subject = "12345678901", issuer = "annenIssuer")}")
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -58,7 +58,7 @@ class NarmesteLederUserApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Post, "/9999/avkreft") {
                         addHeader("Authorization", "Bearer ${generateJWTLoginservice(audience = "feil", subject = "12345678901", issuer = "issuer")}")
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -67,7 +67,7 @@ class NarmesteLederUserApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Post, "/9999/avkreft") {
                         addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = "12345678901", issuer = "issuer")}")
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
@@ -76,7 +76,7 @@ class NarmesteLederUserApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Post, "/9999/avkreft") {
                         addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = "12345678901", issuer = "annenIssuer")}")
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -85,7 +85,7 @@ class NarmesteLederUserApiKtTest : FunSpec({
                 with(
                     handleRequest(HttpMethod.Post, "/9999/avkreft") {
                         addHeader("Cookie", "selvbetjening-idtoken=${generateJWTLoginservice(audience = "feil", subject = "12345678901", issuer = "issuer")}")
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }

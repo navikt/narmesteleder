@@ -18,7 +18,7 @@ fun DatabaseInterface.finnAktiveNarmestelederkoblinger(narmesteLederFnr: String)
         connection.prepareStatement(
             """
            SELECT * from narmeste_leder where narmeste_leder_fnr = ? and aktiv_tom is null;
-        """
+        """,
         ).use {
             it.setString(1, narmesteLederFnr)
             it.executeQuery().toList { toNarmesteLederRelasjon() }
@@ -31,7 +31,7 @@ fun DatabaseInterface.finnNarmestelederForSykmeldt(fnr: String, orgnummer: Strin
         connection.prepareStatement(
             """
            SELECT * from narmeste_leder where bruker_fnr = ? and orgnummer = ? and aktiv_tom is null;
-        """
+        """,
         ).use {
             it.setString(1, fnr)
             it.setString(2, orgnummer)
@@ -45,7 +45,7 @@ fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(fnr: String): List<Narme
         connection.prepareStatement(
             """
            SELECT * from narmeste_leder where bruker_fnr = ?;
-        """
+        """,
         ).use {
             it.setString(1, fnr)
             it.executeQuery().toList { toNarmesteLederRelasjon() }
@@ -58,7 +58,7 @@ fun DatabaseInterface.finnAktiveNarmesteledereForSykmeldt(fnr: String): List<Nar
         connection.prepareStatement(
             """
            SELECT * from narmeste_leder where bruker_fnr = ? and aktiv_tom is null;
-        """
+        """,
         ).use {
             it.setString(1, fnr)
             it.executeQuery().toList { toNarmesteLederRelasjon() }
@@ -71,7 +71,7 @@ fun DatabaseInterface.getAnsatte(fnr: String): List<NarmesteLederRelasjon> {
         connection.prepareStatement(
             """
            SELECT * from narmeste_leder where narmeste_leder_fnr = ? and aktiv_tom is null;
-        """
+        """,
         ).use {
             it.setString(1, fnr)
             it.executeQuery().toList { toNarmesteLederRelasjon() }
@@ -84,7 +84,7 @@ fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(fnr: String, orgnummer: 
         connection.prepareStatement(
             """
            SELECT * from narmeste_leder where bruker_fnr = ? and orgnummer = ?;
-        """
+        """,
         ).use {
             it.setString(1, fnr)
             it.setString(2, orgnummer)
@@ -119,7 +119,7 @@ fun DatabaseInterface.finnForskuttering(fnr: String, orgnummer: String): Forskut
         connection.prepareStatement(
             """
            SELECT arbeidsgiver_forskutterer from narmeste_leder where bruker_fnr = ? and orgnummer = ? ORDER BY aktiv_tom DESC NULLS FIRST;
-        """
+        """,
         ).use {
             it.setString(1, fnr)
             it.setString(2, orgnummer)
@@ -143,7 +143,7 @@ private fun Connection.lagreNarmesteleder(narmesteLederId: UUID, nlResponse: NlR
                     aktiv_tom,
                     timestamp)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-                 """
+                 """,
     ).use {
         it.setObject(1, narmesteLederId)
         it.setString(2, nlResponse.orgnummer)
@@ -155,8 +155,8 @@ private fun Connection.lagreNarmesteleder(narmesteLederId: UUID, nlResponse: NlR
         it.setTimestamp(
             8,
             nlResponse.aktivFom?.let { Timestamp.from(nlResponse.aktivFom.toInstant()) } ?: Timestamp.from(
-                kafkaTimestamp.toInstant()
-            )
+                kafkaTimestamp.toInstant(),
+            ),
         )
         it.setObject(9, nlResponse.aktivTom?.let { Timestamp.from(nlResponse.aktivTom.toInstant()) })
         it.setTimestamp(10, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
@@ -170,13 +170,13 @@ private fun Connection.deaktiverNarmesteLeder(narmesteLederId: UUID, aktivTom: O
             UPDATE narmeste_leder 
                 SET aktiv_tom = ?, timestamp = ?
                 WHERE narmeste_leder_id = ?;
-            """
+            """,
     ).use {
         it.setTimestamp(
             1,
             aktivTom?.let { Timestamp.from(aktivTom.toInstant()) } ?: Timestamp.from(
-                OffsetDateTime.now(ZoneOffset.UTC).toInstant()
-            )
+                OffsetDateTime.now(ZoneOffset.UTC).toInstant(),
+            ),
         )
         it.setTimestamp(2, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
         it.setObject(3, narmesteLederId)
@@ -189,7 +189,7 @@ private fun Connection.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: 
             UPDATE narmeste_leder 
                 SET narmeste_leder_telefonnummer = ?, narmeste_leder_epost = ?, arbeidsgiver_forskutterer = ?, aktiv_tom = null, timestamp = ?
                 WHERE narmeste_leder_id = ?;
-            """
+            """,
     ).use {
         it.setString(1, nlResponse.leder.mobil)
         it.setString(2, nlResponse.leder.epost)
@@ -210,7 +210,7 @@ private fun ResultSet.toNarmesteLederRelasjon(): NarmesteLederRelasjon =
         aktivFom = getTimestamp("aktiv_fom").toInstant().atOffset(ZoneOffset.UTC).toLocalDate(),
         aktivTom = getTimestamp("aktiv_tom")?.toInstant()?.atOffset(ZoneOffset.UTC)?.toLocalDate(),
         arbeidsgiverForskutterer = getObject("arbeidsgiver_forskutterer")?.toString()?.toBoolean(),
-        timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC)
+        timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
     )
 
 private fun ResultSet.toForskutteringRespons(): ForskutteringRespons {

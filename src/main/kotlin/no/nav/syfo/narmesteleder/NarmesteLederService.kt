@@ -10,7 +10,7 @@ import no.nav.syfo.pdl.service.PdlPersonService
 @DelicateCoroutinesApi
 class NarmesteLederService(
     private val database: DatabaseInterface,
-    private val pdlPersonService: PdlPersonService
+    private val pdlPersonService: PdlPersonService,
 ) {
     suspend fun hentNarmesteledereMedNavn(sykmeldtFnr: String, callId: String): List<NarmesteLederRelasjon> {
         val narmesteLederRelasjoner = database.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -36,7 +36,7 @@ class NarmesteLederService(
             aktivTom = aktivTom,
             arbeidsgiverForskutterer = arbeidsgiverForskutterer,
             timestamp = timestamp,
-            navn = navn
+            navn = navn,
         )
     }
 }

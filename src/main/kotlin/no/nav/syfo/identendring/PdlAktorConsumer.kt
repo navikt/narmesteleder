@@ -26,7 +26,7 @@ class PdlAktorConsumer(
     private val applicationState: ApplicationState,
     private val aivenTopic: String,
     private val leaderElection: LeaderElection,
-    private val identendringService: IdentendringService
+    private val identendringService: IdentendringService,
 ) {
     companion object {
         private const val DELAY_ON_ERROR_SECONDS = 60L
@@ -86,7 +86,7 @@ fun GenericRecord.toIdentListe(): List<Ident> {
                 "AKTORID" -> IdentType.AKTORID
                 "NPID" -> IdentType.NPID
                 else -> throw IllegalStateException("Har mottatt ident med ukjent type")
-            }
+            },
         )
     }
 }

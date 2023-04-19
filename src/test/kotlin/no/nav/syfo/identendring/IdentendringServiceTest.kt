@@ -44,7 +44,7 @@ class IdentendringServiceTest : FunSpec({
             Pair(fnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
             Pair(nyttFnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
             Pair(sykmeldtFnr, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2")),
-            Pair(nyttFnrSykmeldt, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2"))
+            Pair(nyttFnrSykmeldt, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2")),
         )
         coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()
     }
@@ -60,7 +60,7 @@ class IdentendringServiceTest : FunSpec({
             val identListeUtenEndringIFnr = listOf(
                 Ident(idnummer = "1234", gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),
                 Ident(idnummer = "1111", gjeldende = true, type = IdentType.AKTORID),
-                Ident(idnummer = "2222", gjeldende = false, type = IdentType.AKTORID)
+                Ident(idnummer = "2222", gjeldende = false, type = IdentType.AKTORID),
             )
 
             identendringService.oppdaterIdent(identListeUtenEndringIFnr)
@@ -72,7 +72,7 @@ class IdentendringServiceTest : FunSpec({
             val identListeUtenEndringIFnr = listOf(
                 Ident(idnummer = "1234", gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),
                 Ident(idnummer = "1111", gjeldende = true, type = IdentType.AKTORID),
-                Ident(idnummer = "2222", gjeldende = false, type = IdentType.FOLKEREGISTERIDENT)
+                Ident(idnummer = "2222", gjeldende = false, type = IdentType.FOLKEREGISTERIDENT),
             )
 
             identendringService.oppdaterIdent(identListeUtenEndringIFnr)
@@ -82,26 +82,32 @@ class IdentendringServiceTest : FunSpec({
         }
         test("Oppdaterer alle aktive NL-koblinger hvis leder har byttet fnr") {
             testDb.connection.lagreNarmesteleder(
-                orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true,
+                orgnummer = "orgnummer",
+                fnr = sykmeldtFnr,
+                fnrNl = fnrLeder,
+                arbeidsgiverForskutterer = true,
                 aktivFom = OffsetDateTime.now(
-                    ZoneOffset.UTC
-                ).minusYears(1)
+                    ZoneOffset.UTC,
+                ).minusYears(1),
             )
             testDb.connection.lagreNarmesteleder(
-                orgnummer = "orgnummer", fnr = "123456", fnrNl = fnrLeder, arbeidsgiverForskutterer = true,
+                orgnummer = "orgnummer",
+                fnr = "123456",
+                fnrNl = fnrLeder,
+                arbeidsgiverForskutterer = true,
                 aktivFom = OffsetDateTime.now(
-                    ZoneOffset.UTC
+                    ZoneOffset.UTC,
                 ).minusYears(2),
                 aktivTom = OffsetDateTime.now(
-                    ZoneOffset.UTC
-                ).minusYears(1)
+                    ZoneOffset.UTC,
+                ).minusYears(1),
             )
 
             val aktorId = "1111"
             val identListe = listOf(
                 Ident(idnummer = nyttFnrLeder, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),
                 Ident(idnummer = aktorId, gjeldende = true, type = IdentType.AKTORID),
-                Ident(idnummer = fnrLeder, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT)
+                Ident(idnummer = fnrLeder, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT),
 
             )
             coEvery { pdlPersonService.erIdentAktiv(any()) } returns true
@@ -134,19 +140,25 @@ class IdentendringServiceTest : FunSpec({
         }
         test("Oppretter aktive NL-koblinger med nytt fnr og bryter aktive koblinger med gammelt fnr hvis ansatt bytter fnr") {
             testDb.connection.lagreNarmesteleder(
-                orgnummer = "orgnummer", fnr = sykmeldtFnr, fnrNl = fnrLeder, arbeidsgiverForskutterer = true,
+                orgnummer = "orgnummer",
+                fnr = sykmeldtFnr,
+                fnrNl = fnrLeder,
+                arbeidsgiverForskutterer = true,
                 aktivFom = OffsetDateTime.now(
-                    ZoneOffset.UTC
-                ).minusYears(1)
+                    ZoneOffset.UTC,
+                ).minusYears(1),
             )
             testDb.connection.lagreNarmesteleder(
-                orgnummer = "orgnummer2", fnr = sykmeldtFnr, fnrNl = "123456", arbeidsgiverForskutterer = true,
+                orgnummer = "orgnummer2",
+                fnr = sykmeldtFnr,
+                fnrNl = "123456",
+                arbeidsgiverForskutterer = true,
                 aktivFom = OffsetDateTime.now(
-                    ZoneOffset.UTC
+                    ZoneOffset.UTC,
                 ).minusYears(2),
                 aktivTom = OffsetDateTime.now(
-                    ZoneOffset.UTC
-                ).minusYears(1)
+                    ZoneOffset.UTC,
+                ).minusYears(1),
             )
 
             coEvery { pdlPersonService.erIdentAktiv(nyttFnrSykmeldt) } returns true
@@ -155,7 +167,7 @@ class IdentendringServiceTest : FunSpec({
             val identListe = listOf(
                 Ident(idnummer = nyttFnrSykmeldt, gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),
                 Ident(idnummer = "1111", gjeldende = true, type = IdentType.AKTORID),
-                Ident(idnummer = sykmeldtFnr, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT)
+                Ident(idnummer = sykmeldtFnr, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT),
             )
 
             identendringService.oppdaterIdent(identListe)

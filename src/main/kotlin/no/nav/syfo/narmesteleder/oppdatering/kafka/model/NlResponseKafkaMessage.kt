@@ -6,5 +6,5 @@ import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 data class NlResponseKafkaMessage(
     val kafkaMetadata: KafkaMetadata,
     val nlResponse: NlResponse?,
-    val nlAvbrutt: NlAvbrutt?
+    val nlAvbrutt: NlAvbrutt?,
 )

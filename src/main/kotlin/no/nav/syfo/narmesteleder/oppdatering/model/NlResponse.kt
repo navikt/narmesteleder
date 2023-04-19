@@ -8,5 +8,5 @@ data class NlResponse(
     val leder: Leder,
     val sykmeldt: Sykmeldt,
     val aktivFom: OffsetDateTime? = null,
-    val aktivTom: OffsetDateTime? = null
+    val aktivTom: OffsetDateTime? = null,
 )

@@ -17,12 +17,12 @@ data class NarmesteLederRelasjon(
     val skrivetilgang: Boolean = true,
     val tilganger: List<Tilgang> = listOf(Tilgang.SYKMELDING, Tilgang.SYKEPENGESOKNAD, Tilgang.MOTE, Tilgang.OPPFOLGINGSPLAN),
     val timestamp: OffsetDateTime,
-    val navn: String? = null
+    val navn: String? = null,
 )
 
 enum class Tilgang {
     SYKMELDING,
     SYKEPENGESOKNAD,
     MOTE,
-    OPPFOLGINGSPLAN
+    OPPFOLGINGSPLAN,
 }

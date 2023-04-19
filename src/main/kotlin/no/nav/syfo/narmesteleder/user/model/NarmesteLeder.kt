@@ -11,5 +11,5 @@ data class NarmesteLeder(
     val aktivTom: LocalDate?,
     val arbeidsgiverForskutterer: Boolean?,
     val timestamp: OffsetDateTime,
-    val navn: String?
+    val navn: String?,
 )

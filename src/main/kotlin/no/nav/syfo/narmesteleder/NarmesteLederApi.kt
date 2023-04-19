@@ -16,7 +16,7 @@ import org.slf4j.MDC
 @DelicateCoroutinesApi
 fun Route.registrerNarmesteLederApi(
     database: DatabaseInterface,
-    utvidetNarmesteLederService: NarmesteLederService
+    utvidetNarmesteLederService: NarmesteLederService,
 ) {
     get("/leder/narmesteleder/aktive") {
         val callId = MDC.get("Nav-Callid")
@@ -60,8 +60,8 @@ fun Route.registrerNarmesteLederApi(
                 call.respond(
                     utvidetNarmesteLederService.hentNarmesteledereMedNavn(
                         sykmeldtFnr = sykmeldtFnr,
-                        callId = callId
-                    )
+                        callId = callId,
+                    ),
                 )
             } else {
                 val narmesteLederRelasjoner = database.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)

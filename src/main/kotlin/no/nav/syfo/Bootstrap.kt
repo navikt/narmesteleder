@@ -146,7 +146,7 @@ fun main() {
     val pdlClient = PdlClient(
         httpClient,
         env.pdlGraphqlPath,
-        PdlClient::class.java.getResource("/graphql/getPerson.graphql")!!.readText().replace(Regex("[\n\t]"), "")
+        PdlClient::class.java.getResource("/graphql/getPerson.graphql")!!.readText().replace(Regex("[\n\t]"), ""),
     )
     val pdlPersonRedisService = PdlPersonRedisService(jedisPool, env.redisSecret)
     val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, env.pdlScope)
@@ -156,24 +156,24 @@ fun main() {
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }.toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
         StringDeserializer(),
-        JacksonKafkaDeserializer(NlResponseKafkaMessage::class)
+        JacksonKafkaDeserializer(NlResponseKafkaMessage::class),
     )
     val kafkaProducerNlResponse = KafkaProducer<String, NlResponseKafkaMessage>(
         KafkaUtils
             .getAivenKafkaConfig()
-            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class)
+            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class),
     )
     val nlResponseProducer = NLResponseProducer(kafkaProducerNlResponse, env.nlResponseTopic)
     val kafkaProducerNlRequest = KafkaProducer<String, NlRequestKafkaMessage>(
         KafkaUtils
             .getAivenKafkaConfig()
-            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class)
+            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class),
     )
     val nlRequestProducer = NLRequestProducer(kafkaProducerNlRequest, env.nlRequestTopic)
     val kafkaProducerNarmesteLederLeesah = KafkaProducer<String, NarmesteLederLeesah>(
         KafkaUtils
             .getAivenKafkaConfig()
-            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class)
+            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class),
     )
     val narmesteLederLeesahProducer = NarmesteLederLeesahProducer(kafkaProducerNarmesteLederLeesah, env.narmesteLederLeesahTopic)
 
@@ -187,7 +187,7 @@ fun main() {
         tokenXIssuer = wellKnownTokenX.issuer,
         database = database,
         pdlPersonService = pdlPersonService,
-        nlResponseProducer = nlResponseProducer
+        nlResponseProducer = nlResponseProducer,
     )
 
     val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, arbeidsgiverService, database, narmesteLederLeesahProducer, nlRequestProducer)
@@ -196,7 +196,7 @@ fun main() {
         applicationState,
         env.nlResponseTopic,
         oppdaterNarmesteLederService,
-        env.cluster
+        env.cluster,
     )
 
     val identendringService = IdentendringService(database, oppdaterNarmesteLederService, pdlPersonService)
@@ -218,7 +218,7 @@ fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<Strin
         setProperty(KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO")
     }.toConsumerConfig(
         "${environment.applicationName}-consumer",
-        valueDeserializer = KafkaAvroDeserializer::class
+        valueDeserializer = KafkaAvroDeserializer::class,
     ).also {
         it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
         it["specific.avro.reader"] = false
@@ -236,7 +236,7 @@ data class WellKnown(
     val authorization_endpoint: String,
     val token_endpoint: String,
     val jwks_uri: String,
-    val issuer: String
+    val issuer: String,
 )
 
 fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =
@@ -246,5 +246,5 @@ fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =
 data class WellKnownTokenX(
     val token_endpoint: String,
     val jwks_uri: String,
-    val issuer: String
+    val issuer: String,
 )

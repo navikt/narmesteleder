@@ -50,14 +50,14 @@ class PdlPersonServiceTest : FunSpec({
                 ResponseData(
                     hentPersonBolk = listOf(
                         HentPersonBolk(fnrLeder1, Person(listOf(no.nav.syfo.pdl.client.model.Navn("fornavn", null, "etternavn"))), "ok"),
-                        HentPersonBolk(fnrLeder2, Person(listOf(no.nav.syfo.pdl.client.model.Navn("fornavn2", "mellomnavn", "etternavn2"))), "ok")
+                        HentPersonBolk(fnrLeder2, Person(listOf(no.nav.syfo.pdl.client.model.Navn("fornavn2", "mellomnavn", "etternavn2"))), "ok"),
                     ),
                     hentIdenterBolk = listOf(
                         HentIdenterBolk(fnrLeder1, listOf(PdlIdent(fnrLeder1, "FOLKEREGISTERIDENT"), PdlIdent(aktorIdLeder1, PdlPersonService.AKTORID)), "ok"),
-                        HentIdenterBolk(fnrLeder2, listOf(PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"), PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID)), "ok")
-                    )
+                        HentIdenterBolk(fnrLeder2, listOf(PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"), PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID)), "ok"),
+                    ),
                 ),
-                errors = null
+                errors = null,
             )
 
             val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
@@ -71,14 +71,14 @@ class PdlPersonServiceTest : FunSpec({
                 ResponseData(
                     hentPersonBolk = listOf(
                         HentPersonBolk(fnrLeder1, null, "not_found"),
-                        HentPersonBolk(fnrLeder2, Person(listOf(no.nav.syfo.pdl.client.model.Navn("fornavn", null, "etternavn"))), "ok")
+                        HentPersonBolk(fnrLeder2, Person(listOf(no.nav.syfo.pdl.client.model.Navn("fornavn", null, "etternavn"))), "ok"),
                     ),
                     hentIdenterBolk = listOf(
                         HentIdenterBolk(fnrLeder1, null, "not_found"),
-                        HentIdenterBolk(fnrLeder2, listOf(PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"), PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID)), "ok")
-                    )
+                        HentIdenterBolk(fnrLeder2, listOf(PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"), PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID)), "ok"),
+                    ),
                 ),
-                errors = null
+                errors = null,
             )
 
             val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
@@ -99,7 +99,7 @@ class PdlPersonServiceTest : FunSpec({
         test("Henter navn og aktørid for to ledere fra redis") {
             coEvery { pdlPersonRedisService.getPerson(eq(listOf(fnrLeder1, fnrLeder2))) } returns mapOf(
                 fnrLeder1 to PdlPersonRedisModel(NavnRedisModel("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1),
-                fnrLeder2 to PdlPersonRedisModel(NavnRedisModel("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
+                fnrLeder2 to PdlPersonRedisModel(NavnRedisModel("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2),
             )
 
             val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
@@ -112,18 +112,18 @@ class PdlPersonServiceTest : FunSpec({
         test("Henter navn og aktørid for to ledere, en fra redis og en fra PDL") {
             coEvery { pdlPersonRedisService.getPerson(eq(listOf(fnrLeder1, fnrLeder2))) } returns mapOf(
                 fnrLeder1 to PdlPersonRedisModel(NavnRedisModel("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1),
-                fnrLeder2 to null
+                fnrLeder2 to null,
             )
             coEvery { pdlClient.getPersoner(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentPersonBolk = listOf(
-                        HentPersonBolk(fnrLeder2, Person(listOf(no.nav.syfo.pdl.client.model.Navn("fornavn2", "mellomnavn", "etternavn2"))), "ok")
+                        HentPersonBolk(fnrLeder2, Person(listOf(no.nav.syfo.pdl.client.model.Navn("fornavn2", "mellomnavn", "etternavn2"))), "ok"),
                     ),
                     hentIdenterBolk = listOf(
-                        HentIdenterBolk(fnrLeder2, listOf(PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"), PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID)), "ok")
-                    )
+                        HentIdenterBolk(fnrLeder2, listOf(PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"), PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID)), "ok"),
+                    ),
                 ),
-                errors = null
+                errors = null,
             )
 
             val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
@@ -149,22 +149,22 @@ class PdlPersonServiceTest : FunSpec({
                                         no.nav.syfo.pdl.client.model.Navn(
                                             "Fornavn",
                                             "Mellomnanv",
-                                            "Etternavn"
-                                        )
-                                    )
+                                            "Etternavn",
+                                        ),
+                                    ),
                                 ),
-                                code = "ok"
+                                code = "ok",
                             )
                         },
                         hentIdenterBolk = fnrs.map {
                             HentIdenterBolk(
                                 it,
                                 listOf(PdlIdent(it, "FOLKEREGISTERIDENT"), PdlIdent(it, PdlPersonService.AKTORID)),
-                                code = "ok"
+                                code = "ok",
                             )
-                        }
+                        },
                     ),
-                    emptyList()
+                    emptyList(),
                 )
             }
 
@@ -178,7 +178,7 @@ class PdlPersonServiceTest : FunSpec({
             coEvery { pdlClient.getPersoner(any(), any()) } returns
                 GetPersonResponse(
                     ResponseData(hentPersonBolk = emptyList(), hentIdenterBolk = emptyList()),
-                    errors = null
+                    errors = null,
                 )
 
             val exception = assertFailsWith<PersonNotFoundException> {
@@ -201,22 +201,22 @@ class PdlPersonServiceTest : FunSpec({
                                         no.nav.syfo.pdl.client.model.Navn(
                                             "Fornavn",
                                             "Mellomnanv",
-                                            "Etternavn"
-                                        )
-                                    )
+                                            "Etternavn",
+                                        ),
+                                    ),
                                 ),
-                                code = "ok"
-                            )
+                                code = "ok",
+                            ),
                         ),
                         hentIdenterBolk = listOf(
                             HentIdenterBolk(
                                 "123",
                                 listOf(PdlIdent("123", "FOLKEREGISTERIDENT"), PdlIdent("234", PdlPersonService.AKTORID)),
-                                code = "ok"
-                            )
-                        )
+                                code = "ok",
+                            ),
+                        ),
                     ),
-                    emptyList()
+                    emptyList(),
                 )
 
             val exception = assertFailsWith<InactiveIdentException> {

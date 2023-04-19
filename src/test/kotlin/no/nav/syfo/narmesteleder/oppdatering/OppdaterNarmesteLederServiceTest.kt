@@ -52,7 +52,7 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
         coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
             Pair(fnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
             Pair(fnrLeder2, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder2, "aktorid2")),
-            Pair(sykmeldtFnr, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid3"))
+            Pair(sykmeldtFnr, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid3")),
         )
     }
     afterTest {
@@ -67,10 +67,12 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
-                    "orgnummer", utbetalesLonn = true, Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
-                    Sykmeldt(sykmeldtFnr, "Syk Sykesen")
+                    "orgnummer",
+                    utbetalesLonn = true,
+                    Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
+                    Sykmeldt(sykmeldtFnr, "Syk Sykesen"),
                 ),
-                nlAvbrutt = null
+                nlAvbrutt = null,
             )
 
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
@@ -93,10 +95,12 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
-                    "orgnummer", utbetalesLonn = false, Leder(fnrLeder, "90909090", "epost2@nav.no", "Leder", "Ledersen"),
-                    Sykmeldt(sykmeldtFnr, "Syk Sykesen")
+                    "orgnummer",
+                    utbetalesLonn = false,
+                    Leder(fnrLeder, "90909090", "epost2@nav.no", "Leder", "Ledersen"),
+                    Sykmeldt(sykmeldtFnr, "Syk Sykesen"),
                 ),
-                nlAvbrutt = null
+                nlAvbrutt = null,
             )
 
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
@@ -119,10 +123,12 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
-                    "orgnummer", utbetalesLonn = false, Leder(fnrLeder2, "40404040", "epost2@nav.no", "Leder", "Ledersen"),
-                    Sykmeldt(sykmeldtFnr, "Syk Sykesen")
+                    "orgnummer",
+                    utbetalesLonn = false,
+                    Leder(fnrLeder2, "40404040", "epost2@nav.no", "Leder", "Ledersen"),
+                    Sykmeldt(sykmeldtFnr, "Syk Sykesen"),
                 ),
-                nlAvbrutt = null
+                nlAvbrutt = null,
             )
 
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
@@ -149,10 +155,12 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
-                    "orgnummer2", utbetalesLonn = false, Leder(fnrLeder2, "40404040", "epost2@nav.no", "Leder", "Ledersen"),
-                    Sykmeldt(sykmeldtFnr, "Syk Sykesen")
+                    "orgnummer2",
+                    utbetalesLonn = false,
+                    Leder(fnrLeder2, "40404040", "epost2@nav.no", "Leder", "Ledersen"),
+                    Sykmeldt(sykmeldtFnr, "Syk Sykesen"),
                 ),
-                nlAvbrutt = null
+                nlAvbrutt = null,
             )
 
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
@@ -172,15 +180,17 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
         test("Feiler hvis ansatt ikke finnes i PDL") {
             coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
                 Pair(fnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
-                Pair(sykmeldtFnr, null)
+                Pair(sykmeldtFnr, null),
             )
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
-                    "orgnummer", utbetalesLonn = true, Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
-                    Sykmeldt(sykmeldtFnr, "Syk Sykesen")
+                    "orgnummer",
+                    utbetalesLonn = true,
+                    Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
+                    Sykmeldt(sykmeldtFnr, "Syk Sykesen"),
                 ),
-                nlAvbrutt = null
+                nlAvbrutt = null,
             )
 
             assertFailsWith<IllegalStateException> {
@@ -192,15 +202,17 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
         test("Feiler hvis nærmeste leder ikke finnes i PDL") {
             coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
                 Pair(fnrLeder, null),
-                Pair(sykmeldtFnr, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2"))
+                Pair(sykmeldtFnr, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2")),
             )
             val nlResponseKafkaMessage = NlResponseKafkaMessage(
                 kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
                 nlResponse = NlResponse(
-                    "orgnummer", utbetalesLonn = true, Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
-                    Sykmeldt(sykmeldtFnr, "Syk Sykesen")
+                    "orgnummer",
+                    utbetalesLonn = true,
+                    Leder(fnrLeder, "90909090", "epost@nav.no", "Leder", "Ledersen"),
+                    Sykmeldt(sykmeldtFnr, "Syk Sykesen"),
                 ),
-                nlAvbrutt = null
+                nlAvbrutt = null,
             )
 
             assertFailsWith<IllegalStateException> {
@@ -219,8 +231,8 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
                 nlAvbrutt = NlAvbrutt(
                     orgnummer = "orgnummer",
                     sykmeldtFnr = sykmeldtFnr,
-                    aktivTom = aktivTom
-                )
+                    aktivTom = aktivTom,
+                ),
             )
 
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
@@ -242,8 +254,8 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
                 nlAvbrutt = NlAvbrutt(
                     orgnummer = "orgnummer",
                     sykmeldtFnr = sykmeldtFnr,
-                    aktivTom = aktivTom
-                )
+                    aktivTom = aktivTom,
+                ),
             )
 
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
@@ -261,8 +273,8 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
                 nlAvbrutt = NlAvbrutt(
                     orgnummer = "orgnummer",
                     sykmeldtFnr = sykmeldtFnr,
-                    aktivTom = aktivTom
-                )
+                    aktivTom = aktivTom,
+                ),
             )
 
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
@@ -280,8 +292,8 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
                 nlAvbrutt = NlAvbrutt(
                     orgnummer = "orgnummer",
                     sykmeldtFnr = sykmeldtFnr,
-                    aktivTom = aktivTom
-                )
+                    aktivTom = aktivTom,
+                ),
             )
 
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
@@ -299,8 +311,8 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
                 nlAvbrutt = NlAvbrutt(
                     orgnummer = "orgnummer",
                     sykmeldtFnr = sykmeldtFnr,
-                    aktivTom = aktivTom
-                )
+                    aktivTom = aktivTom,
+                ),
             )
 
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)
@@ -317,8 +329,8 @@ class OppdaterNarmesteLederServiceTest : FunSpec({
                 nlAvbrutt = NlAvbrutt(
                     orgnummer = "orgnummer",
                     sykmeldtFnr = sykmeldtFnr,
-                    aktivTom = aktivTom
-                )
+                    aktivTom = aktivTom,
+                ),
             )
 
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(nlResponseKafkaMessage, 0, 0)

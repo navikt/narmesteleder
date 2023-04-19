@@ -42,14 +42,17 @@ class UtvidetNarmesteLederServiceTest : FunSpec({
         test("Setter riktig navn på ledere") {
             testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = fnr, fnrNl = fnrLeder1, arbeidsgiverForskutterer = true)
             testDb.connection.lagreNarmesteleder(
-                orgnummer = "orgnummer2", fnr = fnr, fnrNl = fnrLeder2, arbeidsgiverForskutterer = true,
+                orgnummer = "orgnummer2",
+                fnr = fnr,
+                fnrNl = fnrLeder2,
+                arbeidsgiverForskutterer = true,
                 aktivTom = OffsetDateTime.now(
-                    ZoneOffset.UTC
-                ).minusDays(2)
+                    ZoneOffset.UTC,
+                ).minusDays(2),
             )
             coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
                 Pair(fnrLeder1, PdlPerson(Navn("FORNAVN EKSTRANAVN", null, "ETTERNAVN"), fnrLeder1, "aktorid1")),
-                Pair(fnrLeder2, PdlPerson(Navn("FORNAVN2", "MELLOMNAVN", "BINDESTREK-ETTERNAVN"), fnrLeder2, "aktorid2"))
+                Pair(fnrLeder2, PdlPerson(Navn("FORNAVN2", "MELLOMNAVN", "BINDESTREK-ETTERNAVN"), fnrLeder2, "aktorid2")),
             )
 
             val narmesteLedereMedNavn = utvidetNarmesteLederService.hentNarmesteledereMedNavn(fnr, callId)
@@ -63,14 +66,17 @@ class UtvidetNarmesteLederServiceTest : FunSpec({
         test("Setter null som navn hvis navn mangler i PDL (feiler ikke)") {
             testDb.connection.lagreNarmesteleder(orgnummer = "orgnummer", fnr = fnr, fnrNl = fnrLeder1, arbeidsgiverForskutterer = true)
             testDb.connection.lagreNarmesteleder(
-                orgnummer = "orgnummer2", fnr = fnr, fnrNl = fnrLeder2, arbeidsgiverForskutterer = true,
+                orgnummer = "orgnummer2",
+                fnr = fnr,
+                fnrNl = fnrLeder2,
+                arbeidsgiverForskutterer = true,
                 aktivTom = OffsetDateTime.now(
-                    ZoneOffset.UTC
-                ).minusDays(2)
+                    ZoneOffset.UTC,
+                ).minusDays(2),
             )
             coEvery { pdlPersonService.getPersoner(any(), any()) } returns mapOf(
                 Pair(fnrLeder1, PdlPerson(Navn("FORNAVN", null, "ETTERNAVN"), fnrLeder1, "aktorid1")),
-                Pair(fnrLeder2, null)
+                Pair(fnrLeder2, null),
             )
 
             val narmesteLedereMedNavn = utvidetNarmesteLederService.hentNarmesteledereMedNavn(fnr, callId)
