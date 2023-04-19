@@ -25,7 +25,7 @@ val testContainerPostgresVersion = "1.17.4"
 val swaggerUiVersion = "4.15.0"
 val jedisVersion = "4.3.1"
 val kotlinVersion = "1.8.10"
-val confluentVersion = "7.2.1"
+val confluentVersion = "7.3.3"
 val nettyCodecVersion = "4.1.86.Final"
 val commonsCodecVersion = "1.15"
 
