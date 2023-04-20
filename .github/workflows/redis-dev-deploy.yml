@@ -6,7 +6,7 @@ on:
       - '.github/workflows/redis**'
     branches:
       - '**'
-      - '!master'
+      - '!main'
 jobs:
   deploy:
     name: Deploy Redis to dev-gcp
