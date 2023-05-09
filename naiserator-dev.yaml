@@ -90,9 +90,6 @@ spec:
           cluster: dev-gcp
         - application: esyfovarsel
           namespace: team-esyfo
-          cluster: dev-fss
-        - application: esyfovarsel
-          namespace: team-esyfo
           cluster: dev-gcp
         - application: ditt-sykefravaer
           namespace: flex
