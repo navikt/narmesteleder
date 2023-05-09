@@ -87,9 +87,6 @@ spec:
           cluster: prod-gcp
         - application: esyfovarsel
           namespace: team-esyfo
-          cluster: prod-fss
-        - application: esyfovarsel
-          namespace: team-esyfo
           cluster: prod-gcp
         - application: ditt-sykefravaer
           namespace: flex
