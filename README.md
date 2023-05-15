@@ -5,6 +5,31 @@ This project contains the application code and infrastructure for narmesteleder
 * Kotlin
 * Ktor
 * Gradle
+* Kotest
+* Docker
+
+### :scroll: Prerequisites
+* JDK 17
+Make sure you have the Java JDK 17 installed
+You can check which version you have installed using this command:
+``` shell
+java -version
+```
+
+## FlowChart
+This the high level flow of the application
+```mermaid
+  graph LR
+      narmesteleder --- Azure-AD
+      narmesteleder <--> id1[(Database)]
+      narmesteleder <--> PDL
+      A([pdl.aktor-v2]) --> narmesteleder
+      narmesteleder <--> aareg
+      B([teamsykmelding.syfo-narmesteleder]) --> narmesteleder
+      narmesteleder --> C([teamsykmelding.syfo-nl-request])
+      narmesteleder --> D([teamsykmelding.syfo-narmesteleder-leesah])
+      narmesteleder <--> narmesteleder-redis;
+```
 
 ## Getting started
 ### Getting github-package-registry packages NAV-IT
@@ -42,14 +67,14 @@ Alternatively, the variables can be configured via environment variables:
 
 or the command line:
 
-``` bash
+``` shell
 ./gradlew -PgithubUser=x-access-token -PgithubPassword=[token]
 ```
 
 ### Building the application
 #### Compile and package application
 To build locally and run the integration tests you can simply run
-``` bash
+``` shell
 ./gradlew shadowJar
 ```
 or on windows 
@@ -57,12 +82,12 @@ or on windows
 
 #### Creating a docker image
 Creating a docker image should be as simple as
-``` bash
+``` shell
 docker build -t narmesteleder .
 ```
 
 #### Running a docker image
-``` bash
+``` shell
 docker run --rm -it -p 8080:8080 narmesteleder
 ```
 
@@ -70,7 +95,7 @@ docker run --rm -it -p 8080:8080 narmesteleder
 
 Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
 
-``` bash
+``` shell
 ./gradlew wrapper --gradle-version $gradleVersjon
 ```
 
