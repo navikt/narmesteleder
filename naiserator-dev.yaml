@@ -70,6 +70,9 @@ spec:
         - application: syfobrukertilgang
           namespace: team-esyfo
           cluster: dev-fss
+        - application: syfobrukertilgang
+          namespace: team-esyfo
+          cluster: dev-gcp
         - application: syfooppfolgingsplanservice
           namespace: team-esyfo
           cluster: dev-fss
