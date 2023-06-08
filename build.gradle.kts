@@ -24,7 +24,7 @@ val hikariVersion = "5.0.1"
 val testContainerPostgresVersion = "1.18.3"
 val swaggerUiVersion = "4.19.0"
 val jedisVersion = "4.4.2"
-val kotlinVersion = "1.8.21"
+val kotlinVersion = "1.8.22"
 val confluentVersion = "7.4.0"
 val commonsCodecVersion = "1.15"
 
