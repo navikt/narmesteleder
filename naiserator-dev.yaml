@@ -16,12 +16,12 @@ spec:
           - name: narmesteleder
             envVarPrefix: NAIS_DATABASE
         diskAutoresize: true
-        highAvailability: true
+        highAvailability: false
         insights:
           enabled: true
   replicas:
     min: 1
-    max: 3
+    max: 2
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
@@ -40,7 +40,7 @@ spec:
     path: /internal/prometheus
   resources:
     limits:
-      cpu: 250m
+      cpu: 500m
       memory: 500Mi
     requests:
       cpu: 50m
