@@ -26,7 +26,7 @@ val swaggerUiVersion = "5.1.0"
 val jedisVersion = "4.4.3"
 val kotlinVersion = "1.8.22"
 val confluentVersion = "7.4.0"
-val commonsCodecVersion = "1.15"
+val commonsCodecVersion = "1.16.0"
 
 plugins {
     id("org.jmailen.kotlinter") version "3.15.0"
