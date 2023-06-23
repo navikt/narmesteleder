@@ -17,12 +17,18 @@ fun Route.registrerForskutteringApi(database: DatabaseInterface) {
         val callId = MDC.get("Nav-Callid")
         try {
             val queryParameters: Parameters = request.queryParameters
-            val fnr = request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
-            val orgnummer: String = queryParameters["orgnummer"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("Orgnummer mangler")
+            val fnr =
+                request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
+                    ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
+            val orgnummer: String =
+                queryParameters["orgnummer"]?.takeIf { it.isNotEmpty() }
+                    ?: throw IllegalArgumentException("Orgnummer mangler")
 
-            log.info("Mottatt forespørsel om forskuttering for fnr for orgnummer {}, {}", orgnummer, callId)
+            log.info(
+                "Mottatt forespørsel om forskuttering for fnr for orgnummer {}, {}",
+                orgnummer,
+                callId
+            )
             val arbeidsgiverForskutterer = database.finnForskuttering(fnr, orgnummer)
             call.respond(arbeidsgiverForskutterer)
         } catch (e: IllegalArgumentException) {

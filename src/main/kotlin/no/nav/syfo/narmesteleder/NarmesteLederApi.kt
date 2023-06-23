@@ -21,8 +21,9 @@ fun Route.registrerNarmesteLederApi(
     get("/leder/narmesteleder/aktive") {
         val callId = MDC.get("Nav-Callid")
         try {
-            val narmesteLederFnr: String = call.request.headers["Narmeste-Leder-Fnr"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("Narmeste-Leder-Fnr mangler")
+            val narmesteLederFnr: String =
+                call.request.headers["Narmeste-Leder-Fnr"]?.takeIf { it.isNotEmpty() }
+                    ?: throw IllegalArgumentException("Narmeste-Leder-Fnr mangler")
 
             call.respond(database.finnAktiveNarmestelederkoblinger(narmesteLederFnr))
         } catch (e: IllegalArgumentException) {
@@ -34,12 +35,15 @@ fun Route.registrerNarmesteLederApi(
     get("/sykmeldt/narmesteleder") {
         val callId = MDC.get("Nav-Callid")
         try {
-            val sykmeldtFnr: String = call.request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
-            val orgnummer: String = call.request.queryParameters["orgnummer"]?.takeIf { it.isNotEmpty() }
-                ?: throw NotImplementedError("Spørring uten orgnummer er ikke implementert")
+            val sykmeldtFnr: String =
+                call.request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
+                    ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
+            val orgnummer: String =
+                call.request.queryParameters["orgnummer"]?.takeIf { it.isNotEmpty() }
+                    ?: throw NotImplementedError("Spørring uten orgnummer er ikke implementert")
 
-            val narmesteLederRelasjon = database.finnNarmestelederForSykmeldt(sykmeldtFnr, orgnummer)
+            val narmesteLederRelasjon =
+                database.finnNarmestelederForSykmeldt(sykmeldtFnr, orgnummer)
             call.respond(mapOf("narmesteLederRelasjon" to narmesteLederRelasjon))
         } catch (e: IllegalArgumentException) {
             log.warn("Kan ikke hente nærmeste leder da fnr mangler: {}, {}", e.message, callId)
@@ -53,8 +57,9 @@ fun Route.registrerNarmesteLederApi(
     get("/sykmeldt/narmesteledere") {
         val callId = MDC.get("Nav-Callid")
         try {
-            val sykmeldtFnr: String = call.request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
-                ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
+            val sykmeldtFnr: String =
+                call.request.headers["Sykmeldt-Fnr"]?.takeIf { it.isNotEmpty() }
+                    ?: throw IllegalArgumentException("Sykmeldt-Fnr mangler")
 
             if (call.request.queryParameters["utvidet"] == "ja") {
                 call.respond(
@@ -64,7 +69,8 @@ fun Route.registrerNarmesteLederApi(
                     ),
                 )
             } else {
-                val narmesteLederRelasjoner = database.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
+                val narmesteLederRelasjoner =
+                    database.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
                 call.respond(narmesteLederRelasjoner)
             }
         } catch (e: IllegalArgumentException) {

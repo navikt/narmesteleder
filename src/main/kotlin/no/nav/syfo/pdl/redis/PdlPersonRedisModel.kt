@@ -17,7 +17,12 @@ data class NavnRedisModel(
 
 fun PdlPerson.toPdlPersonRedisModel(): PdlPersonRedisModel {
     return PdlPersonRedisModel(
-        navn = NavnRedisModel(fornavn = navn.fornavn, mellomnavn = navn.mellomnavn, etternavn = navn.etternavn),
+        navn =
+            NavnRedisModel(
+                fornavn = navn.fornavn,
+                mellomnavn = navn.mellomnavn,
+                etternavn = navn.etternavn
+            ),
         aktorId = aktorId!!,
         fnr = fnr!!,
     )
@@ -25,7 +30,8 @@ fun PdlPerson.toPdlPersonRedisModel(): PdlPersonRedisModel {
 
 fun PdlPersonRedisModel.toPdlPerson(): PdlPerson {
     return PdlPerson(
-        navn = Navn(fornavn = navn.fornavn, mellomnavn = navn.mellomnavn, etternavn = navn.etternavn),
+        navn =
+            Navn(fornavn = navn.fornavn, mellomnavn = navn.mellomnavn, etternavn = navn.etternavn),
         aktorId = aktorId,
         fnr = fnr,
     )

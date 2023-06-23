@@ -15,7 +15,8 @@ data class NarmesteLederRelasjon(
     val aktivTom: LocalDate?,
     val arbeidsgiverForskutterer: Boolean?,
     val skrivetilgang: Boolean = true,
-    val tilganger: List<Tilgang> = listOf(Tilgang.SYKMELDING, Tilgang.SYKEPENGESOKNAD, Tilgang.MOTE, Tilgang.OPPFOLGINGSPLAN),
+    val tilganger: List<Tilgang> =
+        listOf(Tilgang.SYKMELDING, Tilgang.SYKEPENGESOKNAD, Tilgang.MOTE, Tilgang.OPPFOLGINGSPLAN),
     val timestamp: OffsetDateTime,
     val navn: String? = null,
 )

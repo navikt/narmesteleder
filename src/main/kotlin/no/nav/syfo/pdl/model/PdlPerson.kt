@@ -23,7 +23,19 @@ fun Navn.toFormattedNameString(): String {
 }
 
 private fun capitalizeFirstLetter(string: String): String {
-    return string.lowercase()
-        .split(" ").joinToString(" ") { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
-        .split("-").joinToString("-") { it.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }.trimEnd()
+    return string
+        .lowercase()
+        .split(" ")
+        .joinToString(" ") {
+            it.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+            }
+        }
+        .split("-")
+        .joinToString("-") {
+            it.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+            }
+        }
+        .trimEnd()
 }

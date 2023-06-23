@@ -12,7 +12,10 @@ class NarmesteLederService(
     private val database: DatabaseInterface,
     private val pdlPersonService: PdlPersonService,
 ) {
-    suspend fun hentNarmesteledereMedNavn(sykmeldtFnr: String, callId: String): List<NarmesteLederRelasjon> {
+    suspend fun hentNarmesteledereMedNavn(
+        sykmeldtFnr: String,
+        callId: String
+    ): List<NarmesteLederRelasjon> {
         val narmesteLederRelasjoner = database.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
         val nlFnrs = narmesteLederRelasjoner.map { it.narmesteLederFnr }
         if (nlFnrs.isEmpty()) {
@@ -20,10 +23,15 @@ class NarmesteLederService(
         }
         val nlPersoner = pdlPersonService.getPersoner(fnrs = nlFnrs, callId = callId)
 
-        return narmesteLederRelasjoner.map { it.copy(navn = nlPersoner[it.narmesteLederFnr]?.navn?.toFormattedNameString()) }
+        return narmesteLederRelasjoner.map {
+            it.copy(navn = nlPersoner[it.narmesteLederFnr]?.navn?.toFormattedNameString())
+        }
     }
 
-    suspend fun hentNarmesteLedereForAnsatt(sykmeldtFnr: String, callId: String): List<NarmesteLeder> {
+    suspend fun hentNarmesteLedereForAnsatt(
+        sykmeldtFnr: String,
+        callId: String
+    ): List<NarmesteLeder> {
         return hentNarmesteledereMedNavn(sykmeldtFnr, callId).map { it.tilNarmesteLeder() }
     }
 

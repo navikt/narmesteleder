@@ -22,6 +22,9 @@ import io.ktor.client.request.get
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.prometheus.client.hotspot.DefaultExports
+import java.net.URL
+import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.ApplicationServer
@@ -61,29 +64,28 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
-import java.net.URL
-import java.util.concurrent.TimeUnit
-import kotlin.time.ExperimentalTime
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.narmesteleder")
 
 val securelog = LoggerFactory.getLogger("securelog")
 
-val objectMapper: ObjectMapper = ObjectMapper().apply {
-    registerKotlinModule()
-    registerModule(JavaTimeModule())
-    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-}
+val objectMapper: ObjectMapper =
+    ObjectMapper().apply {
+        registerKotlinModule()
+        registerModule(JavaTimeModule())
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    }
 
 @DelicateCoroutinesApi
 @ExperimentalTime
 fun main() {
     val env = Environment()
-    val jwkProvider = JwkProviderBuilder(URL(env.jwkKeysUrl))
-        .cached(10, 24, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
+    val jwkProvider =
+        JwkProviderBuilder(URL(env.jwkKeysUrl))
+            .cached(10, 24, TimeUnit.HOURS)
+            .rateLimited(10, 1, TimeUnit.MINUTES)
+            .build()
     DefaultExports.initialize()
     val applicationState = ApplicationState()
     val database = Database(env)
@@ -102,7 +104,8 @@ fun main() {
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                    is SocketTimeoutException ->
+                        throw ServiceUnavailableException(exception.message)
                 }
             }
         }
@@ -114,7 +117,9 @@ fun main() {
             }
             retryIf(maxRetries) { request, response ->
                 if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+                    log.warn(
+                        "Retrying for statuscode ${response.status.value}, for url ${request.url}"
+                    )
                     true
                 } else {
                     false
@@ -129,79 +134,122 @@ fun main() {
     }
     val httpClient = HttpClient(Apache, config)
 
-    val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClient)
+    val accessTokenClientV2 =
+        AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClient)
 
     val wellKnown = getWellKnown(httpClient, env.loginserviceIdportenDiscoveryUrl)
-    val jwkProviderLoginservice = JwkProviderBuilder(URL(wellKnown.jwks_uri))
-        .cached(10, 24, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
+    val jwkProviderLoginservice =
+        JwkProviderBuilder(URL(wellKnown.jwks_uri))
+            .cached(10, 24, TimeUnit.HOURS)
+            .rateLimited(10, 1, TimeUnit.MINUTES)
+            .build()
 
     val wellKnownTokenX = getWellKnownTokenX(httpClient, env.tokenXWellKnownUrl)
-    val jwkProviderTokenX = JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
-        .cached(10, 24, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
+    val jwkProviderTokenX =
+        JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
+            .cached(10, 24, TimeUnit.HOURS)
+            .rateLimited(10, 1, TimeUnit.MINUTES)
+            .build()
 
-    val pdlClient = PdlClient(
-        httpClient,
-        env.pdlGraphqlPath,
-        PdlClient::class.java.getResource("/graphql/getPerson.graphql")!!.readText().replace(Regex("[\n\t]"), ""),
-    )
+    val pdlClient =
+        PdlClient(
+            httpClient,
+            env.pdlGraphqlPath,
+            PdlClient::class
+                .java
+                .getResource("/graphql/getPerson.graphql")!!
+                .readText()
+                .replace(Regex("[\n\t]"), ""),
+        )
     val pdlPersonRedisService = PdlPersonRedisService(jedisPool, env.redisSecret)
-    val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, env.pdlScope)
+    val pdlPersonService =
+        PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, env.pdlScope)
     val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl)
-    val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, accessTokenClientV2, env.aaregScope)
+    val arbeidsgiverService =
+        ArbeidsgiverService(arbeidsforholdClient, accessTokenClientV2, env.aaregScope)
 
-    val kafkaConsumer = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig().also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }.toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
-        StringDeserializer(),
-        JacksonKafkaDeserializer(NlResponseKafkaMessage::class),
-    )
-    val kafkaProducerNlResponse = KafkaProducer<String, NlResponseKafkaMessage>(
-        KafkaUtils
-            .getAivenKafkaConfig()
-            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class),
-    )
+    val kafkaConsumer =
+        KafkaConsumer(
+            KafkaUtils.getAivenKafkaConfig()
+                .also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }
+                .toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
+            StringDeserializer(),
+            JacksonKafkaDeserializer(NlResponseKafkaMessage::class),
+        )
+    val kafkaProducerNlResponse =
+        KafkaProducer<String, NlResponseKafkaMessage>(
+            KafkaUtils.getAivenKafkaConfig()
+                .toProducerConfig(
+                    "${env.applicationName}-producer",
+                    JacksonKafkaSerializer::class,
+                    StringSerializer::class
+                ),
+        )
     val nlResponseProducer = NLResponseProducer(kafkaProducerNlResponse, env.nlResponseTopic)
-    val kafkaProducerNlRequest = KafkaProducer<String, NlRequestKafkaMessage>(
-        KafkaUtils
-            .getAivenKafkaConfig()
-            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class),
-    )
+    val kafkaProducerNlRequest =
+        KafkaProducer<String, NlRequestKafkaMessage>(
+            KafkaUtils.getAivenKafkaConfig()
+                .toProducerConfig(
+                    "${env.applicationName}-producer",
+                    JacksonKafkaSerializer::class,
+                    StringSerializer::class
+                ),
+        )
     val nlRequestProducer = NLRequestProducer(kafkaProducerNlRequest, env.nlRequestTopic)
-    val kafkaProducerNarmesteLederLeesah = KafkaProducer<String, NarmesteLederLeesah>(
-        KafkaUtils
-            .getAivenKafkaConfig()
-            .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class, StringSerializer::class),
-    )
-    val narmesteLederLeesahProducer = NarmesteLederLeesahProducer(kafkaProducerNarmesteLederLeesah, env.narmesteLederLeesahTopic)
+    val kafkaProducerNarmesteLederLeesah =
+        KafkaProducer<String, NarmesteLederLeesah>(
+            KafkaUtils.getAivenKafkaConfig()
+                .toProducerConfig(
+                    "${env.applicationName}-producer",
+                    JacksonKafkaSerializer::class,
+                    StringSerializer::class
+                ),
+        )
+    val narmesteLederLeesahProducer =
+        NarmesteLederLeesahProducer(kafkaProducerNarmesteLederLeesah, env.narmesteLederLeesahTopic)
 
-    val applicationEngine = createApplicationEngine(
-        env = env,
-        applicationState = applicationState,
-        jwkProvider = jwkProvider,
-        jwkProviderLoginservice = jwkProviderLoginservice,
-        jwkProviderTokenX = jwkProviderTokenX,
-        loginserviceIssuer = wellKnown.issuer,
-        tokenXIssuer = wellKnownTokenX.issuer,
-        database = database,
-        pdlPersonService = pdlPersonService,
-        nlResponseProducer = nlResponseProducer,
-    )
+    val applicationEngine =
+        createApplicationEngine(
+            env = env,
+            applicationState = applicationState,
+            jwkProvider = jwkProvider,
+            jwkProviderLoginservice = jwkProviderLoginservice,
+            jwkProviderTokenX = jwkProviderTokenX,
+            loginserviceIssuer = wellKnown.issuer,
+            tokenXIssuer = wellKnownTokenX.issuer,
+            database = database,
+            pdlPersonService = pdlPersonService,
+            nlResponseProducer = nlResponseProducer,
+        )
 
-    val oppdaterNarmesteLederService = OppdaterNarmesteLederService(pdlPersonService, arbeidsgiverService, database, narmesteLederLeesahProducer, nlRequestProducer)
-    val narmesteLederResponseConsumerService = NarmesteLederResponseConsumerService(
-        kafkaConsumer,
-        applicationState,
-        env.nlResponseTopic,
-        oppdaterNarmesteLederService,
-        env.cluster,
-    )
+    val oppdaterNarmesteLederService =
+        OppdaterNarmesteLederService(
+            pdlPersonService,
+            arbeidsgiverService,
+            database,
+            narmesteLederLeesahProducer,
+            nlRequestProducer
+        )
+    val narmesteLederResponseConsumerService =
+        NarmesteLederResponseConsumerService(
+            kafkaConsumer,
+            applicationState,
+            env.nlResponseTopic,
+            oppdaterNarmesteLederService,
+            env.cluster,
+        )
 
-    val identendringService = IdentendringService(database, oppdaterNarmesteLederService, pdlPersonService)
+    val identendringService =
+        IdentendringService(database, oppdaterNarmesteLederService, pdlPersonService)
     val leaderElection = LeaderElection(httpClient, env.electorPath)
-    val pdlAktorConsumer = PdlAktorConsumer(getKafkaConsumerAivenPdlAktor(env), applicationState, env.pdlAktorV2Topic, leaderElection, identendringService)
+    val pdlAktorConsumer =
+        PdlAktorConsumer(
+            getKafkaConsumerAivenPdlAktor(env),
+            applicationState,
+            env.pdlAktorV2Topic,
+            leaderElection,
+            identendringService
+        )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
@@ -212,24 +260,35 @@ fun main() {
 }
 
 fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<String, GenericRecord> {
-    val consumerProperties = KafkaUtils.getAivenKafkaConfig().apply {
-        setProperty(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, environment.schemaRegistryUrl)
-        setProperty(KafkaAvroSerializerConfig.USER_INFO_CONFIG, "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}")
-        setProperty(KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO")
-    }.toConsumerConfig(
-        "${environment.applicationName}-consumer",
-        valueDeserializer = KafkaAvroDeserializer::class,
-    ).also {
-        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-        it["specific.avro.reader"] = false
-        it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
-    }
+    val consumerProperties =
+        KafkaUtils.getAivenKafkaConfig()
+            .apply {
+                setProperty(
+                    KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
+                    environment.schemaRegistryUrl
+                )
+                setProperty(
+                    KafkaAvroSerializerConfig.USER_INFO_CONFIG,
+                    "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}"
+                )
+                setProperty(KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO")
+            }
+            .toConsumerConfig(
+                "${environment.applicationName}-consumer",
+                valueDeserializer = KafkaAvroDeserializer::class,
+            )
+            .also {
+                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+                it["specific.avro.reader"] = false
+                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
+            }
 
     return KafkaConsumer<String, GenericRecord>(consumerProperties)
 }
 
-fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) =
-    runBlocking { httpClient.get(wellKnownUrl).body<WellKnown>() }
+fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) = runBlocking {
+    httpClient.get(wellKnownUrl).body<WellKnown>()
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnown(
@@ -239,8 +298,9 @@ data class WellKnown(
     val issuer: String,
 )
 
-fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) =
-    runBlocking { httpClient.get(wellKnownUrl).body<WellKnownTokenX>() }
+fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) = runBlocking {
+    httpClient.get(wellKnownUrl).body<WellKnownTokenX>()
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnownTokenX(

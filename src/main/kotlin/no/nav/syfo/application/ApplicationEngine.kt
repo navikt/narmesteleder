@@ -22,6 +22,7 @@ import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
+import java.util.UUID
 import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
@@ -38,7 +39,6 @@ import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApiV2
 import no.nav.syfo.pdl.service.PdlPersonService
 import org.slf4j.event.Level
-import java.util.UUID
 
 @DelicateCoroutinesApi
 fun createApplicationEngine(
@@ -73,9 +73,7 @@ fun createApplicationEngine(
         install(CallId) {
             retrieve { it.request.queryParameters["Nav-Callid"] }
             retrieveFromHeader("Nav-Callid")
-            generate {
-                UUID.randomUUID().toString()
-            }
+            generate { UUID.randomUUID().toString() }
         }
         install(CallLogging) {
             level = Level.TRACE
@@ -94,9 +92,7 @@ fun createApplicationEngine(
             allowMethod(HttpMethod.Get)
             allowMethod(HttpMethod.Post)
             allowMethod(HttpMethod.Options)
-            env.allowedOrigin.forEach {
-                hosts.add("https://$it")
-            }
+            env.allowedOrigin.forEach { hosts.add("https://$it") }
             allowHeader("nav_csrf_protection")
             allowHeader("Sykmeldt-Fnr")
             allowCredentials = true

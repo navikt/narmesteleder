@@ -21,11 +21,13 @@ data class Environment(
     val nlRequestTopic: String = "teamsykmelding.syfo-nl-request",
     val narmesteLederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
-    val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
+    val loginserviceIdportenAudience: List<String> =
+        getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     val aaregUrl: String = getEnvVar("AAREG_URL"),
     val aaregScope: String = getEnvVar("AAREG_SCOPE"),
     val allowedOrigin: List<String> = getEnvVar("ALLOWED_ORIGIN").split(","),
-    val redisHost: String = getEnvVar("REDIS_HOST", "narmesteleder-redis.teamsykmelding.svc.cluster.local"),
+    val redisHost: String =
+        getEnvVar("REDIS_HOST", "narmesteleder-redis.teamsykmelding.svc.cluster.local"),
     val redisPort: Int = getEnvVar("REDIS_PORT_NARMESTELEDER", "6379").toInt(),
     val redisSecret: String = getEnvVar("REDIS_PASSWORD"),
     val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
@@ -39,8 +41,9 @@ data class Environment(
     val kafkaSchemaRegistryUsername: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
     val kafkaSchemaRegistryPassword: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
-    val preAuthorizedApp: List<PreAuthorizedApp> = System.getenv("AZURE_APP_PRE_AUTHORIZED_APPS")?.let { objectMapper.readValue(it) } ?: emptyList(),
-
+    val preAuthorizedApp: List<PreAuthorizedApp> =
+        System.getenv("AZURE_APP_PRE_AUTHORIZED_APPS")?.let { objectMapper.readValue(it) }
+            ?: emptyList(),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
@@ -48,4 +51,5 @@ data class Environment(
 }
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
-    System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+    System.getenv(varName)
+        ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")

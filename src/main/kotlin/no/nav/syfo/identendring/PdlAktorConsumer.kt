@@ -1,5 +1,8 @@
 package no.nav.syfo.identendring
 
+import java.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -16,9 +19,6 @@ import no.nav.syfo.pdl.error.PersonNotFoundException
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import java.time.Duration
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 @DelicateCoroutinesApi
 class PdlAktorConsumer(
@@ -46,13 +46,22 @@ class PdlAktorConsumer(
                 } catch (ex: Exception) {
                     when (ex) {
                         is InactiveIdentException -> {
-                            log.warn("New ident is inactive in PDL, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
+                            log.warn(
+                                "New ident is inactive in PDL, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry",
+                                ex
+                            )
                         }
                         is PersonNotFoundException -> {
-                            log.warn("Person not found in PDL, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
+                            log.warn(
+                                "Person not found in PDL, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry",
+                                ex
+                            )
                         }
                         else -> {
-                            log.error("Error running kafka consumer for pdl-aktor, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
+                            log.error(
+                                "Error running kafka consumer for pdl-aktor, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry",
+                                ex
+                            )
                         }
                     }
                     kafkaConsumerAiven.unsubscribe()
@@ -81,12 +90,13 @@ fun GenericRecord.toIdentListe(): List<Ident> {
         Ident(
             idnummer = it.get("idnummer").toString(),
             gjeldende = it.get("gjeldende").toString().toBoolean(),
-            type = when (it.get("type").toString()) {
-                "FOLKEREGISTERIDENT" -> IdentType.FOLKEREGISTERIDENT
-                "AKTORID" -> IdentType.AKTORID
-                "NPID" -> IdentType.NPID
-                else -> throw IllegalStateException("Har mottatt ident med ukjent type")
-            },
+            type =
+                when (it.get("type").toString()) {
+                    "FOLKEREGISTERIDENT" -> IdentType.FOLKEREGISTERIDENT
+                    "AKTORID" -> IdentType.AKTORID
+                    "NPID" -> IdentType.NPID
+                    else -> throw IllegalStateException("Har mottatt ident med ukjent type")
+                },
         )
     }
 }

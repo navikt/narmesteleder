@@ -13,12 +13,12 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.testing.TestApplicationEngine
+import java.nio.file.Paths
+import java.util.UUID
 import no.nav.syfo.Environment
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.log
 import org.slf4j.event.Level
-import java.nio.file.Paths
-import java.util.UUID
 
 fun TestApplicationEngine.setUpTestApplication() {
     start(true)
@@ -50,35 +50,36 @@ fun TestApplicationEngine.setUpTestApplication() {
 val testAudience = listOf("loginserviceId1", "loginserviceId2")
 
 fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Environment {
-    val env = Environment(
-        clientId = "narmesteleder",
-        cluster = "dev",
-        clientSecret = "secret",
-        jwkKeysUrl = "keys",
-        jwtIssuer = "issuer",
-        pdlGraphqlPath = "graphql",
-        databaseUsername = "",
-        databasePassword = "",
-        dbHost = "",
-        dbPort = "",
-        dbName = "",
-        loginserviceIdportenDiscoveryUrl = "url",
-        loginserviceIdportenAudience = audience,
-        aaregUrl = "aareg",
-        aaregScope = "aareg-scope",
-        allowedOrigin = listOf("tjenester", "www"),
-        redisSecret = "secret",
-        tokenXWellKnownUrl = "https://tokenx",
-        narmestelederTokenXClientId = "id",
-        pdlScope = "scope",
-        aadAccessTokenV2Url = "url",
-        clientIdV2 = "id",
-        clientSecretV2 = "hush",
-        schemaRegistryUrl = "schemaAiven",
-        kafkaSchemaRegistryUsername = "user",
-        kafkaSchemaRegistryPassword = "pw",
-        electorPath = "elector",
-    )
+    val env =
+        Environment(
+            clientId = "narmesteleder",
+            cluster = "dev",
+            clientSecret = "secret",
+            jwkKeysUrl = "keys",
+            jwtIssuer = "issuer",
+            pdlGraphqlPath = "graphql",
+            databaseUsername = "",
+            databasePassword = "",
+            dbHost = "",
+            dbPort = "",
+            dbName = "",
+            loginserviceIdportenDiscoveryUrl = "url",
+            loginserviceIdportenAudience = audience,
+            aaregUrl = "aareg",
+            aaregScope = "aareg-scope",
+            allowedOrigin = listOf("tjenester", "www"),
+            redisSecret = "secret",
+            tokenXWellKnownUrl = "https://tokenx",
+            narmestelederTokenXClientId = "id",
+            pdlScope = "scope",
+            aadAccessTokenV2Url = "url",
+            clientIdV2 = "id",
+            clientSecretV2 = "hush",
+            schemaRegistryUrl = "schemaAiven",
+            kafkaSchemaRegistryUsername = "user",
+            kafkaSchemaRegistryPassword = "pw",
+            electorPath = "elector",
+        )
 
     val path = "src/test/resources/jwkset.json"
     val uri = Paths.get(path).toUri().toURL()

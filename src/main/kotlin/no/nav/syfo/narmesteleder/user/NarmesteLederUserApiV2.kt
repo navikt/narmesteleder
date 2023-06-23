@@ -7,13 +7,13 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import java.util.UUID
 import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.application.metrics.DEAKTIVERT_AV_ANSATT_COUNTER
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
-import java.util.UUID
 
 @DelicateCoroutinesApi
 fun Route.registrerNarmesteLederUserApiV2(
@@ -23,8 +23,9 @@ fun Route.registrerNarmesteLederUserApiV2(
     post("/v2/{orgnummer}/avkreft") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val orgnummer = call.parameters["orgnummer"]?.takeIf { it.isNotEmpty() }
-            ?: throw IllegalArgumentException("orgnummer mangler")
+        val orgnummer =
+            call.parameters["orgnummer"]?.takeIf { it.isNotEmpty() }
+                ?: throw IllegalArgumentException("orgnummer mangler")
 
         val callId = UUID.randomUUID()
         deaktiverNarmesteLederService.deaktiverNarmesteLeder(

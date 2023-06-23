@@ -1,5 +1,8 @@
 package no.nav.syfo.narmesteleder.oppdatering.kafka
 
+import java.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -11,9 +14,6 @@ import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
-import java.time.Duration
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 @DelicateCoroutinesApi
 class NarmesteLederResponseConsumerService(
@@ -37,7 +37,10 @@ class NarmesteLederResponseConsumerService(
                 try {
                     runConsumer()
                 } catch (ex: Exception) {
-                    log.error("Error running kafka consumer, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry", ex)
+                    log.error(
+                        "Error running kafka consumer, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry",
+                        ex
+                    )
                     kafkaConsumer.unsubscribe()
                     delay(DELAY_ON_ERROR_SECONDS.seconds)
                 }
@@ -58,9 +61,13 @@ class NarmesteLederResponseConsumerService(
                     )
                 } catch (e: Exception) {
                     if (cluster == "dev-gcp") {
-                        log.error("Noe gikk galt ved mottak av melding med offset ${it.offset()}: ${e.message}, ignoreres i dev")
+                        log.error(
+                            "Noe gikk galt ved mottak av melding med offset ${it.offset()}: ${e.message}, ignoreres i dev"
+                        )
                     } else {
-                        log.error("Noe gikk galt ved mottak av melding med offset ${it.offset()}: ${e.message}")
+                        log.error(
+                            "Noe gikk galt ved mottak av melding med offset ${it.offset()}: ${e.message}"
+                        )
                         throw e
                     }
                 }

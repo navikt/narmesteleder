@@ -40,24 +40,39 @@ class PdlPersonService(
 
             if (pdlResponse.errors != null) {
                 pdlResponse.errors.forEach {
-                    log.error("PDL returnerte feilmelding: ${it.message}, ${it.extensions?.code}, $callId")
-                    it.extensions?.details?.let { details -> log.error("Type: ${details.type}, cause: ${details.cause}, policy: ${details.policy}, $callId") }
+                    log.error(
+                        "PDL returnerte feilmelding: ${it.message}, ${it.extensions?.code}, $callId"
+                    )
+                    it.extensions?.details?.let { details ->
+                        log.error(
+                            "Type: ${details.type}, cause: ${details.cause}, policy: ${details.policy}, $callId"
+                        )
+                    }
                 }
             }
-            if (pdlResponse.data.hentPersonBolk == null || pdlResponse.data.hentPersonBolk.isNullOrEmpty() ||
-                pdlResponse.data.hentIdenterBolk == null || pdlResponse.data.hentIdenterBolk.isNullOrEmpty()
+            if (
+                pdlResponse.data.hentPersonBolk == null ||
+                    pdlResponse.data.hentPersonBolk.isNullOrEmpty() ||
+                    pdlResponse.data.hentIdenterBolk == null ||
+                    pdlResponse.data.hentIdenterBolk.isNullOrEmpty()
             ) {
                 log.error("Fant ikke identer i PDL {}", callId)
                 throw IllegalStateException("Fant ingen identer i PDL, skal ikke kunne skje!")
             }
             pdlResponse.data.hentPersonBolk.forEach {
                 if (it.code != "ok") {
-                    log.warn("Mottok feilkode ${it.code} fra PDL for en eller flere personer, {}", callId)
+                    log.warn(
+                        "Mottok feilkode ${it.code} fra PDL for en eller flere personer, {}",
+                        callId
+                    )
                 }
             }
             pdlResponse.data.hentIdenterBolk.forEach {
                 if (it.code != "ok") {
-                    log.warn("Mottok feilkode ${it.code} fra PDL for en eller flere identer, {}", callId)
+                    log.warn(
+                        "Mottok feilkode ${it.code} fra PDL for en eller flere identer, {}",
+                        callId
+                    )
                 }
             }
 
@@ -77,15 +92,17 @@ class PdlPersonService(
         val pdlResponse = getPersonsFromPdl(listOf(fnr), accessToken)
 
         if (pdlResponse.errors != null) {
-            pdlResponse.errors.forEach {
-                log.warn("PDL kastet error: {} ", it)
-            }
+            pdlResponse.errors.forEach { log.warn("PDL kastet error: {} ", it) }
         }
-        if (pdlResponse.data.hentIdenterBolk == null || pdlResponse.data.hentIdenterBolk.isNullOrEmpty()) {
+        if (
+            pdlResponse.data.hentIdenterBolk == null ||
+                pdlResponse.data.hentIdenterBolk.isNullOrEmpty()
+        ) {
             log.warn("Fant ikke person i PDL")
             throw PersonNotFoundException("Fant ikke person i PDL")
         }
-        // Spørring mot PDL er satt opp til å bare returnere aktive identer, og denne sjekken forutsetter dette
+        // Spørring mot PDL er satt opp til å bare returnere aktive identer, og denne sjekken
+        // forutsetter dette
         if (!pdlResponse.data.toPdlPersonMap().containsKey(fnr)) {
             throw InactiveIdentException("PDL svarer men ident er ikke aktiv")
         }
@@ -97,11 +114,10 @@ class PdlPersonService(
         fnrs: List<String>,
         stsToken: String,
     ): GetPersonResponse {
-        val listFnrs = fnrs.chunked(100).map {
-            GlobalScope.async(context = Dispatchers.IO) {
-                pdlClient.getPersoner(it, stsToken)
+        val listFnrs =
+            fnrs.chunked(100).map {
+                GlobalScope.async(context = Dispatchers.IO) { pdlClient.getPersoner(it, stsToken) }
             }
-        }
 
         val responses = listFnrs.awaitAll().map { it }
         val identer = responses.mapNotNull { it.data.hentIdenterBolk }.flatten()
@@ -126,7 +142,10 @@ class PdlPersonService(
                     PdlPerson(
                         navn = getNavn(it.person.navn.first()),
                         fnr = it.ident,
-                        aktorId = identMap[it.ident]?.firstOrNull { ident -> ident.gruppe == AKTORID }?.ident,
+                        aktorId =
+                            identMap[it.ident]
+                                ?.firstOrNull { ident -> ident.gruppe == AKTORID }
+                                ?.ident,
                     )
                 } else {
                     null
@@ -138,6 +157,9 @@ class PdlPersonService(
         Navn(fornavn = navn.fornavn, mellomnavn = navn.mellomnavn, etternavn = navn.etternavn)
 
     private fun getPersonerFromRedis(fnrs: List<String>): Map<String, PdlPerson> {
-        return pdlPersonRedisService.getPerson(fnrs).filterValues { it != null }.mapValues { it.value!!.toPdlPerson() }
+        return pdlPersonRedisService
+            .getPerson(fnrs)
+            .filterValues { it != null }
+            .mapValues { it.value!!.toPdlPerson() }
     }
 }

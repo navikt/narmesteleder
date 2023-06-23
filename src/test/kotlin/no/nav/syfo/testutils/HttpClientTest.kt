@@ -14,7 +14,11 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.jackson
 import no.nav.syfo.objectMapper
 
-data class ResponseData(val httpStatusCode: HttpStatusCode, val content: String, val headers: Headers = headersOf("Content-Type", listOf("application/json")))
+data class ResponseData(
+    val httpStatusCode: HttpStatusCode,
+    val content: String,
+    val headers: Headers = headersOf("Content-Type", listOf("application/json"))
+)
 
 class HttpClientTest {
 
@@ -27,22 +31,29 @@ class HttpClientTest {
     fun respond(data: Any) {
         responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(data))
     }
+
     fun respond(data: String) {
         responseData = ResponseData(HttpStatusCode.OK, data)
     }
-    val httpClient = HttpClient(MockEngine) {
-        install(ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
+    val httpClient =
+        HttpClient(MockEngine) {
+            install(ContentNegotiation) {
+                jackson {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
+            }
+            engine {
+                addHandler { _ ->
+                    respond(
+                        responseData!!.content,
+                        responseData!!.httpStatusCode,
+                        responseData!!.headers
+                    )
+                }
             }
         }
-        engine {
-            addHandler { _ ->
-                respond(responseData!!.content, responseData!!.httpStatusCode, responseData!!.headers)
-            }
-        }
-    }
 }
