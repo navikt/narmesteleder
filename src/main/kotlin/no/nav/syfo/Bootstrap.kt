@@ -36,6 +36,7 @@ import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.application.leaderelection.LeaderElection
 import no.nav.syfo.identendring.IdentendringService
 import no.nav.syfo.identendring.PdlAktorConsumer
+import no.nav.syfo.identendring.model.Ident
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
@@ -52,9 +53,9 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
 import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.kafka.Personhendelse
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
-import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -170,7 +171,7 @@ fun main() {
 
     val kafkaConsumer =
         KafkaConsumer(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("nl-response-consumer")
                 .also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }
                 .toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
             StringDeserializer(),
@@ -178,7 +179,7 @@ fun main() {
         )
     val kafkaProducerNlResponse =
         KafkaProducer<String, NlResponseKafkaMessage>(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("nl-response-producer")
                 .toProducerConfig(
                     "${env.applicationName}-producer",
                     JacksonKafkaSerializer::class,
@@ -188,7 +189,7 @@ fun main() {
     val nlResponseProducer = NLResponseProducer(kafkaProducerNlResponse, env.nlResponseTopic)
     val kafkaProducerNlRequest =
         KafkaProducer<String, NlRequestKafkaMessage>(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("nl-request-producer")
                 .toProducerConfig(
                     "${env.applicationName}-producer",
                     JacksonKafkaSerializer::class,
@@ -198,7 +199,7 @@ fun main() {
     val nlRequestProducer = NLRequestProducer(kafkaProducerNlRequest, env.nlRequestTopic)
     val kafkaProducerNarmesteLederLeesah =
         KafkaProducer<String, NarmesteLederLeesah>(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("nl-leesah-producer")
                 .toProducerConfig(
                     "${env.applicationName}-producer",
                     JacksonKafkaSerializer::class,
@@ -259,9 +260,34 @@ fun main() {
     applicationServer.start()
 }
 
-fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<String, GenericRecord> {
+private fun getPdlLeesahConsumer(environment: Environment): KafkaConsumer<String, Personhendelse> {
     val consumerProperties =
-        KafkaUtils.getAivenKafkaConfig()
+        KafkaUtils.getAivenKafkaConfig("pdl-leesah-consumer")
+            .apply {
+                setProperty(
+                    KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
+                    environment.schemaRegistryUrl
+                )
+                setProperty(
+                    KafkaAvroSerializerConfig.USER_INFO_CONFIG,
+                    "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}"
+                )
+                setProperty(KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO")
+            }
+            .toConsumerConfig(
+                "narmesteleder-consumer",
+                valueDeserializer = KafkaAvroDeserializer::class,
+            )
+            .also {
+                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+                it["specific.avro.reader"] = true
+            }
+    return KafkaConsumer<String, Personhendelse>(consumerProperties)
+}
+
+fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<String, List<Ident>> {
+    val consumerProperties =
+        KafkaUtils.getAivenKafkaConfig("pdl-ident-consumer")
             .apply {
                 setProperty(
                     KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
@@ -279,11 +305,11 @@ fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<Strin
             )
             .also {
                 it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-                it["specific.avro.reader"] = false
+                it["specific.avro.reader"] = true
                 it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
             }
 
-    return KafkaConsumer<String, GenericRecord>(consumerProperties)
+    return KafkaConsumer<String, List<Ident>>(consumerProperties)
 }
 
 fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) = runBlocking {

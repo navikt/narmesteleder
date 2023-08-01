@@ -10,19 +10,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.leaderelection.LeaderElection
-import no.nav.syfo.coroutine.Unbounded
 import no.nav.syfo.identendring.model.Ident
-import no.nav.syfo.identendring.model.IdentType
 import no.nav.syfo.log
 import no.nav.syfo.pdl.error.InactiveIdentException
 import no.nav.syfo.pdl.error.PersonNotFoundException
-import org.apache.avro.generic.GenericData
-import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 
 @DelicateCoroutinesApi
 class PdlAktorConsumer(
-    private val kafkaConsumerAiven: KafkaConsumer<String, GenericRecord>,
+    private val kafkaConsumerAiven: KafkaConsumer<String, List<Ident>>,
     private val applicationState: ApplicationState,
     private val aivenTopic: String,
     private val leaderElection: LeaderElection,
@@ -35,7 +31,7 @@ class PdlAktorConsumer(
 
     @ExperimentalTime
     fun startConsumer() {
-        GlobalScope.launch(Dispatchers.Unbounded) {
+        GlobalScope.launch(Dispatchers.IO) {
             while (applicationState.ready) {
                 try {
                     if (leaderElection.isLeader()) {
@@ -77,26 +73,10 @@ class PdlAktorConsumer(
         while (applicationState.ready && leaderElection.isLeader()) {
             kafkaConsumerAiven.poll(Duration.ofSeconds(POLL_DURATION_SECONDS)).forEach {
                 if (it.value() != null) {
-                    identendringService.oppdaterIdent(it.value().toIdentListe())
+                    identendringService.oppdaterIdent(it.value())
                 }
             }
         }
         kafkaConsumerAiven.unsubscribe()
-    }
-}
-
-fun GenericRecord.toIdentListe(): List<Ident> {
-    return (get("identifikatorer") as GenericData.Array<GenericRecord>).map {
-        Ident(
-            idnummer = it.get("idnummer").toString(),
-            gjeldende = it.get("gjeldende").toString().toBoolean(),
-            type =
-                when (it.get("type").toString()) {
-                    "FOLKEREGISTERIDENT" -> IdentType.FOLKEREGISTERIDENT
-                    "AKTORID" -> IdentType.AKTORID
-                    "NPID" -> IdentType.NPID
-                    else -> throw IllegalStateException("Har mottatt ident med ukjent type")
-                },
-        )
     }
 }
