@@ -256,7 +256,13 @@ fun main() {
     val personhendelseConsumer =
         getKafkaConsumerAivenPdl<Personhendelse>("pdl-leesah-consumer", env)
     val pdlLeesahConsumer =
-        PdlLeesahConsumer(personhendelseConsumer, applicationState, env.pdlLeesahTopic, database)
+        PdlLeesahConsumer(
+            personhendelseConsumer,
+            applicationState,
+            env.pdlLeesahTopic,
+            database,
+            pdlPersonService
+        )
     pdlLeesahConsumer.start()
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
