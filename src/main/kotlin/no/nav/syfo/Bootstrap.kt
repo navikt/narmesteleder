@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import no.nav.person.pdl.aktor.v2.Aktor
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.client.AccessTokenClientV2
@@ -36,7 +37,6 @@ import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.application.leaderelection.LeaderElection
 import no.nav.syfo.identendring.IdentendringService
 import no.nav.syfo.identendring.PdlAktorConsumer
-import no.nav.syfo.identendring.model.Ident
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
@@ -285,7 +285,7 @@ private fun getPdlLeesahConsumer(environment: Environment): KafkaConsumer<String
     return KafkaConsumer<String, Personhendelse>(consumerProperties)
 }
 
-fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<String, List<Ident>> {
+fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<String, Aktor> {
     val consumerProperties =
         KafkaUtils.getAivenKafkaConfig("pdl-ident-consumer")
             .apply {
@@ -309,7 +309,7 @@ fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<Strin
                 it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
             }
 
-    return KafkaConsumer<String, List<Ident>>(consumerProperties)
+    return KafkaConsumer<String, Aktor>(consumerProperties)
 }
 
 fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) = runBlocking {

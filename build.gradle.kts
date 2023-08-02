@@ -36,6 +36,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
     id("org.cyclonedx.bom") version "1.7.4"
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.8.0"
 }
 
 val githubUser: String by project
@@ -124,7 +125,9 @@ tasks {
             println(project.version)
         }
     }
-
+    named("compileTestKotlin") {
+        dependsOn("generateTestAvroJava")
+    }
     withType<KotlinCompile> {
         dependsOn("generateSwaggerUI")
         kotlinOptions.jvmTarget = "17"
