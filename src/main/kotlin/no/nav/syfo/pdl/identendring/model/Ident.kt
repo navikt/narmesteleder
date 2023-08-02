@@ -1,4 +1,4 @@
-package no.nav.syfo.identendring.model
+package no.nav.syfo.pdl.identendring.model
 
 data class Ident(
     val idnummer: String,

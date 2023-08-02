@@ -10,12 +10,13 @@ import java.time.ZoneOffset
 import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.db.finnAktiveNarmestelederkoblinger
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
-import no.nav.syfo.identendring.model.Ident
-import no.nav.syfo.identendring.model.IdentType
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
+import no.nav.syfo.pdl.identendring.IdentendringService
+import no.nav.syfo.pdl.identendring.model.Ident
+import no.nav.syfo.pdl.identendring.model.IdentType
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService

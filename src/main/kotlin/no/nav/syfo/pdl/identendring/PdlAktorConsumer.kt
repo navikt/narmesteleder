@@ -1,4 +1,4 @@
-package no.nav.syfo.identendring
+package no.nav.syfo.pdl.identendring
 
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -11,11 +11,11 @@ import kotlinx.coroutines.launch
 import no.nav.person.pdl.aktor.v2.Aktor
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.leaderelection.LeaderElection
-import no.nav.syfo.identendring.model.Ident
-import no.nav.syfo.identendring.model.IdentType
 import no.nav.syfo.log
 import no.nav.syfo.pdl.error.InactiveIdentException
 import no.nav.syfo.pdl.error.PersonNotFoundException
+import no.nav.syfo.pdl.identendring.model.Ident
+import no.nav.syfo.pdl.identendring.model.IdentType
 import org.apache.kafka.clients.consumer.KafkaConsumer
 
 @DelicateCoroutinesApi
@@ -39,7 +39,7 @@ class PdlAktorConsumer(
                     if (leaderElection.isLeader()) {
                         runConsumer()
                     } else {
-                        delay(10L.seconds)
+                        delay(1L.seconds)
                     }
                 } catch (ex: Exception) {
                     when (ex) {
