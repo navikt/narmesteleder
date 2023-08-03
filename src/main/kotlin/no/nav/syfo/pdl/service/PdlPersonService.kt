@@ -23,14 +23,15 @@ class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,
     private val pdlPersonRedisService: PdlPersonRedisService,
-    private val pdlScope: String,
+    private val pdlScope: String
 ) {
+
     companion object {
         const val AKTORID = "AKTORID"
     }
 
-    suspend fun getPersonerByAktorId(identer: List<String>): GetPersonResponse {
-        return getPersonsFromPdl(identer)
+    suspend fun getPersonerByIdenter(identer: List<String>): Collection<PdlPerson?> {
+        return getPersonsFromPdl(identer).data.toPdlPersonMap().values
     }
 
     suspend fun getPersoner(fnrs: List<String>, callId: String): Map<String, PdlPerson?> {

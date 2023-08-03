@@ -53,7 +53,7 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.identendring.IdentendringService
 import no.nav.syfo.pdl.identendring.PdlAktorConsumer
-import no.nav.syfo.pdl.kafka.PdlLeesahConsumer
+import no.nav.syfo.pdl.identendring.PdlLeesahConsumer
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
 import org.apache.avro.specific.SpecificRecord
@@ -254,14 +254,13 @@ fun main() {
         )
 
     val personhendelseConsumer =
-        getKafkaConsumerAivenPdl<Personhendelse>("pdl-leesah-consumer", env)
+        getKafkaConsumerAivenPdl<Personhendelse>("pdl-leesah-consumer", env, "earliest")
     val pdlLeesahConsumer =
         PdlLeesahConsumer(
             personhendelseConsumer,
             applicationState,
             env.pdlLeesahTopic,
-            database,
-            pdlPersonService
+            identendringService
         )
     pdlLeesahConsumer.start()
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
@@ -272,34 +271,10 @@ fun main() {
     applicationServer.start()
 }
 
-private fun getPdlLeesahConsumer(environment: Environment): KafkaConsumer<String, Personhendelse> {
-    val consumerProperties =
-        KafkaUtils.getAivenKafkaConfig("pdl-leesah-consumer")
-            .apply {
-                setProperty(
-                    KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
-                    environment.schemaRegistryUrl
-                )
-                setProperty(
-                    KafkaAvroSerializerConfig.USER_INFO_CONFIG,
-                    "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}"
-                )
-                setProperty(KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO")
-            }
-            .toConsumerConfig(
-                "narmesteleder-consumer",
-                valueDeserializer = KafkaAvroDeserializer::class,
-            )
-            .also {
-                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-                it["specific.avro.reader"] = true
-            }
-    return KafkaConsumer<String, Personhendelse>(consumerProperties)
-}
-
 fun <T : SpecificRecord> getKafkaConsumerAivenPdl(
     clientId: String,
-    environment: Environment
+    environment: Environment,
+    offsetResetPolicy: String = "none"
 ): KafkaConsumer<String, T> {
     val consumerProperties =
         KafkaUtils.getAivenKafkaConfig(clientId)
@@ -319,9 +294,9 @@ fun <T : SpecificRecord> getKafkaConsumerAivenPdl(
                 valueDeserializer = KafkaAvroDeserializer::class,
             )
             .also {
-                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = offsetResetPolicy
                 it["specific.avro.reader"] = true
-                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
+                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "10"
             }
 
     return KafkaConsumer<String, T>(consumerProperties)

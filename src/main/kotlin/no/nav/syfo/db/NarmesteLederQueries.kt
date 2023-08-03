@@ -6,12 +6,47 @@ import java.sql.Timestamp
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.application.db.toList
 import no.nav.syfo.forskuttering.Forskuttering
 import no.nav.syfo.forskuttering.ForskutteringRespons
 import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
 import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
+import no.nav.syfo.pdl.model.PdlPerson
+import no.nav.syfo.pdl.model.toFormattedNameString
+
+suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
+    withContext(Dispatchers.IO) {
+        connection.use { connection ->
+            connection
+                .prepareStatement(
+                    """update narmesteleder set bruker_navn = ? where bruker_fnr = ?;"""
+                )
+                .use { preparedStatement ->
+                    fnrNames.forEach {
+                        preparedStatement.setString(1, it.navn.toFormattedNameString())
+                        preparedStatement.setString(2, it.fnr)
+                        preparedStatement.addBatch()
+                    }
+                    preparedStatement.executeUpdate()
+                }
+            connection
+                .prepareStatement(
+                    """update narmesteleder set narmesteleder_navn = ? where narmeste_leder_fnr = ?;"""
+                )
+                .use { preparedStatement ->
+                    fnrNames.forEach {
+                        preparedStatement.setString(1, it.navn.toFormattedNameString())
+                        preparedStatement.setString(2, it.fnr)
+                        preparedStatement.addBatch()
+                    }
+                    preparedStatement.executeUpdate()
+                }
+            connection.commit()
+        }
+    }
 
 fun DatabaseInterface.finnAktiveNarmestelederkoblinger(
     narmesteLederFnr: String
@@ -197,7 +232,7 @@ private fun Connection.lagreNarmesteleder(
             )
             it.setObject(
                 9,
-                nlResponse.aktivTom?.let { Timestamp.from(nlResponse.aktivTom.toInstant()) }
+                nlResponse.aktivTom?.let { Timestamp.from(nlResponse.aktivTom.toInstant()) },
             )
             it.setTimestamp(10, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
             it.execute()

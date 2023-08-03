@@ -1,6 +1,7 @@
-package no.nav.syfo.pdl.kafka
+package no.nav.syfo.pdl.identendring
 
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -9,20 +10,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nav.person.pdl.leesah.Personhendelse
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.db.DatabaseInterface
-import no.nav.syfo.pdl.service.PdlPersonService
-import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 
-class PdlLeesahConsumer
 @OptIn(DelicateCoroutinesApi::class)
-constructor(
+class PdlLeesahConsumer(
     private val kafkaConsumer: KafkaConsumer<String, Personhendelse>,
     private val applicationState: ApplicationState,
     private val topic: String,
-    private val database: DatabaseInterface,
-    private val pdlPersonService: PdlPersonService,
+    private val identendringService: IdentendringService,
 ) {
 
     private val logger = LoggerFactory.getLogger(PdlLeesahConsumer::class.java)
@@ -32,6 +28,7 @@ constructor(
         private const val POLL_DURATION_SECONDS = 1L
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun start() {
         GlobalScope.launch(Dispatchers.IO) {
             while (applicationState.alive) {
@@ -51,23 +48,15 @@ constructor(
     suspend fun runConsumer() {
         while (applicationState.alive) {
             val personhendelser =
-                withContext(Dispatchers.IO) { kafkaConsumer.poll(java.time.Duration.ofMillis(100)) }
-            handlePersonhendelser(personhendelser)
-        }
-    }
+                withContext(Dispatchers.IO) {
+                    kafkaConsumer.poll(POLL_DURATION_SECONDS.seconds.toJavaDuration())
+                }
+            if (!personhendelser.isEmpty) {
+                val identer =
+                    personhendelser.filter { it.value().navn != null }.mapNotNull { it.key() }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    suspend fun handlePersonhendelser(personhendelser: ConsumerRecords<String, Personhendelse>) {
-        val identer =
-            personhendelser
-                .filter { it.value().navn != null }
-                .distinctBy { it.key() }
-                .map { it.key() }
-
-        val persons = pdlPersonService.getPersonerByAktorId(identer)
-
-        personhendelser.forEach { personhendelse ->
-            // database.updateName(getFnr(personhendelse.personidenter) personhendelse.navn)
+                identendringService.updateNames(identer)
+            }
         }
     }
 }
