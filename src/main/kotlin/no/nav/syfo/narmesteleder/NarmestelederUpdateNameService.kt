@@ -15,7 +15,9 @@ import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.application.service.UpdateService
 import no.nav.syfo.db.getItemsWithoutNames
 import no.nav.syfo.pdl.identendring.IdentendringService
+import no.nav.syfo.securelog
 import org.slf4j.LoggerFactory
+import java.sql.BatchUpdateException
 
 @OptIn(DelicateCoroutinesApi::class)
 class NarmestelederUpdateNameService(
@@ -50,8 +52,12 @@ class NarmestelederUpdateNameService(
                                     logger.warn("Job was cancelled, message: ${ex.message}")
                                     throw ex
                                 }
+                                is BatchUpdateException -> {
+                                    logger.error("BatchUpdateException")
+                                    securelog.error("error", ex)
+                                }
                                 else -> {
-                                    logger.error("Caught unexpected delaying for 10s $ex")
+                                    logger.error("Caught unexpected delaying for 10s")
                                     delay(10.seconds)
                                 }
                             }
