@@ -54,8 +54,6 @@ class PdlLeesahConsumer(
                 }
             val identer = personhendelser.filter { it.value().navn != null }.mapNotNull { it.key() }
             if (identer.isNotEmpty()) {
-                securelog.info("updating names for ")
-                logger.info("updating ${identer.size} names")
                 identendringService.updateNames(identer)
             }
         }

@@ -27,7 +27,6 @@ suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
                 )
                 .use { preparedStatement ->
                     fnrNames.forEach {
-                        securelog.info("updating name for bruker ${it.fnr} to ${it.navn.toFormattedNameString()}")
                         preparedStatement.setString(1, it.navn.toFormattedNameString())
                         preparedStatement.setString(2, it.fnr)
                         preparedStatement.addBatch()
@@ -40,7 +39,6 @@ suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
                 )
                 .use { preparedStatement ->
                     fnrNames.forEach {
-                        securelog.info("updating name for narmesteleder ${it.fnr} to ${it.navn.toFormattedNameString()}")
                         preparedStatement.setString(1, it.navn.toFormattedNameString())
                         preparedStatement.setString(2, it.fnr)
                         preparedStatement.addBatch()
