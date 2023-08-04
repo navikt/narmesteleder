@@ -51,9 +51,9 @@ class PdlLeesahConsumer(
                 withContext(Dispatchers.IO) {
                     kafkaConsumer.poll(POLL_DURATION_SECONDS.seconds.toJavaDuration())
                 }
-            if (!personhendelser.isEmpty) {
-                val identer =
-                    personhendelser.filter { it.value().navn != null }.mapNotNull { it.key() }
+            val identer =
+                personhendelser.filter { it.value().navn != null }.mapNotNull { it.key() }
+            if (identer.isNotEmpty()) {
                 logger.info("updating ${identer.size} names")
                 identendringService.updateNames(identer)
             }
