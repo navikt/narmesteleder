@@ -1,6 +1,7 @@
 package no.nav.syfo.narmesteleder
 
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTimedValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +32,14 @@ class NarmestelederUpdateNameService(
                 launch(Dispatchers.IO) {
                     while (isActive) {
                         try {
-                            val noNameList = database.getItemsWithoutNames().distinct()
+
+                            val (noNameList, duration) =
+                                measureTimedValue { database.getItemsWithoutNames().distinct() }
+                            val timeInSeconds = duration.inWholeSeconds
+                            val leftoverMilliseconds = duration.inWholeMilliseconds % 1000
+                            logger.info(
+                                "getting noNames ${noNameList.size} from database in $timeInSeconds.$leftoverMilliseconds seconds"
+                            )
 
                             if (noNameList.isEmpty()) break
 

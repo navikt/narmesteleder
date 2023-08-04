@@ -2,6 +2,8 @@ package no.nav.syfo.pdl.identendring
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
 import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.application.metrics.NYTT_FNR_ANSATT_COUNTER
@@ -143,9 +145,22 @@ class IdentendringService(
     }
 
     suspend fun updateNames(identer: List<String>) {
-        val persons = pdlService.getPersonerByIdenter(identer).filterNotNull()
-        log.info("updating persons names ${persons.size}")
-        database.updateNames(persons)
+        val (persons, duration) =
+            measureTimedValue { pdlService.getPersonerByIdenter(identer).filterNotNull() }
+        val timeInSeconds = duration.inWholeSeconds
+        val leftoverMilliseconds = duration.inWholeMilliseconds % 1000
+
+        log.info(
+            "Got persons from pdl ${persons.size} in $timeInSeconds.$leftoverMilliseconds seconds"
+        )
+
+        val databaseUpdateTime = measureTime { database.updateNames(persons) }
+        val timeInSecondsDatabase = databaseUpdateTime.inWholeSeconds
+        val leftoverMillisecondsDatabase = databaseUpdateTime.inWholeMilliseconds % 1000
+
+        log.info(
+            "Updating Database ${persons.size} in $timeInSecondsDatabase.$leftoverMillisecondsDatabase seconds"
+        )
     }
 
     private fun harEndretFnr(identListe: List<Ident>): Boolean {

@@ -30,7 +30,8 @@ suspend fun DatabaseInterface.getItemsWithoutNames() =
             FROM narmeste_leder
             WHERE bruker_navn IS NULL OR narmesteleder_navn IS NULL
             LIMIT 1000;
-        """.trimIndent()
+        """
+                        .trimIndent()
                 )
                 .use {
                     val result = it.executeQuery()
