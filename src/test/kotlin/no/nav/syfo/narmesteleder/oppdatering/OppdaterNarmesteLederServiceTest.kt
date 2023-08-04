@@ -272,7 +272,7 @@ class OppdaterNarmesteLederServiceTest :
                         nlAvbrutt = null,
                     )
 
-                assertFailsWith<IllegalStateException> {
+                assertFailsWith<IllegalArgumentException> {
                     runBlocking {
                         oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                             nlResponseKafkaMessage,
@@ -304,7 +304,7 @@ class OppdaterNarmesteLederServiceTest :
                         nlAvbrutt = null,
                     )
 
-                assertFailsWith<IllegalStateException> {
+                assertFailsWith<IllegalArgumentException> {
                     runBlocking {
                         oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                             nlResponseKafkaMessage,

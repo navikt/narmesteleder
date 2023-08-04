@@ -26,6 +26,7 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlKafkaMetadata
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequest
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequestKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
+import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.securelog
@@ -51,24 +52,35 @@ class OppdaterNarmesteLederService(
                 val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
                 val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
                 val personMap = pdlPersonService.getPersoner(listOf(sykmeldtFnr, nlFnr), callId)
-                if (personMap[sykmeldtFnr] == null || personMap[nlFnr] == null) {
+                val sykmeldt = personMap[sykmeldtFnr]
+                val nl = personMap[nlFnr]
+                requireNotNull(sykmeldt) {
                     securelog.info(
-                        "Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL callId $callId, " +
+                        "Mottatt NL-skjema for ansatt som ikke finnes i PDL callId $callId, " +
                             "sykmeldtFnr: $sykmeldtFnr nlFnr: $nlFnr orgnummer: $orgnummer",
                     )
-                    log.error(
-                        "Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL callId $callId partition: $partition, offset: $offset"
-                    )
-                    throw IllegalStateException(
-                        "Mottatt NL-skjema for ansatt eller leder som ikke finnes i PDL"
-                    )
+                    "Mottatt NL-skjema for ansatt som ikke finnes i PDL callId $callId partition: $partition, offset: $offset"
                 }
+                requireNotNull(nl) {
+                    securelog.info(
+                        "Mottatt NL-skjema for leder som ikke finnes i PDL callId $callId, " +
+                            "nlFnr: $nlFnr orgnummer: $orgnummer",
+                    )
+                    "Mottatt NL-skjema for leder som ikke finnes i PDL callId $callId partition: $partition, offset: $offset"
+                }
+
                 val narmesteLedere =
                     database.finnAlleNarmesteledereForSykmeldt(
                         fnr = sykmeldtFnr,
                         orgnummer = orgnummer
                     )
-                createOrUpdateNL(narmesteLedere, nlResponseKafkaMessage, callId)
+                createOrUpdateNL(
+                    ledere = narmesteLedere,
+                    nlResponseKafkaMessage = nlResponseKafkaMessage,
+                    callId = callId,
+                    sykmeldt = sykmeldt,
+                    leder = nl
+                )
             }
             nlResponseKafkaMessage.nlAvbrutt != null -> {
                 val narmesteLedere =
@@ -93,7 +105,9 @@ class OppdaterNarmesteLederService(
     private fun createOrUpdateNL(
         ledere: List<NarmesteLederRelasjon>,
         nlResponseKafkaMessage: NlResponseKafkaMessage,
-        callId: String
+        callId: String,
+        sykmeldt: PdlPerson,
+        leder: PdlPerson,
     ) {
         when (
             val eksisterendeLeder =
@@ -110,7 +124,9 @@ class OppdaterNarmesteLederService(
                 database.lagreNarmesteLeder(
                     narmesteLederId,
                     nlResponseKafkaMessage.nlResponse,
-                    nlResponseKafkaMessage.kafkaMetadata.timestamp
+                    nlResponseKafkaMessage.kafkaMetadata.timestamp,
+                    sykmeldt,
+                    leder
                 )
                 narmesteLederLeesahProducer.send(
                     NarmesteLederLeesah(
@@ -147,8 +163,10 @@ class OppdaterNarmesteLederService(
                     nlResponseKafkaMessage.kafkaMetadata.source
                 )
                 database.oppdaterNarmesteLeder(
-                    eksisterendeLeder.narmesteLederId,
-                    nlResponseKafkaMessage.nlResponse
+                    narmesteLederId = eksisterendeLeder.narmesteLederId,
+                    nlResponse = nlResponseKafkaMessage.nlResponse,
+                    sykmeldt = sykmeldt,
+                    leder = leder,
                 )
                 narmesteLederLeesahProducer.send(
                     NarmesteLederLeesah(

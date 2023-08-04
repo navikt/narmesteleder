@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nav.person.pdl.leesah.Personhendelse
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.securelog
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 
