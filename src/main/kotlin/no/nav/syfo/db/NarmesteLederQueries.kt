@@ -16,7 +16,6 @@ import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
 import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.model.toFormattedNameString
-import no.nav.syfo.securelog
 
 suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
     withContext(Dispatchers.IO) {
@@ -161,9 +160,14 @@ fun DatabaseInterface.deaktiverNarmesteLeder(
     }
 }
 
-fun DatabaseInterface.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: NlResponse) {
+fun DatabaseInterface.oppdaterNarmesteLeder(
+    narmesteLederId: UUID,
+    nlResponse: NlResponse,
+    sykmeldt: PdlPerson,
+    leder: PdlPerson,
+) {
     connection.use { connection ->
-        connection.oppdaterNarmesteLeder(narmesteLederId, nlResponse)
+        connection.oppdaterNarmesteLeder(narmesteLederId, nlResponse, sykmeldt, leder)
         connection.commit()
     }
 }
@@ -171,10 +175,12 @@ fun DatabaseInterface.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: N
 fun DatabaseInterface.lagreNarmesteLeder(
     narmesteLederId: UUID,
     nlResponse: NlResponse,
-    kafkaTimestamp: OffsetDateTime
+    kafkaTimestamp: OffsetDateTime,
+    sykmeldt: PdlPerson,
+    leder: PdlPerson
 ) {
     connection.use { connection ->
-        connection.lagreNarmesteleder(narmesteLederId, nlResponse, kafkaTimestamp)
+        connection.lagreNarmesteleder(narmesteLederId, nlResponse, kafkaTimestamp, sykmeldt, leder)
         connection.commit()
     }
 }
@@ -198,7 +204,9 @@ fun DatabaseInterface.finnForskuttering(fnr: String, orgnummer: String): Forskut
 private fun Connection.lagreNarmesteleder(
     narmesteLederId: UUID,
     nlResponse: NlResponse,
-    kafkaTimestamp: OffsetDateTime
+    kafkaTimestamp: OffsetDateTime,
+    sykmeldt: PdlPerson,
+    leder: PdlPerson,
 ) {
     this.prepareStatement(
             """
@@ -212,8 +220,10 @@ private fun Connection.lagreNarmesteleder(
                     arbeidsgiver_forskutterer,
                     aktiv_fom,
                     aktiv_tom,
-                    timestamp)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    timestamp,
+                    bruker_navn,
+                    narmesteleder_navn)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                  """,
         )
         .use {
@@ -236,6 +246,8 @@ private fun Connection.lagreNarmesteleder(
                 nlResponse.aktivTom?.let { Timestamp.from(nlResponse.aktivTom.toInstant()) },
             )
             it.setTimestamp(10, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
+            it.setString(11, sykmeldt.navn.toFormattedNameString())
+            it.setString(12, leder.navn.toFormattedNameString())
             it.execute()
         }
 }
@@ -264,11 +276,22 @@ private fun Connection.deaktiverNarmesteLeder(
             it.execute()
         }
 
-private fun Connection.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: NlResponse) =
+private fun Connection.oppdaterNarmesteLeder(
+    narmesteLederId: UUID,
+    nlResponse: NlResponse,
+    sykmeldt: PdlPerson,
+    leder: PdlPerson
+) =
     this.prepareStatement(
             """
             UPDATE narmeste_leder 
-                SET narmeste_leder_telefonnummer = ?, narmeste_leder_epost = ?, arbeidsgiver_forskutterer = ?, aktiv_tom = null, timestamp = ?
+                SET narmeste_leder_telefonnummer = ?, 
+                narmeste_leder_epost = ?, 
+                arbeidsgiver_forskutterer = ?, 
+                aktiv_tom = null, 
+                timestamp = ?,
+                bruker_navn = ?,
+                narmesteleder_navn = ?
                 WHERE narmeste_leder_id = ?;
             """,
         )
@@ -277,7 +300,9 @@ private fun Connection.oppdaterNarmesteLeder(narmesteLederId: UUID, nlResponse: 
             it.setString(2, nlResponse.leder.epost)
             it.setObject(3, nlResponse.utbetalesLonn)
             it.setTimestamp(4, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
-            it.setObject(5, narmesteLederId)
+            it.setString(5, sykmeldt.navn.toFormattedNameString())
+            it.setString(6, leder.navn.toFormattedNameString())
+            it.setObject(7, narmesteLederId)
             it.execute()
         }
 
