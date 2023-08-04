@@ -28,10 +28,9 @@ suspend fun DatabaseInterface.getItemsWithoutNames() =
             bruker_navn,
             narmesteleder_navn
             FROM narmeste_leder
-            WHERE (bruker_navn IS NULL OR bruker_navn = '') OR (narmesteleder_navn IS NULL OR narmesteleder_navn = '')
-            LIMIT 100;
-        """
-                        .trimIndent()
+            WHERE bruker_navn IS NULL OR narmesteleder_navn IS NULL
+            LIMIT 1000;
+        """.trimIndent()
                 )
                 .use {
                     val result = it.executeQuery()
