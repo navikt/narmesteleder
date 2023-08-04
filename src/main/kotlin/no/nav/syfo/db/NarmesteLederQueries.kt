@@ -16,6 +16,7 @@ import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
 import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.model.toFormattedNameString
+import no.nav.syfo.securelog
 
 suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
     withContext(Dispatchers.IO) {
@@ -26,11 +27,12 @@ suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
                 )
                 .use { preparedStatement ->
                     fnrNames.forEach {
+                        securelog.info("updating name for bruker ${it.fnr} to ${it.navn.toFormattedNameString()}")
                         preparedStatement.setString(1, it.navn.toFormattedNameString())
                         preparedStatement.setString(2, it.fnr)
                         preparedStatement.addBatch()
                     }
-                    preparedStatement.executeUpdate()
+                    preparedStatement.executeBatch()
                 }
             connection
                 .prepareStatement(
@@ -38,11 +40,12 @@ suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
                 )
                 .use { preparedStatement ->
                     fnrNames.forEach {
+                        securelog.info("updating name for narmesteleder ${it.fnr} to ${it.navn.toFormattedNameString()}")
                         preparedStatement.setString(1, it.navn.toFormattedNameString())
                         preparedStatement.setString(2, it.fnr)
                         preparedStatement.addBatch()
                     }
-                    preparedStatement.executeUpdate()
+                    preparedStatement.executeBatch()
                 }
             connection.commit()
         }
