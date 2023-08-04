@@ -31,7 +31,7 @@ class NarmestelederUpdateNameService(
                 launch(Dispatchers.IO) {
                     while (isActive) {
                         try {
-                            val noNameList = database.getItemsWithoutNames()
+                            val noNameList = database.getItemsWithoutNames().distinct()
 
                             if (noNameList.isEmpty()) break
 
