@@ -1,5 +1,6 @@
 package no.nav.syfo.narmesteleder
 
+import java.sql.BatchUpdateException
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTimedValue
 import kotlinx.coroutines.CancellationException
@@ -17,7 +18,6 @@ import no.nav.syfo.db.getItemsWithoutNames
 import no.nav.syfo.pdl.identendring.IdentendringService
 import no.nav.syfo.securelog
 import org.slf4j.LoggerFactory
-import java.sql.BatchUpdateException
 
 @OptIn(DelicateCoroutinesApi::class)
 class NarmestelederUpdateNameService(

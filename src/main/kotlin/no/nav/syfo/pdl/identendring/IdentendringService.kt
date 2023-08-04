@@ -7,7 +7,6 @@ import kotlin.time.measureTimedValue
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.application.metrics.NYTT_FNR_ANSATT_COUNTER
@@ -159,7 +158,7 @@ class IdentendringService(
         )
 
         val databaseUpdateTime = measureTime {
-                    GlobalScope.launch(Dispatchers.IO) { database.updateNames(persons) }
+            database.updateNames(persons)
         }
         val timeInSecondsDatabase = databaseUpdateTime.inWholeSeconds
         val leftoverMillisecondsDatabase = databaseUpdateTime.inWholeMilliseconds % 1000
