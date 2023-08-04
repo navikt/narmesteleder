@@ -35,9 +35,11 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.application.leaderelection.LeaderElection
+import no.nav.syfo.application.leaderelection.LeadershipHandling
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
+import no.nav.syfo.narmesteleder.NarmestelederUpdateNameService
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
@@ -263,7 +265,15 @@ fun main() {
             identendringService
         )
     pdlLeesahConsumer.start()
-    val applicationServer = ApplicationServer(applicationEngine, applicationState)
+
+    val updateNameService = NarmestelederUpdateNameService(database, identendringService)
+
+    val leadershipHandling = LeadershipHandling(updateNameService, leaderElection)
+
+    leadershipHandling.start()
+
+    val applicationServer =
+        ApplicationServer(applicationEngine, applicationState, leadershipHandling)
 
     narmesteLederResponseConsumerService.startConsumer()
     pdlAktorConsumer.startConsumer()

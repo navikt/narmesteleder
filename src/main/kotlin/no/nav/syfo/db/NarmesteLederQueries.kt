@@ -17,12 +17,44 @@ import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.model.toFormattedNameString
 
+suspend fun DatabaseInterface.getItemsWithoutNames() =
+    withContext(Dispatchers.IO) {
+        connection.use { connection ->
+            connection
+                .prepareStatement(
+                    """
+            SELECT bruker_fnr,
+            narmeste_leder_fnr,
+            bruker_navn,
+            narmesteleder_navn
+            FROM narmeste_leder
+            WHERE (bruker_navn IS NULL OR bruker_navn = '') OR (narmesteleder_navn IS NULL OR narmesteleder_navn = '')
+            LIMIT 100;
+        """
+                        .trimIndent()
+                )
+                .use {
+                    val result = it.executeQuery()
+                    val fnrList = mutableListOf<String>()
+
+                    while (result.next()) {
+                        if (result.getString("bruker_navn") == null)
+                            fnrList.add(result.getString("bruker_fnr"))
+                        if (result.getString("narmesteleder_navn") == null)
+                            fnrList.add(result.getString("narmeste_leder_fnr"))
+                    }
+
+                    fnrList
+                }
+        }
+    }
+
 suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
     withContext(Dispatchers.IO) {
         connection.use { connection ->
             connection
                 .prepareStatement(
-                    """update narmesteleder set bruker_navn = ? where bruker_fnr = ?;"""
+                    """update narmeste_leder set bruker_navn = ? where bruker_fnr = ?;"""
                 )
                 .use { preparedStatement ->
                     fnrNames.forEach {
@@ -34,7 +66,7 @@ suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
                 }
             connection
                 .prepareStatement(
-                    """update narmesteleder set narmesteleder_navn = ? where narmeste_leder_fnr = ?;"""
+                    """update narmeste_leder set narmesteleder_navn = ? where narmeste_leder_fnr = ?;"""
                 )
                 .use { preparedStatement ->
                     fnrNames.forEach {
