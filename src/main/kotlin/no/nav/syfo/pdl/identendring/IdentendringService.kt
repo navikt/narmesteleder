@@ -5,6 +5,10 @@ import java.time.ZoneOffset
 import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.application.metrics.NYTT_FNR_ANSATT_COUNTER
 import no.nav.syfo.application.metrics.NYTT_FNR_LEDER_COUNTER
@@ -154,7 +158,12 @@ class IdentendringService(
             "Got persons from pdl ${persons.size} in $timeInSeconds.$leftoverMilliseconds seconds"
         )
 
-        val databaseUpdateTime = measureTime { database.updateNames(persons) }
+        val databaseUpdateTime = measureTime {
+            val updateJobs = persons.chunked(25).map {
+                GlobalScope.launch(Dispatchers.IO) { database.updateNames(it) }
+            }
+            updateJobs.joinAll()
+        }
         val timeInSecondsDatabase = databaseUpdateTime.inWholeSeconds
         val leftoverMillisecondsDatabase = databaseUpdateTime.inWholeMilliseconds % 1000
 

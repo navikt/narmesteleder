@@ -29,7 +29,7 @@ suspend fun DatabaseInterface.getItemsWithoutNames() =
             narmesteleder_navn
             FROM narmeste_leder
             WHERE bruker_navn IS NULL OR narmesteleder_navn IS NULL
-            LIMIT 1000;
+            LIMIT 100;
         """
                         .trimIndent()
                 )
@@ -51,7 +51,6 @@ suspend fun DatabaseInterface.getItemsWithoutNames() =
 
 suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
     withContext(Dispatchers.IO) {
-
         connection.use { connection ->
             connection
                 .prepareStatement(
