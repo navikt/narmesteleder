@@ -264,7 +264,7 @@ fun main() {
             env.pdlLeesahTopic,
             identendringService
         )
-    pdlLeesahConsumer.start()
+    // pdlLeesahConsumer.start()
 
     val updateNameService = NarmestelederUpdateNameService(database, identendringService)
 
