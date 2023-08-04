@@ -67,7 +67,7 @@ suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
             connection.commit()
         }
 
-        connection.use {
+        connection.use { connection ->
             connection
                 .prepareStatement(
                     """update narmeste_leder set narmesteleder_navn = ? where narmeste_leder_fnr = ?;"""

@@ -159,9 +159,10 @@ class IdentendringService(
         )
 
         val databaseUpdateTime = measureTime {
-            val updateJobs = persons.chunked(25).map {
-                GlobalScope.launch(Dispatchers.IO) { database.updateNames(it) }
-            }
+            val updateJobs =
+                persons.chunked(25).map {
+                    GlobalScope.launch(Dispatchers.IO) { database.updateNames(it) }
+                }
             updateJobs.joinAll()
         }
         val timeInSecondsDatabase = databaseUpdateTime.inWholeSeconds
