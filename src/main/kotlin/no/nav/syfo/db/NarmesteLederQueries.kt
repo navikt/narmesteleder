@@ -51,6 +51,7 @@ suspend fun DatabaseInterface.getItemsWithoutNames() =
 
 suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
     withContext(Dispatchers.IO) {
+
         connection.use { connection ->
             connection
                 .prepareStatement(
@@ -64,6 +65,10 @@ suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
                     }
                     preparedStatement.executeBatch()
                 }
+            connection.commit()
+        }
+
+        connection.use {
             connection
                 .prepareStatement(
                     """update narmeste_leder set narmesteleder_navn = ? where narmeste_leder_fnr = ?;"""
