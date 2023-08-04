@@ -23,10 +23,15 @@ class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,
     private val pdlPersonRedisService: PdlPersonRedisService,
-    private val pdlScope: String,
+    private val pdlScope: String
 ) {
+
     companion object {
         const val AKTORID = "AKTORID"
+    }
+
+    suspend fun getPersonerByIdenter(identer: List<String>): Collection<PdlPerson?> {
+        return getPersonsFromPdl(identer).data.toPdlPersonMap().values
     }
 
     suspend fun getPersoner(fnrs: List<String>, callId: String): Map<String, PdlPerson?> {
@@ -34,9 +39,7 @@ class PdlPersonService(
         val fnrsManglerIRedis = fnrs.filter { !personerFraRedis.containsKey(it) }
 
         if (fnrsManglerIRedis.isNotEmpty()) {
-            val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
-
-            val pdlResponse = getPersonsFromPdl(fnrsManglerIRedis, accessToken)
+            val pdlResponse = getPersonsFromPdl(fnrsManglerIRedis)
 
             if (pdlResponse.errors != null) {
                 pdlResponse.errors.forEach {
@@ -88,8 +91,7 @@ class PdlPersonService(
     }
 
     suspend fun erIdentAktiv(fnr: String): Boolean {
-        val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
-        val pdlResponse = getPersonsFromPdl(listOf(fnr), accessToken)
+        val pdlResponse = getPersonsFromPdl(listOf(fnr))
 
         if (pdlResponse.errors != null) {
             pdlResponse.errors.forEach { log.warn("PDL kastet error: {} ", it) }
@@ -110,13 +112,14 @@ class PdlPersonService(
         return true
     }
 
-    private suspend fun getPersonsFromPdl(
-        fnrs: List<String>,
-        stsToken: String,
-    ): GetPersonResponse {
+    private suspend fun getPersonsFromPdl(ider: List<String>): GetPersonResponse {
+
+        val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
         val listFnrs =
-            fnrs.chunked(100).map {
-                GlobalScope.async(context = Dispatchers.IO) { pdlClient.getPersoner(it, stsToken) }
+            ider.chunked(100).map {
+                GlobalScope.async(context = Dispatchers.IO) {
+                    pdlClient.getPersoner(it, accessToken)
+                }
             }
 
         val responses = listFnrs.awaitAll().map { it }

@@ -1,4 +1,4 @@
-package no.nav.syfo.identendring
+package no.nav.syfo.pdl.identendring
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -8,8 +8,7 @@ import no.nav.syfo.application.metrics.NYTT_FNR_ANSATT_COUNTER
 import no.nav.syfo.application.metrics.NYTT_FNR_LEDER_COUNTER
 import no.nav.syfo.db.finnAktiveNarmesteledereForSykmeldt
 import no.nav.syfo.db.finnAktiveNarmestelederkoblinger
-import no.nav.syfo.identendring.model.Ident
-import no.nav.syfo.identendring.model.IdentType
+import no.nav.syfo.db.updateNames
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.KafkaMetadata
@@ -18,6 +17,8 @@ import no.nav.syfo.narmesteleder.oppdatering.model.Leder
 import no.nav.syfo.narmesteleder.oppdatering.model.NlAvbrutt
 import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 import no.nav.syfo.narmesteleder.oppdatering.model.Sykmeldt
+import no.nav.syfo.pdl.identendring.model.Ident
+import no.nav.syfo.pdl.identendring.model.IdentType
 import no.nav.syfo.pdl.service.PdlPersonService
 
 @DelicateCoroutinesApi
@@ -139,6 +140,11 @@ class IdentendringService(
                 NYTT_FNR_ANSATT_COUNTER.inc()
             }
         }
+    }
+
+    suspend fun updateNames(identer: List<String>) {
+        val persons = pdlService.getPersonerByIdenter(identer).filterNotNull()
+        database.updateNames(persons)
     }
 
     private fun harEndretFnr(identListe: List<Ident>): Boolean {

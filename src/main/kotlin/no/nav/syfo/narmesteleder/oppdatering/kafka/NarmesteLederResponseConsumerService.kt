@@ -9,7 +9,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.coroutine.Unbounded
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -32,7 +31,7 @@ class NarmesteLederResponseConsumerService(
 
     @ExperimentalTime
     fun startConsumer() {
-        GlobalScope.launch(Dispatchers.Unbounded) {
+        GlobalScope.launch(Dispatchers.IO) {
             while (applicationState.ready) {
                 try {
                     runConsumer()

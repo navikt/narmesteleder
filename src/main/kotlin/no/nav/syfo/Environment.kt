@@ -37,6 +37,7 @@ data class Environment(
     val clientIdV2: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val clientSecretV2: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val pdlAktorV2Topic: String = "pdl.aktor-v2",
+    val pdlLeesahTopic: String = "pdl.leesah-v1",
     val schemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
     val kafkaSchemaRegistryUsername: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
     val kafkaSchemaRegistryPassword: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),

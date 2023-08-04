@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import no.nav.person.pdl.leesah.Personhendelse
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.client.AccessTokenClientV2
@@ -34,8 +35,6 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.application.leaderelection.LeaderElection
-import no.nav.syfo.identendring.IdentendringService
-import no.nav.syfo.identendring.PdlAktorConsumer
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
@@ -52,9 +51,12 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaDeserializer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.util.JacksonKafkaSerializer
 import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.identendring.IdentendringService
+import no.nav.syfo.pdl.identendring.PdlAktorConsumer
+import no.nav.syfo.pdl.identendring.PdlLeesahConsumer
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
-import org.apache.avro.generic.GenericRecord
+import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -170,7 +172,7 @@ fun main() {
 
     val kafkaConsumer =
         KafkaConsumer(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("nl-response-consumer")
                 .also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }
                 .toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
             StringDeserializer(),
@@ -178,7 +180,7 @@ fun main() {
         )
     val kafkaProducerNlResponse =
         KafkaProducer<String, NlResponseKafkaMessage>(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("nl-response-producer")
                 .toProducerConfig(
                     "${env.applicationName}-producer",
                     JacksonKafkaSerializer::class,
@@ -188,7 +190,7 @@ fun main() {
     val nlResponseProducer = NLResponseProducer(kafkaProducerNlResponse, env.nlResponseTopic)
     val kafkaProducerNlRequest =
         KafkaProducer<String, NlRequestKafkaMessage>(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("nl-request-producer")
                 .toProducerConfig(
                     "${env.applicationName}-producer",
                     JacksonKafkaSerializer::class,
@@ -198,7 +200,7 @@ fun main() {
     val nlRequestProducer = NLRequestProducer(kafkaProducerNlRequest, env.nlRequestTopic)
     val kafkaProducerNarmesteLederLeesah =
         KafkaProducer<String, NarmesteLederLeesah>(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("nl-leesah-producer")
                 .toProducerConfig(
                     "${env.applicationName}-producer",
                     JacksonKafkaSerializer::class,
@@ -244,13 +246,23 @@ fun main() {
     val leaderElection = LeaderElection(httpClient, env.electorPath)
     val pdlAktorConsumer =
         PdlAktorConsumer(
-            getKafkaConsumerAivenPdlAktor(env),
+            getKafkaConsumerAivenPdl("pdl-ident-consumer", env),
             applicationState,
             env.pdlAktorV2Topic,
             leaderElection,
             identendringService
         )
 
+    val personhendelseConsumer =
+        getKafkaConsumerAivenPdl<Personhendelse>("pdl-leesah-consumer", env, "earliest")
+    val pdlLeesahConsumer =
+        PdlLeesahConsumer(
+            personhendelseConsumer,
+            applicationState,
+            env.pdlLeesahTopic,
+            identendringService
+        )
+    pdlLeesahConsumer.start()
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
     narmesteLederResponseConsumerService.startConsumer()
@@ -259,9 +271,13 @@ fun main() {
     applicationServer.start()
 }
 
-fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<String, GenericRecord> {
+fun <T : SpecificRecord> getKafkaConsumerAivenPdl(
+    clientId: String,
+    environment: Environment,
+    offsetResetPolicy: String = "none"
+): KafkaConsumer<String, T> {
     val consumerProperties =
-        KafkaUtils.getAivenKafkaConfig()
+        KafkaUtils.getAivenKafkaConfig(clientId)
             .apply {
                 setProperty(
                     KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
@@ -278,12 +294,12 @@ fun getKafkaConsumerAivenPdlAktor(environment: Environment): KafkaConsumer<Strin
                 valueDeserializer = KafkaAvroDeserializer::class,
             )
             .also {
-                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-                it["specific.avro.reader"] = false
-                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
+                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = offsetResetPolicy
+                it["specific.avro.reader"] = true
+                it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "10"
             }
 
-    return KafkaConsumer<String, GenericRecord>(consumerProperties)
+    return KafkaConsumer<String, T>(consumerProperties)
 }
 
 fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) = runBlocking {
