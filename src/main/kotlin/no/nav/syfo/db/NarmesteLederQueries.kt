@@ -16,38 +16,7 @@ import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
 import no.nav.syfo.narmesteleder.oppdatering.model.NlResponse
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.model.toFormattedNameString
-
-suspend fun DatabaseInterface.getItemsWithoutNames() =
-    withContext(Dispatchers.IO) {
-        connection.use { connection ->
-            connection
-                .prepareStatement(
-                    """
-            SELECT bruker_fnr,
-            narmeste_leder_fnr,
-            bruker_navn,
-            narmesteleder_navn
-            FROM narmeste_leder
-            WHERE bruker_navn IS NULL OR narmesteleder_navn IS NULL
-            LIMIT 100;
-        """
-                        .trimIndent()
-                )
-                .use {
-                    val result = it.executeQuery()
-                    val fnrList = mutableListOf<String>()
-
-                    while (result.next()) {
-                        if (result.getString("bruker_navn") == null)
-                            fnrList.add(result.getString("bruker_fnr"))
-                        if (result.getString("narmesteleder_navn") == null)
-                            fnrList.add(result.getString("narmeste_leder_fnr"))
-                    }
-
-                    fnrList
-                }
-        }
-    }
+import no.nav.syfo.securelog
 
 suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
     withContext(Dispatchers.IO) {
@@ -58,6 +27,9 @@ suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
                 )
                 .use { preparedStatement ->
                     fnrNames.forEach {
+                        securelog.info(
+                            "Updating bruker name for ${it.fnr} to ${it.navn.toFormattedNameString()}"
+                        )
                         preparedStatement.setString(1, it.navn.toFormattedNameString())
                         preparedStatement.setString(2, it.fnr)
                         preparedStatement.addBatch()
@@ -74,6 +46,9 @@ suspend fun DatabaseInterface.updateNames(fnrNames: List<PdlPerson>) =
                 )
                 .use { preparedStatement ->
                     fnrNames.forEach {
+                        securelog.info(
+                            "Updating leder name for ${it.fnr} to ${it.navn.toFormattedNameString()}"
+                        )
                         preparedStatement.setString(1, it.navn.toFormattedNameString())
                         preparedStatement.setString(2, it.fnr)
                         preparedStatement.addBatch()
