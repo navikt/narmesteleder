@@ -144,6 +144,7 @@ class IdentendringService(
 
     suspend fun updateNames(identer: List<String>) {
         val persons = pdlService.getPersonerByIdenter(identer).filterNotNull()
+        log.info("updating names for ${persons.size}")
         database.updateNames(persons)
     }
 
