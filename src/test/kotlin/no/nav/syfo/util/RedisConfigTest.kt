@@ -10,12 +10,12 @@ class RedisConfigTest :
         test("Test config") {
             val redisConfig =
                 RedisConfig(
-                    redisUri = URI("rediss://redis-teamsykmelding-infotrygd.no:12345"),
+                    redisUri = URI("rediss://redis-teamsykmelding-narmesteleder.no:12345"),
                     redisUsername = "Username",
                     redisPassword = "Password",
                 )
 
-            redisConfig.host shouldBeEqualTo "redis-teamsykmelding-infotrygd.no"
+            redisConfig.host shouldBeEqualTo "redis-teamsykmelding-narmesteleder.no"
             redisConfig.port shouldBeEqualTo 12345
         }
     })
