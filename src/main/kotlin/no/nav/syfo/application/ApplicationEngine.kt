@@ -20,13 +20,13 @@ import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
 import java.util.UUID
 import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
-import no.nav.syfo.application.api.setupSwaggerDocApi
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.forskuttering.registrerForskutteringApi
@@ -104,7 +104,7 @@ fun createApplicationEngine(
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {
-                setupSwaggerDocApi()
+                swaggerUI(path = "docs", swaggerFile = "openapi/narmesteleder-api.yaml")
             }
             authenticate("servicebruker") {
                 registrerForskutteringApi(database)

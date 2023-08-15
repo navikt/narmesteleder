@@ -56,6 +56,7 @@ import no.nav.syfo.pdl.identendring.PdlAktorConsumer
 import no.nav.syfo.pdl.identendring.PdlLeesahConsumer
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.pdl.util.createJedisPool
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -64,8 +65,6 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.JedisPoolConfig
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.narmesteleder")
 
@@ -92,7 +91,7 @@ fun main() {
     val applicationState = ApplicationState()
     val database = Database(env)
 
-    val jedisPool = JedisPool(JedisPoolConfig(), env.redisHost, env.redisPort)
+    val jedisPool = createJedisPool()
 
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(ContentNegotiation) {
@@ -163,7 +162,7 @@ fun main() {
                 .readText()
                 .replace(Regex("[\n\t]"), ""),
         )
-    val pdlPersonRedisService = PdlPersonRedisService(jedisPool, env.redisSecret)
+    val pdlPersonRedisService = PdlPersonRedisService(jedisPool)
     val pdlPersonService =
         PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, env.pdlScope)
     val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl)

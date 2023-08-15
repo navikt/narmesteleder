@@ -26,10 +26,6 @@ data class Environment(
     val aaregUrl: String = getEnvVar("AAREG_URL"),
     val aaregScope: String = getEnvVar("AAREG_SCOPE"),
     val allowedOrigin: List<String> = getEnvVar("ALLOWED_ORIGIN").split(","),
-    val redisHost: String =
-        getEnvVar("REDIS_HOST", "narmesteleder-redis.teamsykmelding.svc.cluster.local"),
-    val redisPort: Int = getEnvVar("REDIS_PORT_NARMESTELEDER", "6379").toInt(),
-    val redisSecret: String = getEnvVar("REDIS_PASSWORD"),
     val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
     val narmestelederTokenXClientId: String = getEnvVar("TOKEN_X_CLIENT_ID"),
     val pdlScope: String = getEnvVar("PDL_SCOPE"),

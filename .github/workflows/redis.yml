@@ -1,9 +1,0 @@
-name: Deploy redis to dev and prod
-on:
-  push:
-    paths:
-      - 'redis.yaml'
-jobs:
-  redis:
-    uses: navikt/teamsykmelding-github-actions-workflows/.github/workflows/redis.yaml@main
-    secrets: inherit

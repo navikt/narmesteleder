@@ -71,6 +71,8 @@ dependencies {
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-server-swagger:$ktorVersion")
+
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     //This is to override version that is in io.ktor:ktor-client-apache
@@ -127,10 +129,6 @@ tasks {
     }
     named("compileTestKotlin") {
         dependsOn("generateTestAvroJava")
-    }
-    withType<KotlinCompile> {
-        dependsOn("generateSwaggerUI")
-        kotlinOptions.jvmTarget = "17"
     }
 
     withType<GenerateSwaggerUI> {

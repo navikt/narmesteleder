@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisPool
 
-class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisSecret: String) {
+class PdlPersonRedisService(private val jedisPool: JedisPool) {
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(PdlPersonRedisService::class.java)
@@ -18,7 +18,6 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
         var jedis: Jedis? = null
         try {
             jedis = jedisPool.resource
-            jedis.auth(redisSecret)
             jedis.setex(
                 "${prefix}$fnr",
                 redisTimeoutSeconds,
@@ -35,7 +34,6 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
         var jedis: Jedis? = null
         return try {
             jedis = jedisPool.resource
-            jedis.auth(redisSecret)
             return jedis
                 .mget(*fnrs.map { "${prefix}$it" }.toTypedArray())
                 .filterNotNull()
