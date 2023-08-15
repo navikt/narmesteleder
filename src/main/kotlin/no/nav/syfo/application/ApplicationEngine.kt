@@ -104,7 +104,7 @@ fun createApplicationEngine(
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {
-                swaggerUI(path = "docs", swaggerFile = "api/oas3/narmesteleder-api.yaml")
+                swaggerUI(path = "docs", swaggerFile = "openapi/narmesteleder-api.yaml")
             }
             authenticate("servicebruker") {
                 registrerForskutteringApi(database)
