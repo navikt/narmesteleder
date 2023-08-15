@@ -130,10 +130,6 @@ tasks {
     named("compileTestKotlin") {
         dependsOn("generateTestAvroJava")
     }
-    withType<KotlinCompile> {
-        dependsOn("generateSwaggerUI")
-        kotlinOptions.jvmTarget = "17"
-    }
 
     withType<GenerateSwaggerUI> {
         outputDir = File(buildDir.path + "/resources/main/api")
