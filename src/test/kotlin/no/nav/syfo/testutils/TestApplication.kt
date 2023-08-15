@@ -68,7 +68,6 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
             aaregUrl = "aareg",
             aaregScope = "aareg-scope",
             allowedOrigin = listOf("tjenester", "www"),
-            redisSecret = "secret",
             tokenXWellKnownUrl = "https://tokenx",
             narmestelederTokenXClientId = "id",
             pdlScope = "scope",

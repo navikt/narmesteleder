@@ -63,6 +63,9 @@ spec:
       tenant: nav.no
   tokenx:
     enabled: true
+  redis:
+    - instance: narmesteleder
+      access: readwrite
   accessPolicy:
     inbound:
       rules:
@@ -95,8 +98,6 @@ spec:
           namespace: flex
           cluster: prod-gcp
     outbound:
-      rules:
-        - application: narmesteleder-redis
       external:
         - host: pdl-api.prod-fss-pub.nais.io
         - host: kafka-schema-registry.nais.adeo.no
