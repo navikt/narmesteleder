@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.hidetake.gradle.swagger.generator.GenerateSwaggerUI
 
 group = "no.nav.syfo"
@@ -14,7 +13,7 @@ val logbackVersion = "1.4.11"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.6.2"
-val smCommonVersion = "1.0.12"
+val smCommonVersion = "1.0.14"
 val mockkVersion = "1.13.7"
 val nimbusdsVersion = "9.31"
 val testContainerKafkaVersion = "1.18.3"
