@@ -84,9 +84,6 @@ spec:
           cluster: prod-gcp
         - application: notifikasjon-bruker-api
           namespace: fager
-        - application: isdialogmote
-          namespace: teamsykefravr
-          cluster: prod-gcp
         - application: macgyver
           namespace: teamsykmelding
           cluster: prod-gcp
