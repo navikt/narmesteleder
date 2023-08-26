@@ -49,10 +49,6 @@ spec:
     enabled: false
   envFrom:
     - configmap: loginservice-idporten
-  ingresses:
-    - "https://narmesteleder.intern.nav.no"
-    - "https://narmesteleder.nav.no"
-  webproxy: false
   leaderElection: true
   kafka:
     pool: nav-prod
