@@ -45,9 +45,7 @@ fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
     jwkProvider: JwkProvider,
-    jwkProviderLoginservice: JwkProvider,
     jwkProviderTokenX: JwkProvider,
-    loginserviceIssuer: String,
     tokenXIssuer: String,
     database: Database,
     pdlPersonService: PdlPersonService,
@@ -64,10 +62,8 @@ fun createApplicationEngine(
         }
         setupAuth(
             jwkProvider = jwkProvider,
-            jwkProviderLoginservice = jwkProviderLoginservice,
             jwkProviderTokenX = jwkProviderTokenX,
             env = env,
-            loginserviceIssuer = loginserviceIssuer,
             tokenXIssuer = tokenXIssuer,
         )
         install(CallId) {
@@ -110,11 +106,9 @@ fun createApplicationEngine(
                 registrerForskutteringApi(database)
                 registrerNarmesteLederApi(database, narmesteLederService)
             }
-            authenticate("loginservice") {
-                registrerNarmesteLederUserApi(deaktiverNarmesteLederService, narmesteLederService)
-            }
             authenticate("tokenx") {
                 registrerNarmesteLederUserApiV2(deaktiverNarmesteLederService, narmesteLederService)
+                registrerNarmesteLederUserApi(deaktiverNarmesteLederService, narmesteLederService)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

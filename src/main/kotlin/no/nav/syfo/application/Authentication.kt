@@ -20,10 +20,8 @@ import no.nav.syfo.log
 
 fun Application.setupAuth(
     jwkProvider: JwkProvider,
-    jwkProviderLoginservice: JwkProvider,
     jwkProviderTokenX: JwkProvider,
     env: Environment,
-    loginserviceIssuer: String,
     tokenXIssuer: String,
 ) {
     install(Authentication) {
@@ -46,30 +44,6 @@ fun Application.setupAuth(
                             log.warn("App not in pre authorized list: $appid")
                         }
                         JWTPrincipal(credentials.payload)
-                    }
-                    else -> unauthorized(credentials)
-                }
-            }
-        }
-        jwt(name = "loginservice") {
-            authHeader {
-                if (it.getToken() == null) {
-                    return@authHeader null
-                }
-                return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
-            }
-            verifier(jwkProviderLoginservice, loginserviceIssuer)
-            validate { credentials ->
-                when {
-                    hasLoginserviceIdportenClientIdAudience(
-                        credentials,
-                        env.loginserviceIdportenAudience
-                    ) && erNiva4(credentials) -> {
-                        val principal = JWTPrincipal(credentials.payload)
-                        BrukerPrincipal(
-                            fnr = finnFnrFraToken(principal),
-                            principal = principal,
-                        )
                     }
                     else -> unauthorized(credentials)
                 }
@@ -133,13 +107,6 @@ fun unauthorized(credentials: JWTCredential): Principal? {
         StructuredArguments.keyValue("audience", credentials.payload.audience),
     )
     return null
-}
-
-fun hasLoginserviceIdportenClientIdAudience(
-    credentials: JWTCredential,
-    loginserviceIdportenClientId: List<String>
-): Boolean {
-    return loginserviceIdportenClientId.any { credentials.payload.audience.contains(it) }
 }
 
 fun harNarmestelederAudience(credentials: JWTCredential, clientId: String): Boolean {

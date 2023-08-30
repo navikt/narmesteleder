@@ -14,7 +14,7 @@ import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.pdl.service.PdlPersonService
-import no.nav.syfo.testutils.generateJWTLoginservice
+import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
@@ -33,7 +33,7 @@ class NarmesteLederUserApiKtTest :
                 setUpTestApplication()
                 setUpAuth()
                 application.routing {
-                    authenticate("loginservice") {
+                    authenticate("tokenx") {
                         registrerNarmesteLederUserApi(
                             deaktiverNarmesteLederService,
                             utvidetNarmesteLederService
@@ -45,7 +45,7 @@ class NarmesteLederUserApiKtTest :
                         handleRequest(HttpMethod.Post, "/9999/avkreft") {
                             addHeader(
                                 "Authorization",
-                                "Bearer ${generateJWTLoginservice(audience = "loginserviceId1", subject = "12345678901", issuer = "issuer")}"
+                                "Bearer ${generateJWT(consumerClientId = "issuer", audience = "id", subject = "12345678901", issuer = "issuer")}"
                             )
                         },
                     ) {
@@ -57,7 +57,7 @@ class NarmesteLederUserApiKtTest :
                         handleRequest(HttpMethod.Post, "/9999/avkreft") {
                             addHeader(
                                 "Authorization",
-                                "Bearer ${generateJWTLoginservice(audience = "loginserviceId1", subject = "12345678901", issuer = "annenIssuer")}"
+                                "Bearer ${generateJWT(consumerClientId = "issuer", audience = "clientId", subject = "12345678901", issuer = "annenIssuer")}"
                             )
                         },
                     ) {
@@ -69,7 +69,7 @@ class NarmesteLederUserApiKtTest :
                         handleRequest(HttpMethod.Post, "/9999/avkreft") {
                             addHeader(
                                 "Authorization",
-                                "Bearer ${generateJWTLoginservice(audience = "feil", subject = "12345678901", issuer = "issuer")}"
+                                "Bearer ${generateJWT(consumerClientId = "issuer", audience = "feil", subject = "12345678901", issuer = "issuer")}"
                             )
                         },
                     ) {
@@ -81,7 +81,7 @@ class NarmesteLederUserApiKtTest :
                         handleRequest(HttpMethod.Post, "/9999/avkreft") {
                             addHeader(
                                 "Cookie",
-                                "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = "12345678901", issuer = "issuer")}"
+                                "selvbetjening-idtoken=${generateJWT(consumerClientId = "issuer", audience = "id", subject = "12345678901", issuer = "issuer")}"
                             )
                         },
                     ) {
@@ -93,7 +93,7 @@ class NarmesteLederUserApiKtTest :
                         handleRequest(HttpMethod.Post, "/9999/avkreft") {
                             addHeader(
                                 "Cookie",
-                                "selvbetjening-idtoken=${generateJWTLoginservice(audience = "loginserviceId1", subject = "12345678901", issuer = "annenIssuer")}"
+                                "selvbetjening-idtoken=${generateJWT(consumerClientId = "issuer", audience = "clientId", subject = "12345678901", issuer = "annenIssuer")}"
                             )
                         },
                     ) {
@@ -105,7 +105,7 @@ class NarmesteLederUserApiKtTest :
                         handleRequest(HttpMethod.Post, "/9999/avkreft") {
                             addHeader(
                                 "Cookie",
-                                "selvbetjening-idtoken=${generateJWTLoginservice(audience = "feil", subject = "12345678901", issuer = "issuer")}"
+                                "selvbetjening-idtoken=${generateJWT(consumerClientId = "issuer", audience = "feil", subject = "12345678901", issuer = "issuer")}"
                             )
                         },
                     ) {

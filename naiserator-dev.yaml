@@ -47,8 +47,6 @@ spec:
       memory: 450Mi
   vault:
     enabled: false
-  envFrom:
-    - configmap: loginservice-idporten
   ingresses:
     - "https://narmesteleder.dev.nav.no"
     - "https://narmesteleder.dev.intern.nav.no"

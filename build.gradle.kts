@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import org.hidetake.gradle.swagger.generator.GenerateSwaggerUI
 
 group = "no.nav.syfo"
 version = "1.0.0"
@@ -111,12 +110,6 @@ dependencies {
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
 }
 
-swaggerSources {
-    create("narmesteleder").apply {
-        setInputFile(file("api/oas3/narmesteleder-api.yaml"))
-    }
-}
-
 tasks {
     withType<Jar> {
         manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
@@ -128,10 +121,6 @@ tasks {
     }
     named("compileTestKotlin") {
         dependsOn("generateTestAvroJava")
-    }
-
-    withType<GenerateSwaggerUI> {
-        outputDir = File(buildDir.path + "/resources/main/api")
     }
 
     withType<ShadowJar> {
