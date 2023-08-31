@@ -13,7 +13,6 @@ import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.narmesteleder.NarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.DeaktiverNarmesteLederService
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
-import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
@@ -23,10 +22,9 @@ import org.amshove.kluent.shouldBeEqualTo
 class NarmesteLederUserApiKtTest :
     FunSpec({
         val nlResponseProducer = mockk<NLResponseProducer>(relaxed = true)
-        val pdlPersonService = mockk<PdlPersonService>()
         val database = mockk<DatabaseInterface>()
         val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer)
-        val utvidetNarmesteLederService = NarmesteLederService(database, pdlPersonService)
+        val utvidetNarmesteLederService = NarmesteLederService(database)
 
         context("API for å deaktivere den sykmeldtes nærmeste leder - autentisering") {
             with(TestApplicationEngine()) {

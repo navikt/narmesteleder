@@ -127,6 +127,8 @@ class IdentendringServiceTest :
                                 ZoneOffset.UTC,
                             )
                             .minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
                 )
                 testDb.connection.lagreNarmesteleder(
                     orgnummer = "orgnummer",
@@ -143,6 +145,8 @@ class IdentendringServiceTest :
                                 ZoneOffset.UTC,
                             )
                             .minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder"
                 )
 
                 val aktorId = "1111"
@@ -204,6 +208,8 @@ class IdentendringServiceTest :
                                 ZoneOffset.UTC,
                             )
                             .minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder"
                 )
                 testDb.connection.lagreNarmesteleder(
                     orgnummer = "orgnummer2",
@@ -220,6 +226,8 @@ class IdentendringServiceTest :
                                 ZoneOffset.UTC,
                             )
                             .minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder"
                 )
 
                 coEvery { pdlPersonService.erIdentAktiv(nyttFnrSykmeldt) } returns true

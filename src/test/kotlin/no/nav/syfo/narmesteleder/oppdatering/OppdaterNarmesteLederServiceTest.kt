@@ -118,7 +118,9 @@ class OppdaterNarmesteLederServiceTest :
                     fnr = sykmeldtFnr,
                     fnrNl = fnrLeder,
                     arbeidsgiverForskutterer = true,
-                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
                 )
                 val nlResponseKafkaMessage =
                     NlResponseKafkaMessage(
@@ -161,7 +163,9 @@ class OppdaterNarmesteLederServiceTest :
                     fnr = sykmeldtFnr,
                     fnrNl = fnrLeder,
                     arbeidsgiverForskutterer = true,
-                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
                 )
                 val nlResponseKafkaMessage =
                     NlResponseKafkaMessage(
@@ -216,7 +220,9 @@ class OppdaterNarmesteLederServiceTest :
                     fnr = sykmeldtFnr,
                     fnrNl = fnrLeder,
                     arbeidsgiverForskutterer = true,
-                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
                 )
                 val nlResponseKafkaMessage =
                     NlResponseKafkaMessage(
@@ -330,7 +336,9 @@ class OppdaterNarmesteLederServiceTest :
                     fnr = sykmeldtFnr,
                     fnrNl = fnrLeder,
                     arbeidsgiverForskutterer = true,
-                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
                 )
                 val aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
                 val nlResponseKafkaMessage =
@@ -386,7 +394,9 @@ class OppdaterNarmesteLederServiceTest :
                     fnr = sykmeldtFnr,
                     fnrNl = fnrLeder,
                     arbeidsgiverForskutterer = true,
-                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
                 )
                 val aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
                 val nlResponseKafkaMessage =
@@ -434,7 +444,9 @@ class OppdaterNarmesteLederServiceTest :
                     fnr = sykmeldtFnr,
                     fnrNl = fnrLeder,
                     arbeidsgiverForskutterer = true,
-                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
                 )
                 val aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
                 val nlResponseKafkaMessage =
@@ -484,7 +496,9 @@ class OppdaterNarmesteLederServiceTest :
                     fnr = sykmeldtFnr,
                     fnrNl = fnrLeder,
                     arbeidsgiverForskutterer = true,
-                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
                 )
                 val aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
                 val nlResponseKafkaMessage =
@@ -526,7 +540,9 @@ class OppdaterNarmesteLederServiceTest :
                     fnr = sykmeldtFnr,
                     fnrNl = fnrLeder,
                     arbeidsgiverForskutterer = true,
-                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
                 )
                 val aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
                 val nlResponseKafkaMessage =
@@ -560,7 +576,9 @@ class OppdaterNarmesteLederServiceTest :
                     fnr = sykmeldtFnr,
                     fnrNl = fnrLeder,
                     arbeidsgiverForskutterer = true,
-                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                    aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
                 )
                 val aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
                 val nlResponseKafkaMessage =

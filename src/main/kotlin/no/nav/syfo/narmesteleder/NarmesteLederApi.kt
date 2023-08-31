@@ -64,8 +64,7 @@ fun Route.registrerNarmesteLederApi(
             if (call.request.queryParameters["utvidet"] == "ja") {
                 call.respond(
                     utvidetNarmesteLederService.hentNarmesteledereMedNavn(
-                        sykmeldtFnr = sykmeldtFnr,
-                        callId = callId,
+                        sykmeldtFnr = sykmeldtFnr
                     ),
                 )
             } else {

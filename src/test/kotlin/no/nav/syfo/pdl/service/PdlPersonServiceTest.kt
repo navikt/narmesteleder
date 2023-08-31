@@ -20,9 +20,6 @@ import no.nav.syfo.pdl.error.InactiveIdentException
 import no.nav.syfo.pdl.error.PersonNotFoundException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
-import no.nav.syfo.pdl.redis.NavnRedisModel
-import no.nav.syfo.pdl.redis.PdlPersonRedisModel
-import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import org.amshove.kluent.shouldBeEqualTo
 
 @DelicateCoroutinesApi
@@ -30,9 +27,7 @@ class PdlPersonServiceTest :
     FunSpec({
         val pdlClient = mockkClass(PdlClient::class)
         val accessTokenClientV2 = mockkClass(AccessTokenClientV2::class)
-        val pdlPersonRedisService = mockkClass(PdlPersonRedisService::class, relaxed = true)
-        val pdlPersonService =
-            PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, "scope")
+        val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, "scope")
 
         val callId = "callid"
         val fnrLeder1 = "12345678910"
@@ -41,9 +36,8 @@ class PdlPersonServiceTest :
         val aktorIdLeder2 = "456"
 
         beforeTest {
-            clearMocks(accessTokenClientV2, pdlClient, pdlPersonRedisService)
+            clearMocks(accessTokenClientV2, pdlClient)
             coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
-            coEvery { pdlPersonRedisService.getPerson(any()) } returns emptyMap()
         }
 
         context("Test av PdlPersonService") {
@@ -113,7 +107,6 @@ class PdlPersonServiceTest :
                         fnrLeder2,
                         aktorIdLeder2
                     )
-                coVerify(exactly = 2) { pdlPersonRedisService.updatePerson(any(), any()) }
             }
             test("Person er null hvis navn ikke finnes i PDL") {
                 coEvery { pdlClient.getPersoner(any(), any()) } returns
@@ -157,7 +150,6 @@ class PdlPersonServiceTest :
                 personer[fnrLeder1] shouldBeEqualTo null
                 personer[fnrLeder2] shouldBeEqualTo
                     PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder2, aktorIdLeder2)
-                coVerify(exactly = 1) { pdlPersonRedisService.updatePerson(any(), any()) }
             }
             test("Skal feile når ingen personer finnes") {
                 coEvery { pdlClient.getPersoner(any(), any()) } returns
@@ -172,100 +164,7 @@ class PdlPersonServiceTest :
                     }
                 }
             }
-            test("Henter navn og aktørid for to ledere fra redis") {
-                coEvery {
-                    pdlPersonRedisService.getPerson(eq(listOf(fnrLeder1, fnrLeder2)))
-                } returns
-                    mapOf(
-                        fnrLeder1 to
-                            PdlPersonRedisModel(
-                                NavnRedisModel("fornavn", null, "etternavn"),
-                                fnrLeder1,
-                                aktorIdLeder1
-                            ),
-                        fnrLeder2 to
-                            PdlPersonRedisModel(
-                                NavnRedisModel("fornavn2", "mellomnavn", "etternavn2"),
-                                fnrLeder2,
-                                aktorIdLeder2
-                            ),
-                    )
-
-                val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
-
-                personer[fnrLeder1] shouldBeEqualTo
-                    PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
-                personer[fnrLeder2] shouldBeEqualTo
-                    PdlPerson(
-                        Navn("fornavn2", "mellomnavn", "etternavn2"),
-                        fnrLeder2,
-                        aktorIdLeder2
-                    )
-                coVerify(exactly = 0) { pdlClient.getPersoner(any(), any()) }
-                coVerify(exactly = 0) { pdlPersonRedisService.updatePerson(any(), any()) }
-            }
-            test("Henter navn og aktørid for to ledere, en fra redis og en fra PDL") {
-                coEvery {
-                    pdlPersonRedisService.getPerson(eq(listOf(fnrLeder1, fnrLeder2)))
-                } returns
-                    mapOf(
-                        fnrLeder1 to
-                            PdlPersonRedisModel(
-                                NavnRedisModel("fornavn", null, "etternavn"),
-                                fnrLeder1,
-                                aktorIdLeder1
-                            ),
-                        fnrLeder2 to null,
-                    )
-                coEvery { pdlClient.getPersoner(any(), any()) } returns
-                    GetPersonResponse(
-                        ResponseData(
-                            hentPersonBolk =
-                                listOf(
-                                    HentPersonBolk(
-                                        fnrLeder2,
-                                        Person(
-                                            listOf(
-                                                no.nav.syfo.pdl.client.model.Navn(
-                                                    "fornavn2",
-                                                    "mellomnavn",
-                                                    "etternavn2"
-                                                )
-                                            )
-                                        ),
-                                        "ok"
-                                    ),
-                                ),
-                            hentIdenterBolk =
-                                listOf(
-                                    HentIdenterBolk(
-                                        fnrLeder2,
-                                        listOf(
-                                            PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"),
-                                            PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID)
-                                        ),
-                                        "ok"
-                                    ),
-                                ),
-                        ),
-                        errors = null,
-                    )
-
-                val personer = pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
-
-                personer[fnrLeder1] shouldBeEqualTo
-                    PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
-                personer[fnrLeder2] shouldBeEqualTo
-                    PdlPerson(
-                        Navn("fornavn2", "mellomnavn", "etternavn2"),
-                        fnrLeder2,
-                        aktorIdLeder2
-                    )
-                coVerify(exactly = 1) { pdlClient.getPersoner(eq(listOf(fnrLeder2)), any()) }
-                coVerify(exactly = 1) { pdlPersonRedisService.updatePerson(any(), any()) }
-            }
             test("Skal hente 1000 narmesteldere") {
-                coEvery { pdlPersonRedisService.getPerson(any()) } returns emptyMap()
                 val total = 1001
                 val fnrs = (0 until total).map { it.toString() }
                 coEvery { pdlClient.getPersoner(any(), any()) } answers
