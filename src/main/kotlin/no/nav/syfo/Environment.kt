@@ -20,9 +20,6 @@ data class Environment(
     val nlResponseTopic: String = "teamsykmelding.syfo-narmesteleder",
     val nlRequestTopic: String = "teamsykmelding.syfo-nl-request",
     val narmesteLederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
-    val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
-    val loginserviceIdportenAudience: List<String> =
-        getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     val aaregUrl: String = getEnvVar("AAREG_URL"),
     val aaregScope: String = getEnvVar("AAREG_SCOPE"),
     val allowedOrigin: List<String> = getEnvVar("ALLOWED_ORIGIN").split(","),

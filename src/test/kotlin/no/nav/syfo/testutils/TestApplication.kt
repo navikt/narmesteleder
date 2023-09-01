@@ -47,13 +47,11 @@ fun TestApplicationEngine.setUpTestApplication() {
     }
 }
 
-val testAudience = listOf("loginserviceId1", "loginserviceId2")
-
-fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Environment {
+fun TestApplicationEngine.setUpAuth(): Environment {
     val env =
         Environment(
             clientId = "narmesteleder",
-            cluster = "dev",
+            cluster = "dev-gcp",
             clientSecret = "secret",
             jwkKeysUrl = "keys",
             jwtIssuer = "issuer",
@@ -63,8 +61,6 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
             dbHost = "",
             dbPort = "",
             dbName = "",
-            loginserviceIdportenDiscoveryUrl = "url",
-            loginserviceIdportenAudience = audience,
             aaregUrl = "aareg",
             aaregScope = "aareg-scope",
             allowedOrigin = listOf("tjenester", "www"),
@@ -84,6 +80,6 @@ fun TestApplicationEngine.setUpAuth(audience: List<String> = testAudience): Envi
     val uri = Paths.get(path).toUri().toURL()
     val jwkProvider = JwkProviderBuilder(uri).build()
 
-    application.setupAuth(jwkProvider, jwkProvider, jwkProvider, env, "issuer", "issuer")
+    application.setupAuth(jwkProvider, jwkProvider, env, "issuer")
     return env
 }
