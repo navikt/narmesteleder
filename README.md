@@ -28,7 +28,6 @@ This the high level flow of the application
       B([teamsykmelding.syfo-narmesteleder]) --> narmesteleder
       narmesteleder --> C([teamsykmelding.syfo-nl-request])
       narmesteleder --> D([teamsykmelding.syfo-narmesteleder-leesah])
-      narmesteleder <--> narmesteleder-redis;
 ```
 
 ## Getting started

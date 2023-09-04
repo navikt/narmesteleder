@@ -21,7 +21,6 @@ val flywayVersion = "9.21.1"
 val hikariVersion = "5.0.1"
 val testContainerPostgresVersion = "1.18.3"
 val swaggerUiVersion = "5.3.1"
-val jedisVersion = "4.4.3"
 val kotlinVersion = "1.9.0"
 val confluentVersion = "7.4.1"
 val commonsCodecVersion = "1.16.0"
@@ -92,8 +91,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-
-    implementation("redis.clients:jedis:$jedisVersion")
 
     swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 
