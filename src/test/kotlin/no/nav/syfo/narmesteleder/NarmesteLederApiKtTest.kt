@@ -9,18 +9,12 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.mockk.clearMocks
-import io.mockk.coEvery
-import io.mockk.mockk
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.objectMapper
-import no.nav.syfo.pdl.model.Navn
-import no.nav.syfo.pdl.model.PdlPerson
-import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.testutils.TestDB
 import no.nav.syfo.testutils.dropData
 import no.nav.syfo.testutils.generateJWT
@@ -36,18 +30,18 @@ const val fnrLeder = "123"
 @DelicateCoroutinesApi
 class NarmesteLederApiKtTest :
     FunSpec({
-        val pdlPersonService = mockk<PdlPersonService>()
         val testDb = TestDB()
-        val utvidetNarmesteLederService = NarmesteLederService(testDb, pdlPersonService)
+        val utvidetNarmesteLederService = NarmesteLederService(testDb)
 
         beforeTest {
-            clearMocks(pdlPersonService)
             testDb.connection.dropData()
             testDb.connection.lagreNarmesteleder(
                 orgnummer = "orgnummer",
                 fnr = sykmeldtFnr,
                 fnrNl = fnrLeder,
-                arbeidsgiverForskutterer = true
+                arbeidsgiverForskutterer = true,
+                brukerNavn = "sykmeldt",
+                narmestelederNavn = "narmesteleder"
             )
         }
 
@@ -84,7 +78,10 @@ class NarmesteLederApiKtTest :
                             objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
                         narmesteLedere.size shouldBeEqualTo 1
                         val narmesteLeder = narmesteLedere[0]
-                        erLike(narmesteLeder, forventetNarmesteLeder()) shouldBeEqualTo true
+                        erLike(
+                            narmesteLeder,
+                            forventetNarmesteLeder("narmesteleder")
+                        ) shouldBeEqualTo true
                     }
                 }
                 test("Returnerer inaktiv nærmeste leder") {
@@ -98,6 +95,8 @@ class NarmesteLederApiKtTest :
                                     ZoneOffset.UTC,
                                 )
                                 .minusDays(2),
+                        brukerNavn = "sykmeldt",
+                        narmestelederNavn = "narmesteleder",
                     )
                     with(
                         handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
@@ -145,13 +144,6 @@ class NarmesteLederApiKtTest :
                     }
                 }
                 test("Setter navn på lederne hvis utvidet == ja") {
-                    coEvery { pdlPersonService.getPersoner(any(), any()) } returns
-                        mapOf(
-                            Pair(
-                                fnrLeder,
-                                PdlPerson(Navn("Fornavn", null, "Etternavn"), fnrLeder, "aktorid"),
-                            ),
-                        )
                     with(
                         handleRequest(
                             HttpMethod.Get,
@@ -178,7 +170,7 @@ class NarmesteLederApiKtTest :
                         val narmesteLeder = narmesteLedere[0]
                         erLike(
                             narmesteLeder,
-                            forventetNarmesteLeder(navn = "Fornavn Etternavn")
+                            forventetNarmesteLeder(navn = "narmesteleder")
                         ) shouldBeEqualTo true
                     }
                 }

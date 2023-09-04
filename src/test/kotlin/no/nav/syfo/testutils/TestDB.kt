@@ -68,6 +68,8 @@ fun Connection.lagreNarmesteleder(
     aktivFom: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
     aktivTom: OffsetDateTime? = null,
     timestamp: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+    brukerNavn: String,
+    narmestelederNavn: String,
 ) {
     use { connection ->
         connection
@@ -82,8 +84,10 @@ fun Connection.lagreNarmesteleder(
                     arbeidsgiver_forskutterer,
                     aktiv_fom,
                     aktiv_tom,
-                    timestamp)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    timestamp,
+                    bruker_navn,
+                    narmesteleder_navn)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                  """,
             )
             .use {
@@ -96,6 +100,8 @@ fun Connection.lagreNarmesteleder(
                 it.setTimestamp(7, Timestamp.from(aktivFom.toInstant()))
                 it.setTimestamp(8, aktivTom?.let { Timestamp.from(aktivTom.toInstant()) })
                 it.setTimestamp(9, Timestamp.from(timestamp.toInstant()))
+                it.setString(10, brukerNavn)
+                it.setString(11, narmestelederNavn)
                 it.execute()
             }
         connection.commit()

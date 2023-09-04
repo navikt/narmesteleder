@@ -95,20 +95,23 @@ fun DatabaseInterface.finnNarmestelederForSykmeldt(
     }
 }
 
-fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(fnr: String): List<NarmesteLederRelasjon> {
-    return connection.use { connection ->
-        connection
-            .prepareStatement(
-                """
+suspend fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(
+    fnr: String
+): List<NarmesteLederRelasjon> =
+    withContext(Dispatchers.IO) {
+        connection.use { connection ->
+            connection
+                .prepareStatement(
+                    """
            SELECT * from narmeste_leder where bruker_fnr = ?;
         """,
-            )
-            .use {
-                it.setString(1, fnr)
-                it.executeQuery().toList { toNarmesteLederRelasjon() }
-            }
+                )
+                .use {
+                    it.setString(1, fnr)
+                    it.executeQuery().toList { toNarmesteLederRelasjon() }
+                }
+        }
     }
-}
 
 fun DatabaseInterface.finnAktiveNarmesteledereForSykmeldt(
     fnr: String
@@ -329,6 +332,7 @@ private fun ResultSet.toNarmesteLederRelasjon(): NarmesteLederRelasjon =
         aktivTom = getTimestamp("aktiv_tom")?.toInstant()?.atOffset(ZoneOffset.UTC)?.toLocalDate(),
         arbeidsgiverForskutterer = getObject("arbeidsgiver_forskutterer")?.toString()?.toBoolean(),
         timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
+        navn = getString("narmesteleder_navn")
     )
 
 private fun ResultSet.toForskutteringRespons(): ForskutteringRespons {

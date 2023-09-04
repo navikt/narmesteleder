@@ -41,13 +41,9 @@ fun Route.registrerNarmesteLederUserApiV2(
     get("/user/v2/sykmeldt/narmesteledere") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val callId = UUID.randomUUID()
 
         call.respond(
-            utvidetNarmesteLederService.hentNarmesteLedereForAnsatt(
-                sykmeldtFnr = fnr,
-                callId = callId.toString(),
-            ),
+            utvidetNarmesteLederService.hentNarmesteLedereForAnsatt(sykmeldtFnr = fnr),
         )
     }
 }

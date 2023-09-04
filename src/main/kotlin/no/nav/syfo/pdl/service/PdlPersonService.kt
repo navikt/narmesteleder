@@ -14,15 +14,11 @@ import no.nav.syfo.pdl.error.InactiveIdentException
 import no.nav.syfo.pdl.error.PersonNotFoundException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
-import no.nav.syfo.pdl.redis.PdlPersonRedisService
-import no.nav.syfo.pdl.redis.toPdlPerson
-import no.nav.syfo.pdl.redis.toPdlPersonRedisModel
 
 @DelicateCoroutinesApi
 class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,
-    private val pdlPersonRedisService: PdlPersonRedisService,
     private val pdlScope: String
 ) {
 
@@ -35,59 +31,48 @@ class PdlPersonService(
     }
 
     suspend fun getPersoner(fnrs: List<String>, callId: String): Map<String, PdlPerson?> {
-        val personerFraRedis = getPersonerFromRedis(fnrs)
-        val fnrsManglerIRedis = fnrs.filter { !personerFraRedis.containsKey(it) }
 
-        if (fnrsManglerIRedis.isNotEmpty()) {
-            val pdlResponse = getPersonsFromPdl(fnrsManglerIRedis)
+        val pdlResponse = getPersonsFromPdl(fnrs)
 
-            if (pdlResponse.errors != null) {
-                pdlResponse.errors.forEach {
+        if (pdlResponse.errors != null) {
+            pdlResponse.errors.forEach {
+                log.error(
+                    "PDL returnerte feilmelding: ${it.message}, ${it.extensions?.code}, $callId"
+                )
+                it.extensions?.details?.let { details ->
                     log.error(
-                        "PDL returnerte feilmelding: ${it.message}, ${it.extensions?.code}, $callId"
-                    )
-                    it.extensions?.details?.let { details ->
-                        log.error(
-                            "Type: ${details.type}, cause: ${details.cause}, policy: ${details.policy}, $callId"
-                        )
-                    }
-                }
-            }
-            if (
-                pdlResponse.data.hentPersonBolk == null ||
-                    pdlResponse.data.hentPersonBolk.isNullOrEmpty() ||
-                    pdlResponse.data.hentIdenterBolk == null ||
-                    pdlResponse.data.hentIdenterBolk.isNullOrEmpty()
-            ) {
-                log.error("Fant ikke identer i PDL {}", callId)
-                throw IllegalStateException("Fant ingen identer i PDL, skal ikke kunne skje!")
-            }
-            pdlResponse.data.hentPersonBolk.forEach {
-                if (it.code != "ok") {
-                    log.warn(
-                        "Mottok feilkode ${it.code} fra PDL for en eller flere personer, {}",
-                        callId
+                        "Type: ${details.type}, cause: ${details.cause}, policy: ${details.policy}, $callId"
                     )
                 }
             }
-            pdlResponse.data.hentIdenterBolk.forEach {
-                if (it.code != "ok") {
-                    log.warn(
-                        "Mottok feilkode ${it.code} fra PDL for en eller flere identer, {}",
-                        callId
-                    )
-                }
-            }
-
-            val pdlPersonMap = pdlResponse.data.toPdlPersonMap()
-            pdlPersonMap.forEach {
-                if (it.value != null) {
-                    pdlPersonRedisService.updatePerson(it.value!!.toPdlPersonRedisModel(), it.key)
-                }
-            }
-            return personerFraRedis.plus(pdlPersonMap)
         }
-        return personerFraRedis
+        if (
+            pdlResponse.data.hentPersonBolk == null ||
+                pdlResponse.data.hentPersonBolk.isNullOrEmpty() ||
+                pdlResponse.data.hentIdenterBolk == null ||
+                pdlResponse.data.hentIdenterBolk.isNullOrEmpty()
+        ) {
+            log.error("Fant ikke identer i PDL {}", callId)
+            throw IllegalStateException("Fant ingen identer i PDL, skal ikke kunne skje!")
+        }
+        pdlResponse.data.hentPersonBolk.forEach {
+            if (it.code != "ok") {
+                log.warn(
+                    "Mottok feilkode ${it.code} fra PDL for en eller flere personer, {}",
+                    callId
+                )
+            }
+        }
+        pdlResponse.data.hentIdenterBolk.forEach {
+            if (it.code != "ok") {
+                log.warn(
+                    "Mottok feilkode ${it.code} fra PDL for en eller flere identer, {}",
+                    callId
+                )
+            }
+        }
+
+        return pdlResponse.data.toPdlPersonMap()
     }
 
     suspend fun erIdentAktiv(fnr: String): Boolean {
@@ -158,11 +143,4 @@ class PdlPersonService(
 
     private fun getNavn(navn: no.nav.syfo.pdl.client.model.Navn): Navn =
         Navn(fornavn = navn.fornavn, mellomnavn = navn.mellomnavn, etternavn = navn.etternavn)
-
-    private fun getPersonerFromRedis(fnrs: List<String>): Map<String, PdlPerson> {
-        return pdlPersonRedisService
-            .getPerson(fnrs)
-            .filterValues { it != null }
-            .mapValues { it.value!!.toPdlPerson() }
-    }
 }

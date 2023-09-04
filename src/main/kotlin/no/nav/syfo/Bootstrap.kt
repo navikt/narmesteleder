@@ -54,9 +54,7 @@ import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.identendring.IdentendringService
 import no.nav.syfo.pdl.identendring.PdlAktorConsumer
 import no.nav.syfo.pdl.identendring.PdlLeesahConsumer
-import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
-import no.nav.syfo.pdl.util.createJedisPool
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -90,8 +88,6 @@ fun main() {
     DefaultExports.initialize()
     val applicationState = ApplicationState()
     val database = Database(env)
-
-    val jedisPool = createJedisPool()
 
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(ContentNegotiation) {
@@ -155,9 +151,8 @@ fun main() {
                 .readText()
                 .replace(Regex("[\n\t]"), ""),
         )
-    val pdlPersonRedisService = PdlPersonRedisService(jedisPool)
-    val pdlPersonService =
-        PdlPersonService(pdlClient, accessTokenClientV2, pdlPersonRedisService, env.pdlScope)
+
+    val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, env.pdlScope)
     val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl)
     val arbeidsgiverService =
         ArbeidsgiverService(arbeidsforholdClient, accessTokenClientV2, env.aaregScope)
@@ -210,7 +205,6 @@ fun main() {
             jwkProviderTokenX = jwkProviderTokenX,
             tokenXIssuer = wellKnownTokenX.issuer,
             database = database,
-            pdlPersonService = pdlPersonService,
             nlResponseProducer = nlResponseProducer,
         )
 

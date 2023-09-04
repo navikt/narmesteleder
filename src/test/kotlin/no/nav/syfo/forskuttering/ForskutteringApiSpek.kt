@@ -44,13 +44,17 @@ class ForskutteringApiSpek :
                         fnrNl,
                         arbeidsgiverForskutterer = false,
                         aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2),
-                        aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                        aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                        brukerNavn = "sykmeldt",
+                        narmestelederNavn = "narmesteleder"
                     )
                     testDb.connection.lagreNarmesteleder(
                         orgnummer,
                         fnr,
                         fnrNl,
-                        arbeidsgiverForskutterer = true
+                        arbeidsgiverForskutterer = true,
+                        brukerNavn = "sykmeldt",
+                        narmestelederNavn = "narmesteleder"
                     )
                     with(
                         handleRequest(
@@ -79,7 +83,9 @@ class ForskutteringApiSpek :
                         orgnummer,
                         fnr,
                         fnrNl,
-                        arbeidsgiverForskutterer = false
+                        arbeidsgiverForskutterer = false,
+                        brukerNavn = "sykmeldt",
+                        narmestelederNavn = "narmesteleder"
                     )
                     with(
                         handleRequest(
@@ -108,7 +114,9 @@ class ForskutteringApiSpek :
                         orgnummer,
                         fnr,
                         fnrNl,
-                        arbeidsgiverForskutterer = null
+                        arbeidsgiverForskutterer = null,
+                        brukerNavn = "sykmeldt",
+                        narmestelederNavn = "narmesteleder"
                     )
                     with(
                         handleRequest(
@@ -164,7 +172,9 @@ class ForskutteringApiSpek :
                         fnrNl,
                         arbeidsgiverForskutterer = false,
                         aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2),
-                        aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+                        aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
+                        brukerNavn = "sykmeldt",
+                        narmestelederNavn = "narmesteleder"
                     )
                     testDb.connection.lagreNarmesteleder(
                         orgnummer,
@@ -172,7 +182,9 @@ class ForskutteringApiSpek :
                         fnrNl,
                         arbeidsgiverForskutterer = true,
                         aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
-                        aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(2)
+                        aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(2),
+                        brukerNavn = "sykmeldt",
+                        narmestelederNavn = "narmesteleder"
                     )
                     with(
                         handleRequest(
@@ -204,7 +216,9 @@ class ForskutteringApiSpek :
                 orgnummer,
                 fnr,
                 fnrNl,
-                arbeidsgiverForskutterer = true
+                arbeidsgiverForskutterer = true,
+                brukerNavn = "sykmeldt",
+                narmestelederNavn = "narmesteleder"
             )
             with(TestApplicationEngine()) {
                 setUpTestApplication()

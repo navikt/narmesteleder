@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
@@ -37,7 +38,6 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.registrerNarmesteLederApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApi
 import no.nav.syfo.narmesteleder.user.registrerNarmesteLederUserApiV2
-import no.nav.syfo.pdl.service.PdlPersonService
 import org.slf4j.event.Level
 
 @DelicateCoroutinesApi
@@ -48,68 +48,88 @@ fun createApplicationEngine(
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
     database: Database,
-    pdlPersonService: PdlPersonService,
     nlResponseProducer: NLResponseProducer,
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
-        install(ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-        setupAuth(
-            jwkProvider = jwkProvider,
-            jwkProviderTokenX = jwkProviderTokenX,
-            env = env,
-            tokenXIssuer = tokenXIssuer,
+        setUp(
+            jwkProvider,
+            jwkProviderTokenX,
+            env,
+            tokenXIssuer,
+            database,
+            nlResponseProducer,
+            applicationState
         )
-        install(CallId) {
-            retrieve { it.request.queryParameters["Nav-Callid"] }
-            retrieveFromHeader("Nav-Callid")
-            generate { UUID.randomUUID().toString() }
-        }
-        install(CallLogging) {
-            level = Level.TRACE
-            mdc("Nav-Callid") { it.callId }
-            mdc("Nav-Consumer-Id") { call ->
-                call.request.queryParameters["Nav-Consumer-Id"] ?: "narmesteleder"
-            }
-        }
-        install(StatusPages) {
-            exception<Throwable> { call, cause ->
-                log.error("Caught exception", cause)
-                call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-            }
-        }
-        install(CORS) {
-            allowMethod(HttpMethod.Get)
-            allowMethod(HttpMethod.Post)
-            allowMethod(HttpMethod.Options)
-            env.allowedOrigin.forEach { hosts.add("https://$it") }
-            allowHeader("nav_csrf_protection")
-            allowHeader("Sykmeldt-Fnr")
-            allowCredentials = true
-            allowNonSimpleContentTypes = true
-        }
-
-        val narmesteLederService = NarmesteLederService(database, pdlPersonService)
-        val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer)
-        routing {
-            registerNaisApi(applicationState)
-            if (env.cluster == "dev-gcp") {
-                swaggerUI(path = "docs", swaggerFile = "openapi/narmesteleder-api.yaml")
-            }
-            authenticate("servicebruker") {
-                registrerForskutteringApi(database)
-                registrerNarmesteLederApi(database, narmesteLederService)
-            }
-            authenticate("tokenx") {
-                registrerNarmesteLederUserApiV2(deaktiverNarmesteLederService, narmesteLederService)
-                registrerNarmesteLederUserApi(deaktiverNarmesteLederService, narmesteLederService)
-            }
-        }
-        intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
     }
+
+@DelicateCoroutinesApi
+private fun Application.setUp(
+    jwkProvider: JwkProvider,
+    jwkProviderTokenX: JwkProvider,
+    env: Environment,
+    tokenXIssuer: String,
+    database: Database,
+    nlResponseProducer: NLResponseProducer,
+    applicationState: ApplicationState
+) {
+    install(ContentNegotiation) {
+        jackson {
+            registerKotlinModule()
+            registerModule(JavaTimeModule())
+            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        }
+    }
+    setupAuth(
+        jwkProvider = jwkProvider,
+        jwkProviderTokenX = jwkProviderTokenX,
+        env = env,
+        tokenXIssuer = tokenXIssuer,
+    )
+    install(CallId) {
+        retrieve { it.request.queryParameters["Nav-Callid"] }
+        retrieveFromHeader("Nav-Callid")
+        generate { UUID.randomUUID().toString() }
+    }
+    install(CallLogging) {
+        level = Level.TRACE
+        mdc("Nav-Callid") { it.callId }
+        mdc("Nav-Consumer-Id") { call ->
+            call.request.queryParameters["Nav-Consumer-Id"] ?: "narmesteleder"
+        }
+    }
+    install(StatusPages) {
+        exception<Throwable> { call, cause ->
+            log.error("Caught exception", cause)
+            call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
+        }
+    }
+    install(CORS) {
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
+        allowMethod(HttpMethod.Options)
+        env.allowedOrigin.forEach { hosts.add("https://$it") }
+        allowHeader("nav_csrf_protection")
+        allowHeader("Sykmeldt-Fnr")
+        allowCredentials = true
+        allowNonSimpleContentTypes = true
+    }
+
+    val narmesteLederService = NarmesteLederService(database)
+    val deaktiverNarmesteLederService = DeaktiverNarmesteLederService(nlResponseProducer)
+    routing {
+        registerNaisApi(applicationState)
+        if (env.cluster == "dev-gcp") {
+            swaggerUI(path = "docs", swaggerFile = "openapi/narmesteleder-api.yaml")
+        }
+        authenticate("servicebruker") {
+            registrerForskutteringApi(database)
+            registrerNarmesteLederApi(database, narmesteLederService)
+        }
+        authenticate("tokenx") {
+            registrerNarmesteLederUserApiV2(deaktiverNarmesteLederService, narmesteLederService)
+            registrerNarmesteLederUserApi(deaktiverNarmesteLederService, narmesteLederService)
+        }
+    }
+    intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
+}
