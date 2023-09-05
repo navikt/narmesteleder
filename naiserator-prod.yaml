@@ -72,7 +72,6 @@ spec:
         - application: syfooppfolgingsplanservice
           namespace: team-esyfo
           cluster: prod-fss
-        - application: syfosmaltinn
         - application: sykmeldinger-arbeidsgiver
         - application: notifikasjon-bruker-api
           namespace: fager
