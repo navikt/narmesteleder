@@ -49,7 +49,6 @@ spec:
     enabled: false
   ingresses:
     - "https://narmesteleder.dev.nav.no"
-    - "https://narmesteleder.dev.intern.nav.no"
     - "https://narmesteleder.intern.dev.nav.no"
   webproxy: false
   leaderElection: true
