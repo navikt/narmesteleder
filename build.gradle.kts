@@ -28,11 +28,16 @@ val ktfmtVersion = "0.44"
 
 
 plugins {
+    id("application")
     id("com.diffplug.spotless") version "6.21.0"
     kotlin("jvm") version "1.9.10"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
     id("com.github.davidmc24.gradle.plugin.avro") version "1.8.0"
+}
+
+application {
+    mainClass.set("no.nav.syfo.BootstrapKt")
 }
 
 val githubUser: String by project
@@ -107,26 +112,25 @@ dependencies {
 }
 
 tasks {
-    withType<Jar> {
-        manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-    }
-    create("printVersion") {
-        doLast {
-            println(project.version)
-        }
-    }
-    named("compileTestKotlin") {
-        dependsOn("generateTestAvroJava")
-    }
-
-    withType<ShadowJar> {
+    
+    shadowJar {
         transform(ServiceFileTransformer::class.java) {
             setPath("META-INF/cxf")
             include("bus-extensions.txt")
         }
+        archiveBaseName.set("app")
+        archiveClassifier.set("")
+        isZip64 = true
+        manifest {
+            attributes(
+                mapOf(
+                    "Main-Class" to "no.nav.syfo.BootstrapKt",
+                ),
+            )
+        }
     }
 
-    withType<Test> {
+    test {
         useJUnitPlatform {
         }
         testLogging {
