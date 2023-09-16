@@ -40,15 +40,13 @@ spec:
     path: /internal/prometheus
   resources:
     limits:
-      cpu: 500m
-      memory: 500Mi
+      memory: 1024Mi
     requests:
       cpu: 50m
       memory: 450Mi
   vault:
     enabled: false
   ingresses:
-    - "https://narmesteleder.dev.nav.no"
     - "https://narmesteleder.intern.dev.nav.no"
   webproxy: false
   leaderElection: true
