@@ -1,9 +1,9 @@
-name: Deploy to dev and prod
+name: Deploy app to dev and prod
 on: push
 
 permissions:
   actions: read
-  contents: read
+  contents: write
   security-events: write
   packages: write
   id-token: write
