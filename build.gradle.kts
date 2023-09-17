@@ -25,6 +25,7 @@ val kotlinVersion = "1.9.10"
 val confluentVersion = "7.4.1"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
+val snakeYamlVersion = "2.0"
 
 
 plugins {
@@ -95,6 +96,9 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+
+    //due to https://github.com/advisories/GHSA-mjmj-j48q-9wg2
+    implementation("org.yaml:snakeyaml:$snakeYamlVersion")
 
     swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 
