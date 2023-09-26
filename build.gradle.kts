@@ -79,7 +79,11 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-
+    constraints {
+        implementation("org.xerial.snappy:snappy-java:1.1.10.4") {
+            because("override transient from org.apache.kafka:kafka_2.12")
+        }
+    }
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
