@@ -12,7 +12,7 @@ val logbackVersion = "1.4.11"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.7.2"
-val smCommonVersion = "2.0.0"
+val smCommonVersion = "2.0.2"
 val mockkVersion = "1.13.8"
 val nimbusdsVersion = "9.35"
 val testContainerKafkaVersion = "1.19.0"
@@ -80,7 +80,7 @@ dependencies {
 
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     constraints {
-        implementation("org.xerial.snappy:snappy-java:1.1.10.4") {
+        implementation("org.xerial.snappy:snappy-java:1.1.10.5") {
             because("override transient from org.apache.kafka:kafka_2.12")
         }
     }
