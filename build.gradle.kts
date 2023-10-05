@@ -26,7 +26,7 @@ val confluentVersion = "7.5.0"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
-
+val avroVersion = "1.11.3"
 
 plugins {
     id("application")
@@ -85,6 +85,12 @@ dependencies {
         }
     }
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
+    constraints {
+        implementation("org.apache.avro:avro:$avroVersion") {
+            because("override transient from io.confluent:kafka-avro-serializer")
+        }
+    }
+
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
