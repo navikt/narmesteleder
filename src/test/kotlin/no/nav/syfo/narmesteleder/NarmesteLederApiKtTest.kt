@@ -1,7 +1,6 @@
 package no.nav.syfo.narmesteleder
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -23,17 +22,22 @@ import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 
 const val sykmeldtFnr = "fnr"
 const val fnrLeder = "123"
 
 @DelicateCoroutinesApi
-class NarmesteLederApiKtTest :
-    FunSpec({
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+internal class NarmesteLederApiKtTest {
         val testDb = TestDB()
         val utvidetNarmesteLederService = NarmesteLederService(testDb)
 
-        beforeTest {
+        @BeforeEach
+        fun beforeEach() {
             testDb.connection.dropData()
             testDb.connection.lagreNarmesteleder(
                 orgnummer = "orgnummer",
@@ -45,9 +49,52 @@ class NarmesteLederApiKtTest :
             )
         }
 
-        afterSpec { testDb.stop() }
+        @AfterAll
+        fun afterAll() {
+            testDb.stop()
+        }
 
-        context("API for å hente alle den sykmeldtes nærmeste ledere") {
+    @Test
+    internal fun `API for å hente alle den sykmeldtes nærmeste leder Returnerer nærmeste ledere`() {
+        with(TestApplicationEngine()) {
+            setUpTestApplication()
+            val env = setUpAuth()
+            application.routing {
+                authenticate("servicebruker") {
+                    registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
+                }
+            }
+            with(
+                handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
+                    addHeader("Sykmeldt-Fnr", sykmeldtFnr)
+                    addHeader(
+                        HttpHeaders.Authorization,
+                        "Bearer ${
+                            generateJWT(
+                                "syfosmaltinn",
+                                "narmesteleder",
+                                subject = "123",
+                                issuer = env.jwtIssuer,
+                            )
+                        }",
+                    )
+                },
+            ) {
+                response.status() shouldBeEqualTo HttpStatusCode.OK
+                val narmesteLedere =
+                    objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
+                narmesteLedere.size shouldBeEqualTo 1
+                val narmesteLeder = narmesteLedere[0]
+                erLike(
+                    narmesteLeder,
+                    forventetNarmesteLeder("narmesteleder")
+                ) shouldBeEqualTo true
+            }
+    }
+    }
+
+        @Test
+        internal fun `API for a hente alle den sykmeldtes nærmeste ledere returnerer inaktiv nærmeste leder`() {
             with(TestApplicationEngine()) {
                 setUpTestApplication()
                 val env = setUpAuth()
@@ -56,54 +103,25 @@ class NarmesteLederApiKtTest :
                         registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
                     }
                 }
-                test("Returnerer nærmeste ledere") {
-                    with(
-                        handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
-                            addHeader("Sykmeldt-Fnr", sykmeldtFnr)
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${
-                                generateJWT(
-                                    "syfosmaltinn",
-                                    "narmesteleder",
-                                    subject = "123",
-                                    issuer = env.jwtIssuer,
-                                )
-                            }",
-                            )
-                        },
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-                        val narmesteLedere =
-                            objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
-                        narmesteLedere.size shouldBeEqualTo 1
-                        val narmesteLeder = narmesteLedere[0]
-                        erLike(
-                            narmesteLeder,
-                            forventetNarmesteLeder("narmesteleder")
-                        ) shouldBeEqualTo true
-                    }
-                }
-                test("Returnerer inaktiv nærmeste leder") {
-                    testDb.connection.lagreNarmesteleder(
-                        orgnummer = "orgnummer2",
-                        fnr = sykmeldtFnr,
-                        fnrNl = "fnrLeder2",
-                        arbeidsgiverForskutterer = true,
-                        aktivTom =
-                            OffsetDateTime.now(
-                                    ZoneOffset.UTC,
-                                )
-                                .minusDays(2),
-                        brukerNavn = "sykmeldt",
-                        narmestelederNavn = "narmesteleder",
+                testDb.connection.lagreNarmesteleder(
+                    orgnummer = "orgnummer2",
+                    fnr = sykmeldtFnr,
+                    fnrNl = "fnrLeder2",
+                    arbeidsgiverForskutterer = true,
+                    aktivTom =
+                    OffsetDateTime.now(
+                        ZoneOffset.UTC,
                     )
-                    with(
-                        handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
-                            addHeader("Sykmeldt-Fnr", sykmeldtFnr)
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${
+                        .minusDays(2),
+                    brukerNavn = "sykmeldt",
+                    narmestelederNavn = "narmesteleder",
+                )
+                with(
+                    handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
+                        addHeader("Sykmeldt-Fnr", sykmeldtFnr)
+                        addHeader(
+                            HttpHeaders.Authorization,
+                            "Bearer ${
                                 generateJWT(
                                     "syfosmaltinn",
                                     "narmesteleder",
@@ -111,73 +129,129 @@ class NarmesteLederApiKtTest :
                                     issuer = env.jwtIssuer,
                                 )
                             }",
-                            )
-                        },
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-                        val narmesteLedere =
-                            objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
-                        narmesteLedere.size shouldBeEqualTo 2
-                    }
-                }
-                test("Returnerer tom liste hvis bruker ikke har noen nærmeste ledere") {
-                    with(
-                        handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
-                            addHeader("Sykmeldt-Fnr", "sykmeldtFnrUtenNl")
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${
-                                generateJWT(
-                                    "syfosmaltinn",
-                                    "narmesteleder",
-                                    subject = "123",
-                                    issuer = env.jwtIssuer,
-                                )
-                            }",
-                            )
-                        },
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-                        val narmesteLedere =
-                            objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
-                        narmesteLedere.size shouldBeEqualTo 0
-                    }
-                }
-                test("Setter navn på lederne hvis utvidet == ja") {
-                    with(
-                        handleRequest(
-                            HttpMethod.Get,
-                            "/sykmeldt/narmesteledere?utvidet=ja",
-                        ) {
-                            addHeader("Sykmeldt-Fnr", sykmeldtFnr)
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${
-                                generateJWT(
-                                    "syfosmaltinn",
-                                    "narmesteleder",
-                                    subject = "123",
-                                    issuer = env.jwtIssuer,
-                                )
-                            }",
-                            )
-                        },
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.OK
-                        val narmesteLedere =
-                            objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
-                        narmesteLedere.size shouldBeEqualTo 1
-                        val narmesteLeder = narmesteLedere[0]
-                        erLike(
-                            narmesteLeder,
-                            forventetNarmesteLeder(navn = "narmesteleder")
-                        ) shouldBeEqualTo true
-                    }
+                        )
+                    },
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    val narmesteLedere =
+                        objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
+                    narmesteLedere.size shouldBeEqualTo 2
                 }
             }
         }
 
-        context("Feilhåndtering narmestelederapi") {
+
+                @Test
+                internal fun `API for a hente alle den sykmeldtes nærmeste ledere eeturnerer tom liste hvis bruker ikke har noen nærmeste lederer`() {
+                    with(TestApplicationEngine()) {
+                        setUpTestApplication()
+                        val env = setUpAuth()
+                        application.routing {
+                            authenticate("servicebruker") {
+                                registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
+                            }
+                        }
+                        with(
+                            handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
+                                addHeader("Sykmeldt-Fnr", "sykmeldtFnrUtenNl")
+                                addHeader(
+                                    HttpHeaders.Authorization,
+                                    "Bearer ${
+                                        generateJWT(
+                                            "syfosmaltinn",
+                                            "narmesteleder",
+                                            subject = "123",
+                                            issuer = env.jwtIssuer,
+                                        )
+                                    }",
+                                )
+                            },
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val narmesteLedere =
+                                objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
+                            narmesteLedere.size shouldBeEqualTo 0
+                        }
+                    }
+                }
+
+                @Test
+                internal fun `API for a hente alle den sykmeldtes nærmeste ledere setter navn på lederne hvis utvidet == ja`() {
+                    with(TestApplicationEngine()) {
+                        setUpTestApplication()
+                        val env = setUpAuth()
+                        application.routing {
+                            authenticate("servicebruker") {
+                                registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
+                            }
+                        }
+                        with(
+                            handleRequest(
+                                HttpMethod.Get,
+                                "/sykmeldt/narmesteledere?utvidet=ja",
+                            ) {
+                                addHeader("Sykmeldt-Fnr", sykmeldtFnr)
+                                addHeader(
+                                    HttpHeaders.Authorization,
+                                    "Bearer ${
+                                        generateJWT(
+                                            "syfosmaltinn",
+                                            "narmesteleder",
+                                            subject = "123",
+                                            issuer = env.jwtIssuer,
+                                        )
+                                    }",
+                                )
+                            },
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val narmesteLedere =
+                                objectMapper.readValue<List<NarmesteLederRelasjon>>(response.content!!)
+                            narmesteLedere.size shouldBeEqualTo 1
+                            val narmesteLeder = narmesteLedere[0]
+                            erLike(
+                                narmesteLeder,
+                                forventetNarmesteLeder(navn = "narmesteleder")
+                            ) shouldBeEqualTo true
+                        }
+                    }
+                }
+
+
+
+    @Test
+    internal fun `Feilhåndtering narmestelederapi returnerer feilmelding hvis fnr for den sykmeldte mangler`() {
+        with(TestApplicationEngine()) {
+            setUpTestApplication()
+            val env = setUpAuth()
+            application.routing {
+                authenticate("servicebruker") {
+                    registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
+                }
+            }
+            with(
+                handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
+                    addHeader(
+                        HttpHeaders.Authorization,
+                        "Bearer ${
+                            generateJWT(
+                                "syfosmaltinn",
+                                "narmesteleder",
+                                subject = "123",
+                                issuer = env.jwtIssuer,
+                            )
+                        }",
+                    )
+                },
+            ) {
+                response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                response.content shouldNotBeEqualTo null
+            }
+    }
+    }
+
+        @Test
+        internal fun `Feilhåndtering narmestelederapi returnerer returnerer feilmelding hvis fnr for den sykmeldte mangler`() {
             with(TestApplicationEngine()) {
                 setUpTestApplication()
                 val env = setUpAuth()
@@ -186,12 +260,11 @@ class NarmesteLederApiKtTest :
                         registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
                     }
                 }
-                test("Returnerer feilmelding hvis fnr for den sykmeldte mangler") {
-                    with(
-                        handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
-                            addHeader(
-                                HttpHeaders.Authorization,
-                                "Bearer ${
+                with(
+                    handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
+                        addHeader(
+                            HttpHeaders.Authorization,
+                            "Bearer ${
                                 generateJWT(
                                     "syfosmaltinn",
                                     "narmesteleder",
@@ -199,14 +272,25 @@ class NarmesteLederApiKtTest :
                                     issuer = env.jwtIssuer,
                                 )
                             }",
-                            )
-                        },
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                        response.content shouldNotBeEqualTo null
-                    }
+                        )
+                    },
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                    response.content shouldNotBeEqualTo null
                 }
-                test("Feil audience gir feilmelding") {
+            }
+        }
+
+    @Test
+    internal fun `Feilhåndtering narmestelederapi returnerer feil audience gir feilmelding`() {
+        with(TestApplicationEngine()) {
+            setUpTestApplication()
+            val env = setUpAuth()
+            application.routing {
+                authenticate("servicebruker") {
+                    registrerNarmesteLederApi(testDb, utvidetNarmesteLederService)
+                }
+            }
                     with(
                         handleRequest(HttpMethod.Get, "/sykmeldt/narmesteledere") {
                             addHeader("Sykmeldt-Fnr", sykmeldtFnr)
@@ -227,8 +311,7 @@ class NarmesteLederApiKtTest :
                     }
                 }
             }
-        }
-    })
+    }
 
 private fun erLike(
     narmesteLederRelasjon1: NarmesteLederRelasjon,

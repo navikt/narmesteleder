@@ -1,4 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 
 group = "no.nav.syfo"
@@ -27,6 +26,7 @@ val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
 val avroVersion = "1.11.3"
+val junitJupiterVersion="5.10.0"
 
 plugins {
     id("application")
@@ -100,8 +100,11 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
-    //due to https://github.com/advisories/GHSA-mjmj-j48q-9wg2
-    implementation("org.yaml:snakeyaml:$snakeYamlVersion")
+    constraints {
+        implementation("org.yaml:snakeyaml:$snakeYamlVersion") {
+            because("due to https://github.com/advisories/GHSA-mjmj-j48q-9wg2")
+        }
+    }
 
     swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 
@@ -109,6 +112,10 @@ dependencies {
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
     testImplementation("org.testcontainers:kafka:$testContainerKafkaVersion")
     testImplementation("org.testcontainers:postgresql:$testContainerPostgresVersion")
