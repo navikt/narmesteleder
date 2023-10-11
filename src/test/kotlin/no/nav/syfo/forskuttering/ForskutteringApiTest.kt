@@ -328,7 +328,6 @@ internal class ForskutteringApiTest {
         }
     }
 
-
     @Test
     internal fun `Feilhaandtering forskutteringsapi returnerer feil audience gir feilmelding`() {
         testDb.connection.lagreNarmesteleder(

@@ -47,53 +47,53 @@ internal class PdlPersonServiceTest {
             GetPersonResponse(
                 ResponseData(
                     hentPersonBolk =
-                    listOf(
-                        HentPersonBolk(
-                            fnrLeder1,
-                            Person(
-                                listOf(
-                                    no.nav.syfo.pdl.client.model.Navn(
-                                        "fornavn",
-                                        null,
-                                        "etternavn",
+                        listOf(
+                            HentPersonBolk(
+                                fnrLeder1,
+                                Person(
+                                    listOf(
+                                        no.nav.syfo.pdl.client.model.Navn(
+                                            "fornavn",
+                                            null,
+                                            "etternavn",
+                                        ),
                                     ),
                                 ),
+                                "ok",
                             ),
-                            "ok",
-                        ),
-                        HentPersonBolk(
-                            fnrLeder2,
-                            Person(
-                                listOf(
-                                    no.nav.syfo.pdl.client.model.Navn(
-                                        "fornavn2",
-                                        "mellomnavn",
-                                        "etternavn2",
+                            HentPersonBolk(
+                                fnrLeder2,
+                                Person(
+                                    listOf(
+                                        no.nav.syfo.pdl.client.model.Navn(
+                                            "fornavn2",
+                                            "mellomnavn",
+                                            "etternavn2",
+                                        ),
                                     ),
                                 ),
+                                "ok",
                             ),
-                            "ok",
                         ),
-                    ),
                     hentIdenterBolk =
-                    listOf(
-                        HentIdenterBolk(
-                            fnrLeder1,
-                            listOf(
-                                PdlIdent(fnrLeder1, "FOLKEREGISTERIDENT"),
-                                PdlIdent(aktorIdLeder1, PdlPersonService.AKTORID),
+                        listOf(
+                            HentIdenterBolk(
+                                fnrLeder1,
+                                listOf(
+                                    PdlIdent(fnrLeder1, "FOLKEREGISTERIDENT"),
+                                    PdlIdent(aktorIdLeder1, PdlPersonService.AKTORID),
+                                ),
+                                "ok",
                             ),
-                            "ok",
-                        ),
-                        HentIdenterBolk(
-                            fnrLeder2,
-                            listOf(
-                                PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"),
-                                PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID),
+                            HentIdenterBolk(
+                                fnrLeder2,
+                                listOf(
+                                    PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"),
+                                    PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID),
+                                ),
+                                "ok",
                             ),
-                            "ok",
                         ),
-                    ),
                 ),
                 errors = null,
             )
@@ -117,34 +117,34 @@ internal class PdlPersonServiceTest {
             GetPersonResponse(
                 ResponseData(
                     hentPersonBolk =
-                    listOf(
-                        HentPersonBolk(fnrLeder1, null, "not_found"),
-                        HentPersonBolk(
-                            fnrLeder2,
-                            Person(
-                                listOf(
-                                    no.nav.syfo.pdl.client.model.Navn(
-                                        "fornavn",
-                                        null,
-                                        "etternavn",
+                        listOf(
+                            HentPersonBolk(fnrLeder1, null, "not_found"),
+                            HentPersonBolk(
+                                fnrLeder2,
+                                Person(
+                                    listOf(
+                                        no.nav.syfo.pdl.client.model.Navn(
+                                            "fornavn",
+                                            null,
+                                            "etternavn",
+                                        ),
                                     ),
                                 ),
+                                "ok",
                             ),
-                            "ok",
                         ),
-                    ),
                     hentIdenterBolk =
-                    listOf(
-                        HentIdenterBolk(fnrLeder1, null, "not_found"),
-                        HentIdenterBolk(
-                            fnrLeder2,
-                            listOf(
-                                PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"),
-                                PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID),
+                        listOf(
+                            HentIdenterBolk(fnrLeder1, null, "not_found"),
+                            HentIdenterBolk(
+                                fnrLeder2,
+                                listOf(
+                                    PdlIdent(fnrLeder2, "FOLKEREGISTERIDENT"),
+                                    PdlIdent(aktorIdLeder2, PdlPersonService.AKTORID),
+                                ),
+                                "ok",
                             ),
-                            "ok",
                         ),
-                    ),
                 ),
                 errors = null,
             )
@@ -166,9 +166,7 @@ internal class PdlPersonServiceTest {
             )
 
         assertFailsWith<IllegalStateException> {
-            runBlocking {
-                pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId)
-            }
+            runBlocking { pdlPersonService.getPersoner(listOf(fnrLeder1, fnrLeder2), callId) }
         }
     }
 
@@ -181,36 +179,36 @@ internal class PdlPersonServiceTest {
                 val fnrList = args[0] as List<String>
                 GetPersonResponse(
                     data =
-                    ResponseData(
-                        hentPersonBolk =
-                        fnrList.map {
-                            HentPersonBolk(
-                                it,
-                                Person(
-                                    navn =
-                                    listOf(
-                                        no.nav.syfo.pdl.client.model.Navn(
-                                            "Fornavn",
-                                            "Mellomnanv",
-                                            "Etternavn",
+                        ResponseData(
+                            hentPersonBolk =
+                                fnrList.map {
+                                    HentPersonBolk(
+                                        it,
+                                        Person(
+                                            navn =
+                                                listOf(
+                                                    no.nav.syfo.pdl.client.model.Navn(
+                                                        "Fornavn",
+                                                        "Mellomnanv",
+                                                        "Etternavn",
+                                                    ),
+                                                ),
                                         ),
-                                    ),
-                                ),
-                                code = "ok",
-                            )
-                        },
-                        hentIdenterBolk =
-                        fnrs.map {
-                            HentIdenterBolk(
-                                it,
-                                listOf(
-                                    PdlIdent(it, "FOLKEREGISTERIDENT"),
-                                    PdlIdent(it, PdlPersonService.AKTORID),
-                                ),
-                                code = "ok",
-                            )
-                        },
-                    ),
+                                        code = "ok",
+                                    )
+                                },
+                            hentIdenterBolk =
+                                fnrs.map {
+                                    HentIdenterBolk(
+                                        it,
+                                        listOf(
+                                            PdlIdent(it, "FOLKEREGISTERIDENT"),
+                                            PdlIdent(it, PdlPersonService.AKTORID),
+                                        ),
+                                        code = "ok",
+                                    )
+                                },
+                        ),
                     emptyList(),
                 )
             }
@@ -243,36 +241,36 @@ internal class PdlPersonServiceTest {
         coEvery { pdlClient.getPersoner(any(), any()) } returns
             GetPersonResponse(
                 data =
-                ResponseData(
-                    hentPersonBolk =
-                    listOf(
-                        HentPersonBolk(
-                            "123",
-                            Person(
-                                navn =
-                                listOf(
-                                    no.nav.syfo.pdl.client.model.Navn(
-                                        "Fornavn",
-                                        "Mellomnanv",
-                                        "Etternavn",
+                    ResponseData(
+                        hentPersonBolk =
+                            listOf(
+                                HentPersonBolk(
+                                    "123",
+                                    Person(
+                                        navn =
+                                            listOf(
+                                                no.nav.syfo.pdl.client.model.Navn(
+                                                    "Fornavn",
+                                                    "Mellomnanv",
+                                                    "Etternavn",
+                                                ),
+                                            ),
                                     ),
+                                    code = "ok",
                                 ),
                             ),
-                            code = "ok",
-                        ),
-                    ),
-                    hentIdenterBolk =
-                    listOf(
-                        HentIdenterBolk(
-                            "123",
+                        hentIdenterBolk =
                             listOf(
-                                PdlIdent("123", "FOLKEREGISTERIDENT"),
-                                PdlIdent("234", PdlPersonService.AKTORID),
+                                HentIdenterBolk(
+                                    "123",
+                                    listOf(
+                                        PdlIdent("123", "FOLKEREGISTERIDENT"),
+                                        PdlIdent("234", PdlPersonService.AKTORID),
+                                    ),
+                                    code = "ok",
+                                ),
                             ),
-                            code = "ok",
-                        ),
                     ),
-                ),
                 emptyList(),
             )
 

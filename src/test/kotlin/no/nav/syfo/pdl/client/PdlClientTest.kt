@@ -1,7 +1,7 @@
 package no.nav.syfo.pdl.client
 
-import kotlinx.coroutines.runBlocking
 import java.io.File
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.testutils.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
@@ -11,11 +11,8 @@ internal class PdlClientTest {
     private val httpClient = HttpClientTest()
 
     private val graphQlQuery =
-        File("src/main/resources/graphql/getPerson.graphql")
-            .readText()
-            .replace(Regex("[\n\t]"), "")
+        File("src/main/resources/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
     private val pdlClient = PdlClient(httpClient.httpClient, "graphqlend", graphQlQuery)
-
 
     @Test
     internal fun `Skal faa hente person fra pdl`() {
@@ -34,8 +31,7 @@ internal class PdlClientTest {
             personBolk.person?.navn!![0].etternavn shouldBeEqualTo "SAKS"
             val identBolk = response.data.hentIdenterBolk?.find { it.ident == "12345678910" }
             identBolk?.identer?.size shouldBeEqualTo 2
-            identBolk?.identer?.find { it.gruppe == "AKTORID" }?.ident shouldBeEqualTo
-                "99999999999"
+            identBolk?.identer?.find { it.gruppe == "AKTORID" }?.ident shouldBeEqualTo "99999999999"
             val personBolk2 = response.data.hentPersonBolk?.find { it.ident == "01987654321" }
             personBolk2?.person?.navn!![0].fornavn shouldBeEqualTo "GLAD"
             personBolk2.person?.navn!![0].etternavn shouldBeEqualTo "BOLLE"

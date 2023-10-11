@@ -3,8 +3,8 @@ package no.nav.syfo.narmesteleder.arbeidsforhold.service
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.client.AccessTokenClientV2
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Ansettelsesperiode
@@ -56,8 +56,7 @@ internal class ArbeidsgiverServiceTest {
 
     @Test
     internal fun `arbeidsgiverService returnerer tom liste hvis bruker ikke har arbeidsforhold`() {
-        coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns
-            emptyList()
+        coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns emptyList()
 
         runBlocking {
             val arbeidsgiverinformasjon =
@@ -229,4 +228,3 @@ internal class ArbeidsgiverServiceTest {
         }
     }
 }
-

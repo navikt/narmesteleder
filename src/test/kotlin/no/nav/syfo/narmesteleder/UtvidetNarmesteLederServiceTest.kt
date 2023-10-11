@@ -49,18 +49,16 @@ internal class UtvidetNarmesteLederServiceTest {
             fnrNl = fnrLeder2,
             arbeidsgiverForskutterer = true,
             aktivTom =
-            OffsetDateTime.now(
-                ZoneOffset.UTC,
-            )
-                .minusDays(2),
+                OffsetDateTime.now(
+                        ZoneOffset.UTC,
+                    )
+                    .minusDays(2),
             brukerNavn = "sykmeldt",
             narmestelederNavn = "Fornavn2 Mellomnavn Bindestrek-Etternavn",
         )
 
         runBlocking {
-
-            val narmesteLedereMedNavn =
-                utvidetNarmesteLederService.hentNarmesteledereMedNavn(fnr)
+            val narmesteLedereMedNavn = utvidetNarmesteLederService.hentNarmesteledereMedNavn(fnr)
 
             narmesteLedereMedNavn.size shouldBeEqualTo 2
             val nl1 = narmesteLedereMedNavn.find { it.narmesteLederFnr == fnrLeder1 }
@@ -73,8 +71,7 @@ internal class UtvidetNarmesteLederServiceTest {
     @Test
     internal fun `Returnerer tom liste hvis bruker ikke har noen nærmeste ledere`() {
         runBlocking {
-            val narmesteLedereMedNavn =
-                utvidetNarmesteLederService.hentNarmesteledereMedNavn(fnr)
+            val narmesteLedereMedNavn = utvidetNarmesteLederService.hentNarmesteledereMedNavn(fnr)
 
             narmesteLedereMedNavn.size shouldBeEqualTo 0
         }

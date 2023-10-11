@@ -77,8 +77,7 @@ internal class IdentendringServiceTest {
                     PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2"),
                 ),
             )
-        coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns
-            emptyList()
+        coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()
     }
 
     @AfterEach
@@ -145,10 +144,10 @@ internal class IdentendringServiceTest {
             fnrNl = fnrLeder,
             arbeidsgiverForskutterer = true,
             aktivFom =
-            OffsetDateTime.now(
-                ZoneOffset.UTC,
-            )
-                .minusYears(1),
+                OffsetDateTime.now(
+                        ZoneOffset.UTC,
+                    )
+                    .minusYears(1),
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )
@@ -158,15 +157,15 @@ internal class IdentendringServiceTest {
             fnrNl = fnrLeder,
             arbeidsgiverForskutterer = true,
             aktivFom =
-            OffsetDateTime.now(
-                ZoneOffset.UTC,
-            )
-                .minusYears(2),
+                OffsetDateTime.now(
+                        ZoneOffset.UTC,
+                    )
+                    .minusYears(2),
             aktivTom =
-            OffsetDateTime.now(
-                ZoneOffset.UTC,
-            )
-                .minusYears(1),
+                OffsetDateTime.now(
+                        ZoneOffset.UTC,
+                    )
+                    .minusYears(1),
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )
@@ -228,10 +227,10 @@ internal class IdentendringServiceTest {
             fnrNl = fnrLeder,
             arbeidsgiverForskutterer = true,
             aktivFom =
-            OffsetDateTime.now(
-                ZoneOffset.UTC,
-            )
-                .minusYears(1),
+                OffsetDateTime.now(
+                        ZoneOffset.UTC,
+                    )
+                    .minusYears(1),
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )
@@ -241,15 +240,15 @@ internal class IdentendringServiceTest {
             fnrNl = "123456",
             arbeidsgiverForskutterer = true,
             aktivFom =
-            OffsetDateTime.now(
-                ZoneOffset.UTC,
-            )
-                .minusYears(2),
+                OffsetDateTime.now(
+                        ZoneOffset.UTC,
+                    )
+                    .minusYears(2),
             aktivTom =
-            OffsetDateTime.now(
-                ZoneOffset.UTC,
-            )
-                .minusYears(1),
+                OffsetDateTime.now(
+                        ZoneOffset.UTC,
+                    )
+                    .minusYears(1),
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )
@@ -281,9 +280,8 @@ internal class IdentendringServiceTest {
             val nlListeGammeltFnr = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
             nlListeGammeltFnr.size shouldBeEqualTo 2
             nlListeGammeltFnr.find { it.aktivTom == null } shouldBeEqualTo null
-            nlListeGammeltFnr
-                .find { it.orgnummer == "orgnummer" }
-                ?.narmesteLederFnr shouldBeEqualTo fnrLeder
+            nlListeGammeltFnr.find { it.orgnummer == "orgnummer" }?.narmesteLederFnr shouldBeEqualTo
+                fnrLeder
             nlListeGammeltFnr
                 .find { it.orgnummer == "orgnummer2" }
                 ?.narmesteLederFnr shouldBeEqualTo "123456"
