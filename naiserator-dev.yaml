@@ -71,7 +71,6 @@ spec:
           namespace: team-esyfo
           cluster: dev-fss
         - application: sykmeldinger-arbeidsgiver
-        - application: sykmeldinger-backend
           namespace: teamsykmelding
           cluster: dev-gcp
         - application: notifikasjon-bruker-api
