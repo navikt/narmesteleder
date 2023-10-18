@@ -75,8 +75,6 @@ spec:
         - application: sykmeldinger-backend
           namespace: teamsykmelding
           cluster: dev-gcp
-        - application: debug-dings
-          namespace: plattformsikkerhet
         - application: notifikasjon-bruker-api
           namespace: fager
         - application: macgyver
