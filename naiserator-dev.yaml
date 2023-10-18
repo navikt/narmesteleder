@@ -70,7 +70,6 @@ spec:
         - application: syfooppfolgingsplanservice
           namespace: team-esyfo
           cluster: dev-fss
-        - application: syfosmaltinn
         - application: sykmeldinger-arbeidsgiver
         - application: sykmeldinger-backend
           namespace: teamsykmelding
