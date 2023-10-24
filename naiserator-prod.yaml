@@ -69,8 +69,6 @@ spec:
           namespace: team-esyfo
           cluster: prod-fss
         - application: sykmeldinger-arbeidsgiver
-        - application: notifikasjon-bruker-api
-          namespace: fager
         - application: macgyver
           namespace: teamsykmelding
           cluster: prod-gcp
