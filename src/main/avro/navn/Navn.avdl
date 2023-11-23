@@ -14,6 +14,5 @@ protocol NavnV1 {
     string etternavn;
     union { null, string } forkortetNavn = null;
     union { null, OriginaltNavn } originaltNavn = null;
-    union { null, date } gyldigFraOgMed = null;
   }
 }
