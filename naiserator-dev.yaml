@@ -73,8 +73,6 @@ spec:
         - application: sykmeldinger-arbeidsgiver
           namespace: teamsykmelding
           cluster: dev-gcp
-        - application: notifikasjon-bruker-api
-          namespace: fager
         - application: macgyver
           namespace: teamsykmelding
           cluster: dev-gcp

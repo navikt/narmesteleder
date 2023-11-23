@@ -4,34 +4,34 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.7.3"
-val jacksonVersion = "2.15.3"
+val jacksonVersion = "2.16.0"
 val kluentVersion = "1.73"
-val ktorVersion = "2.3.5"
+val ktorVersion = "2.3.6"
 val logbackVersion = "1.4.11"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val kotestVersion = "5.7.2"
-val smCommonVersion = "2.0.3"
+val smCommonVersion = "2.0.6"
 val mockkVersion = "1.13.8"
-val nimbusdsVersion = "9.37"
-val testContainerKafkaVersion = "1.19.1"
+val nimbusdsVersion = "9.37.1"
+val testContainerKafkaVersion = "1.19.2"
 val postgresVersion = "42.6.0"
 val flywayVersion = "9.22.3"
-val hikariVersion = "5.0.1"
-val testContainerPostgresVersion = "1.19.1"
+val hikariVersion = "5.1.0"
+val testContainerPostgresVersion = "1.19.2"
 val swaggerUiVersion = "5.9.0"
-val kotlinVersion = "1.9.10"
-val confluentVersion = "7.5.1"
+val kotlinVersion = "1.9.20"
+val confluentVersion = "7.5.2"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
 val avroVersion = "1.11.3"
-val junitJupiterVersion="5.10.0"
+val junitJupiterVersion="5.10.1"
+val javaVersion = JavaVersion.VERSION_17
 
 plugins {
     id("application")
     id("com.diffplug.spotless") version "6.22.0"
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.20"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
     id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
@@ -70,7 +70,11 @@ dependencies {
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    //This is to override version that is in io.ktor:ktor-client-apache
+    constraints {
+        implementation("commons-codec:commons-codec:$commonsCodecVersion") {
+            because("override transient from io.ktor:ktor-client-apache")
+        }
+    }
     implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
@@ -125,7 +129,17 @@ dependencies {
 }
 
 tasks {
-    
+
+    compileKotlin {
+        kotlinOptions.jvmTarget = javaVersion.toString()
+
+    }
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = javaVersion.toString()
+        dependsOn("generateTestAvroJava")
+    }
+
+
     shadowJar {
         transform(ServiceFileTransformer::class.java) {
             setPath("META-INF/cxf")
