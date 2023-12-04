@@ -80,7 +80,8 @@ dependencies {
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
-    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    compileOnly("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     constraints {
