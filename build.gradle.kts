@@ -12,13 +12,13 @@ val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
 val smCommonVersion = "2.0.6"
 val mockkVersion = "1.13.8"
-val nimbusdsVersion = "9.37.1"
+val nimbusdsVersion = "9.37.2"
 val testContainerKafkaVersion = "1.19.3"
 val postgresVersion = "42.7.0"
 val flywayVersion = "10.1.0"
 val hikariVersion = "5.1.0"
 val testContainerPostgresVersion = "1.19.3"
-val swaggerUiVersion = "5.9.0"
+val swaggerUiVersion = "5.10.3"
 val kotlinVersion = "1.9.21"
 val confluentVersion = "7.5.2"
 val commonsCodecVersion = "1.16.0"
@@ -30,7 +30,7 @@ val javaVersion = JavaVersion.VERSION_17
 
 plugins {
     id("application")
-    id("com.diffplug.spotless") version "6.23.2"
+    id("com.diffplug.spotless") version "6.23.3"
     kotlin("jvm") version "1.9.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
