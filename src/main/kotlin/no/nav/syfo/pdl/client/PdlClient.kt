@@ -25,6 +25,7 @@ class PdlClient(
             .post(basePath) {
                 setBody(getPersonRequest)
                 header(HttpHeaders.Authorization, "Bearer $stsToken")
+                header("Behandlingsnummer", "B506")
                 header(temaHeader, tema)
                 header(HttpHeaders.ContentType, "application/json")
             }
