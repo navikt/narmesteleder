@@ -44,10 +44,10 @@ spec:
       runtime: java
   resources:
     limits:
-      memory: 1024Mi
+      memory: 1512Mi
     requests:
       cpu: 50m
-      memory: 450Mi
+      memory: 700Mi
   vault:
     enabled: false
   ingresses:
