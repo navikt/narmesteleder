@@ -51,7 +51,7 @@ spec:
       memory: 3Gi
     requests:
       cpu: 100m
-      memory: 800Mi
+      memory: 900Mi
   ingresses:
     - "https://narmesteleder.intern.nav.no"
     - "https://narmesteleder.nav.no"
