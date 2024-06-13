@@ -10,6 +10,7 @@ This project contains the application code and infrastructure for narmesteleder
 
 ### :scroll: Prerequisites
 * JDK 17
+
 Make sure you have the Java JDK 17 installed
 You can check which version you have installed using this command:
 ``` shell
