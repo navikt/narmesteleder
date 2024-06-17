@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 group = "no.nav.syfo"
 version = "1.0.0"
@@ -25,8 +26,8 @@ val commonsCodecVersion = "1.17.0"
 val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
 val avroVersion = "1.11.3"
-val junitJupiterVersion="5.10.2"
-val javaVersion = JavaVersion.VERSION_17
+val junitJupiterVersion = "5.10.2"
+val javaVersion = JvmTarget.JVM_21
 
 plugins {
     id("application")
@@ -129,22 +130,24 @@ dependencies {
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
 }
 
+
+
+kotlin {
+    compilerOptions {
+        jvmTarget = javaVersion
+    }
+}
+
 tasks {
 
-    compileKotlin {
-        kotlinOptions.jvmTarget = javaVersion.toString()
-
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = javaVersion.toString()
+    init {
         dependsOn("generateTestAvroJava")
     }
 
-
     shadowJar {
-mergeServiceFiles {
-     setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
- }
+        mergeServiceFiles {
+            setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
+        }
         transform(ServiceFileTransformer::class.java) {
             setPath("META-INF/cxf")
             include("bus-extensions.txt")
