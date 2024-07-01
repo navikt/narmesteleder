@@ -1,3 +1,4 @@
+import org.apache.avro.tool.SpecificCompilerTool
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -35,7 +36,6 @@ plugins {
     kotlin("jvm") version "2.0.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
 }
 
 application {
@@ -131,6 +131,24 @@ dependencies {
 }
 
 
+buildscript {
+    dependencies {
+        classpath("org.apache.avro:avro-tools:1.11.3")
+        classpath("org.apache.avro:avro:1.11.3")
+    }
+}
+
+val avroSchemasDir = "src/main/avro"
+val avroCodeGenerationDir = "build/generated-main-avro-custom-java"
+
+
+sourceSets {
+    main {
+        java {
+            srcDir( file(File(avroCodeGenerationDir)))
+        }
+    }
+}
 
 kotlin {
     compilerOptions {
@@ -140,8 +158,36 @@ kotlin {
 
 tasks {
 
-    init {
-        dependsOn("generateTestAvroJava")
+    register("customAvroCodeGeneration") {
+        inputs.dir(avroSchemasDir)
+        outputs.dir(avroCodeGenerationDir)
+
+        logging.captureStandardOutput(LogLevel.INFO)
+        logging.captureStandardError(LogLevel.ERROR)
+
+        doLast {
+            SpecificCompilerTool().run(
+                System.`in`, System.out, System.err,
+                listOf(
+                    "-encoding",
+                    "UTF-8",
+                    "-string",
+                    "-fieldVisibility",
+                    "private",
+                    "-noSetters",
+                    "schema",
+                    "$projectDir/$avroSchemasDir",
+                    "$projectDir/$avroCodeGenerationDir",
+                ),
+            )
+        }
+    }
+
+    compileKotlin {
+        dependsOn("customAvroCodeGeneration")
+    }
+    compileTestKotlin {
+        dependsOn("customAvroCodeGeneration")
     }
 
     shadowJar {
@@ -162,6 +208,7 @@ tasks {
                 ),
             )
         }
+        dependsOn("customAvroCodeGeneration")
     }
 
     test {
@@ -172,12 +219,14 @@ tasks {
             showStackTraces = true
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
+        dependsOn("customAvroCodeGeneration")
     }
 
     spotless {
         kotlin { ktfmt(ktfmtVersion).kotlinlangStyle() }
         check {
             dependsOn("spotlessApply")
+            dependsOn("customAvroCodeGeneration")
         }
     }
 }

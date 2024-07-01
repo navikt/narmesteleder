@@ -22,7 +22,8 @@ import io.ktor.client.request.get
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.prometheus.client.hotspot.DefaultExports
-import java.net.URL
+import java.net.URI
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -81,8 +82,8 @@ val objectMapper: ObjectMapper =
 fun main() {
     val env = Environment()
     val jwkProvider =
-        JwkProviderBuilder(URL(env.jwkKeysUrl))
-            .cached(10, 24, TimeUnit.HOURS)
+        JwkProviderBuilder(URI.create(env.jwkKeysUrl).toURL())
+            .cached(10, Duration.ofHours(24))
             .rateLimited(10, 1, TimeUnit.MINUTES)
             .build()
     DefaultExports.initialize()
@@ -136,7 +137,7 @@ fun main() {
 
     val wellKnownTokenX = getWellKnownTokenX(httpClient, env.tokenXWellKnownUrl)
     val jwkProviderTokenX =
-        JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
+        JwkProviderBuilder(URI.create(wellKnownTokenX.jwks_uri).toURL())
             .cached(10, 24, TimeUnit.HOURS)
             .rateLimited(10, 1, TimeUnit.MINUTES)
             .build()
@@ -286,18 +287,6 @@ fun <T : SpecificRecord> getKafkaConsumerAivenPdl(
 
     return KafkaConsumer<String, T>(consumerProperties)
 }
-
-fun getWellKnown(httpClient: HttpClient, wellKnownUrl: String) = runBlocking {
-    httpClient.get(wellKnownUrl).body<WellKnown>()
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class WellKnown(
-    val authorization_endpoint: String,
-    val token_endpoint: String,
-    val jwks_uri: String,
-    val issuer: String,
-)
 
 fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) = runBlocking {
     httpClient.get(wellKnownUrl).body<WellKnownTokenX>()
