@@ -1,0 +1,29 @@
+{
+  "type" : "record",
+  "name" : "Aktor",
+  "namespace" : "no.nav.person.pdl.aktor.v2",
+  "fields" : [ {
+    "name" : "identifikatorer",
+    "type" : {
+      "type" : "array",
+      "items" : {
+        "type" : "record",
+        "name" : "Identifikator",
+        "fields" : [ {
+          "name" : "idnummer",
+          "type" : "string"
+        }, {
+          "name" : "type",
+          "type" : {
+            "type" : "enum",
+            "name" : "Type",
+            "symbols" : [ "FOLKEREGISTERIDENT", "AKTORID", "NPID" ]
+          }
+        }, {
+          "name" : "gjeldende",
+          "type" : "boolean"
+        } ]
+      }
+    }
+  } ]
+}
