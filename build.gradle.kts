@@ -16,7 +16,7 @@ val mockkVersion = "1.13.12"
 val nimbusdsVersion = "9.40"
 val testContainerKafkaVersion = "1.20.1"
 val postgresVersion = "42.7.3"
-val flywayVersion = "10.17.0"
+val flywayVersion = "10.17.1"
 val hikariVersion = "5.1.0"
 val testContainerPostgresVersion = "1.20.1"
 val swaggerUiVersion = "5.17.14"
@@ -27,7 +27,7 @@ val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
 val avroVersion = "1.12.0"
 val junitJupiterVersion = "5.10.3"
-val kafkaVersion = "3.8.0"
+val kafkaVersion = "7.7.0-ce"
 val javaVersion = JvmTarget.JVM_21
 
 plugins {
