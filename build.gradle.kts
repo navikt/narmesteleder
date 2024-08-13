@@ -12,7 +12,6 @@ val ktorVersion = "2.3.12"
 val logbackVersion = "1.5.6"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "2.0.8"
 val mockkVersion = "1.13.12"
 val nimbusdsVersion = "9.40"
 val testContainerKafkaVersion = "1.20.1"
@@ -28,6 +27,7 @@ val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
 val avroVersion = "1.12.0"
 val junitJupiterVersion = "5.10.3"
+val kafkaVersion = "3.8.0"
 val javaVersion = JvmTarget.JVM_21
 
 plugins {
@@ -84,12 +84,8 @@ dependencies {
     compileOnly("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
-    implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    constraints {
-        implementation("org.xerial.snappy:snappy-java:1.1.10.6") {
-            because("override transient from org.apache.kafka:kafka_2.12")
-        }
-    }
+    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     constraints {
         implementation("org.apache.avro:avro:$avroVersion") {
