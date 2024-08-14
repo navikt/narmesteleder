@@ -26,7 +26,7 @@ val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
 val avroVersion = "1.12.0"
-val junitJupiterVersion = "5.10.3"
+val junitJupiterVersion = "5.11.0"
 val kafkaVersion = "3.8.0"
 val javaVersion = JvmTarget.JVM_21
 
