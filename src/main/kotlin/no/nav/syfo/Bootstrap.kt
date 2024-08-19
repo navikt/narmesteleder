@@ -278,6 +278,7 @@ fun <T : SpecificRecord> getKafkaConsumerAivenPdl(
             .toConsumerConfig(
                 "${environment.applicationName}-consumer",
                 valueDeserializer = KafkaAvroDeserializer::class,
+                keyDeserializer = KafkaAvroDeserializer::class,
             )
             .also {
                 it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = offsetResetPolicy
