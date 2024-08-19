@@ -26,6 +26,7 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlKafkaMetadata
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequest
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequestKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
+import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -263,6 +264,9 @@ class OppdaterNarmesteLederService(
                 )
                 if (aktivtArbeidsforhold != null) {
                     log.info("Ber om ny nærmeste leder siden arbeidsforhold er aktivt, $callId")
+                    securelog.info(
+                        "Ber om ny nærmeste leder siden arbeidsforhold er aktivt, callid: $callId, source: $source, orgnummer: ${it.orgnummer} for fnrs: ${objectMapper.writeValueAsString(it.fnr)}"
+                    )
                     val navn =
                         pdlPersonService
                             .getPersoner(fnrs = listOf(it.fnr), callId = callId)[it.fnr]
