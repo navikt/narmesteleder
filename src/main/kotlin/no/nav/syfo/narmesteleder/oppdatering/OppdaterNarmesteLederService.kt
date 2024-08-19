@@ -52,7 +52,7 @@ class OppdaterNarmesteLederService(
                 val dirtyFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
                 val sykmeldtFnr = dirtyFnr.replace(Regex("[^0-9]"), "")
                 if (dirtyFnr != sykmeldtFnr) {
-                    log.error("Fnr for sykmeldt er ikke gyldig, source: ${nlResponseKafkaMessage.kafkaMetadata.source} callId: $callId")
+                    log.error("handterMottattNarmesteLederOppdatering: Fnr for sykmeldt er ikke gyldig, source: ${nlResponseKafkaMessage.kafkaMetadata.source} callId: $callId")
                 }
 
                 val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
@@ -272,9 +272,15 @@ class OppdaterNarmesteLederService(
                     securelog.info(
                         "Ber om ny nærmeste leder siden arbeidsforhold er aktivt, callid: $callId, source: $source, orgnummer: ${it.orgnummer} for fnrs: ${objectMapper.writeValueAsString(it.fnr)}"
                     )
+                    val dirtyFnr = it.fnr
+                    val fnr = dirtyFnr.replace(Regex("[^0-9]"), "")
+                    if (dirtyFnr != fnr) {
+                        log.error("deaktiverTidligereLedereVedAvbryting: Fnr for sykmeldt er ikke gyldig, source: $source callId: $callId")
+                    }
+
                     val navn =
                         pdlPersonService
-                            .getPersoner(fnrs = listOf(it.fnr), callId = callId)[it.fnr]
+                            .getPersoner(fnrs = listOf(fnr), callId = callId)[fnr]
                             ?.navn
 
                     nlRequestProducer.send(
@@ -283,7 +289,7 @@ class OppdaterNarmesteLederService(
                                 NlRequest(
                                     requestId = UUID.fromString(callId),
                                     sykmeldingId = null,
-                                    fnr = it.fnr,
+                                    fnr = fnr,
                                     orgnr = it.orgnummer,
                                     name = navn?.toFormattedNameString()
                                             ?: throw RuntimeException(
