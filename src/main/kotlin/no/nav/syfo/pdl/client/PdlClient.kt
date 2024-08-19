@@ -5,7 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.http.HttpHeaders
+import io.ktor.http.*
 import no.nav.syfo.pdl.client.model.GetPersonRequest
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.GetPersonVariables
@@ -21,14 +21,22 @@ class PdlClient(
     suspend fun getPersoner(fnrs: List<String>, stsToken: String): GetPersonResponse {
         val getPersonRequest =
             GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(identer = fnrs))
-        return httpClient
-            .post(basePath) {
+
+        val response =
+            httpClient.post(basePath) {
                 setBody(getPersonRequest)
                 header(HttpHeaders.Authorization, "Bearer $stsToken")
                 header("Behandlingsnummer", "B506")
                 header(temaHeader, tema)
                 header(HttpHeaders.ContentType, "application/json")
             }
-            .body()
+
+        if (!response.status.isSuccess()) {
+            throw RuntimeException(
+                "Failed to fetch person from PDL, response status: ${response.status}"
+            )
+        }
+
+        return response.body<GetPersonResponse>()
     }
 }
