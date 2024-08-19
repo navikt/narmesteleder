@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nav.person.pdl.leesah.Personhendelse
 import no.nav.syfo.application.ApplicationState
+import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 
@@ -47,11 +48,20 @@ class PdlLeesahConsumer(
 
     suspend fun runConsumer() {
         while (applicationState.alive) {
-            val personhendelser =
+            val personhendelser: ConsumerRecords<String, Personhendelse> =
                 withContext(Dispatchers.IO) {
                     kafkaConsumer.poll(POLL_DURATION_SECONDS.seconds.toJavaDuration())
                 }
-            val identer = personhendelser.filter { it.value().navn != null }.mapNotNull { it.key() }
+            val identer = personhendelser.filter { it.value().navn != null }.mapNotNull {
+                val fnr = it.key() ?: return@mapNotNull null
+
+                val cleanFnr = fnr.replace(Regex("[^0-9]"), "")
+                if (cleanFnr != fnr) {
+                    logger.info("Got dirty fnr in Leesah consumer, cleaned it, topic ${it.topic()}")
+                }
+
+                cleanFnr
+            }
             if (identer.isNotEmpty()) {
                 identendringService.updateNames(identer)
             }
