@@ -2,6 +2,7 @@ package no.nav.syfo.pdl.identendring
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.application.metrics.NYTT_FNR_ANSATT_COUNTER
@@ -143,7 +144,8 @@ class IdentendringService(
     }
 
     suspend fun updateNames(identer: List<String>) {
-        val persons = pdlService.getPersonerByIdenter(identer).filterNotNull()
+        val callId = UUID.randomUUID().toString()
+        val persons = pdlService.getPersoner(identer, callId).values.filterNotNull()
         log.info("updating names for ${persons.size}")
         database.updateNames(persons)
     }

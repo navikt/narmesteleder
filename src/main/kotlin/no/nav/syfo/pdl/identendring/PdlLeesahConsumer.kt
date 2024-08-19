@@ -52,16 +52,7 @@ class PdlLeesahConsumer(
                 withContext(Dispatchers.IO) {
                     kafkaConsumer.poll(POLL_DURATION_SECONDS.seconds.toJavaDuration())
                 }
-            val identer = personhendelser.filter { it.value().navn != null }.mapNotNull {
-                val fnr = it.key() ?: return@mapNotNull null
-
-                val cleanFnr = fnr.replace(Regex("[^0-9]"), "")
-                if (cleanFnr != fnr) {
-                    logger.info("Got dirty fnr in Leesah consumer, cleaned it, topic ${it.topic()}")
-                }
-
-                cleanFnr
-            }
+            val identer = personhendelser.filter { it.value().navn != null }.mapNotNull { it.key() }
             if (identer.isNotEmpty()) {
                 identendringService.updateNames(identer)
             }

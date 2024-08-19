@@ -49,12 +49,7 @@ class OppdaterNarmesteLederService(
         val callId = UUID.randomUUID().toString()
         when {
             nlResponseKafkaMessage.nlResponse != null -> {
-                val dirtyFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
-                val sykmeldtFnr = dirtyFnr.replace(Regex("[^0-9]"), "")
-                if (dirtyFnr != sykmeldtFnr) {
-                    log.error("handterMottattNarmesteLederOppdatering: Fnr for sykmeldt er ikke gyldig, source: ${nlResponseKafkaMessage.kafkaMetadata.source} callId: $callId")
-                }
-
+                val sykmeldtFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
                 val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
                 val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
                 val personMap = pdlPersonService.getPersoner(listOf(sykmeldtFnr, nlFnr), callId)
@@ -272,15 +267,10 @@ class OppdaterNarmesteLederService(
                     securelog.info(
                         "Ber om ny nærmeste leder siden arbeidsforhold er aktivt, callid: $callId, source: $source, orgnummer: ${it.orgnummer} for fnrs: ${objectMapper.writeValueAsString(it.fnr)}"
                     )
-                    val dirtyFnr = it.fnr
-                    val fnr = dirtyFnr.replace(Regex("[^0-9]"), "")
-                    if (dirtyFnr != fnr) {
-                        log.error("deaktiverTidligereLedereVedAvbryting: Fnr for sykmeldt er ikke gyldig, source: $source callId: $callId")
-                    }
 
                     val navn =
                         pdlPersonService
-                            .getPersoner(fnrs = listOf(fnr), callId = callId)[fnr]
+                            .getPersoner(fnrs = listOf(it.fnr), callId = callId)[it.fnr]
                             ?.navn
 
                     nlRequestProducer.send(
@@ -289,7 +279,7 @@ class OppdaterNarmesteLederService(
                                 NlRequest(
                                     requestId = UUID.fromString(callId),
                                     sykmeldingId = null,
-                                    fnr = fnr,
+                                    fnr = it.fnr,
                                     orgnr = it.orgnummer,
                                     name = navn?.toFormattedNameString()
                                             ?: throw RuntimeException(

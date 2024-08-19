@@ -7,7 +7,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import no.nav.syfo.application.client.AccessTokenClientV2
 import no.nav.syfo.log
-import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.ResponseData
@@ -15,7 +14,6 @@ import no.nav.syfo.pdl.error.InactiveIdentException
 import no.nav.syfo.pdl.error.PersonNotFoundException
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
-import no.nav.syfo.securelog
 
 @DelicateCoroutinesApi
 class PdlPersonService(
@@ -28,12 +26,7 @@ class PdlPersonService(
         const val AKTORID = "AKTORID"
     }
 
-    suspend fun getPersonerByIdenter(identer: List<String>): Collection<PdlPerson?> {
-        return getPersonsFromPdl(identer).data.toPdlPersonMap().values
-    }
-
     suspend fun getPersoner(fnrs: List<String>, callId: String): Map<String, PdlPerson?> {
-
         val pdlResponse = getPersonsFromPdl(fnrs)
 
         if (pdlResponse.errors != null) {
@@ -100,14 +93,11 @@ class PdlPersonService(
     }
 
     private suspend fun getPersonsFromPdl(ider: List<String>): GetPersonResponse {
-
         val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
         val listFnrs =
             ider.chunked(100).map {
                 GlobalScope.async(context = Dispatchers.IO) {
-                    pdlClient.getPersoner(it, accessToken).also {
-                        securelog.info("GetPersonResponse: ${objectMapper.writeValueAsString(it)}")
-                    }
+                    pdlClient.getPersoner(it, accessToken)
                 }
             }
 
