@@ -49,7 +49,12 @@ class OppdaterNarmesteLederService(
         val callId = UUID.randomUUID().toString()
         when {
             nlResponseKafkaMessage.nlResponse != null -> {
-                val sykmeldtFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
+                val dirtyFnr = nlResponseKafkaMessage.nlResponse.sykmeldt.fnr
+                val sykmeldtFnr = dirtyFnr.replace(Regex("[^0-9]"), "")
+                if (dirtyFnr != sykmeldtFnr) {
+                    log.error("Fnr for sykmeldt er ikke gyldig, source: ${nlResponseKafkaMessage.kafkaMetadata.source} callId: $callId")
+                }
+
                 val nlFnr = nlResponseKafkaMessage.nlResponse.leder.fnr
                 val orgnummer = nlResponseKafkaMessage.nlResponse.orgnummer
                 val personMap = pdlPersonService.getPersoner(listOf(sykmeldtFnr, nlFnr), callId)

@@ -54,7 +54,7 @@ internal class OppdaterNarmesteLederServiceTest {
             narmesteLederLeesahProducer,
             nlRequestProducer
         )
-    val sykmeldtFnr = "fnr"
+    val sykmeldtFnr = "6969"
     val fnrLeder = "123"
     val fnrLeder2 = "123456"
     val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
