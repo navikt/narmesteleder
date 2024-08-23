@@ -15,12 +15,12 @@ val prometheusVersion = "0.16.0"
 val mockkVersion = "1.13.12"
 val nimbusdsVersion = "9.40"
 val testContainerKafkaVersion = "1.20.1"
-val postgresVersion = "42.7.3"
-val flywayVersion = "10.17.1"
+val postgresVersion = "42.7.4"
+val flywayVersion = "10.17.2"
 val hikariVersion = "5.1.0"
 val testContainerPostgresVersion = "1.20.1"
 val swaggerUiVersion = "5.17.14"
-val kotlinVersion = "2.0.10"
+val kotlinVersion = "2.0.20"
 val confluentVersion = "7.7.0"
 val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
@@ -33,7 +33,7 @@ val javaVersion = JvmTarget.JVM_21
 plugins {
     id("application")
     id("com.diffplug.spotless") version "6.25.0"
-    kotlin("jvm") version "2.0.10"
+    kotlin("jvm") version "2.0.20"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
