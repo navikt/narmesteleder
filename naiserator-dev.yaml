@@ -57,7 +57,6 @@ spec:
     enabled: false
   ingresses:
     - "https://narmesteleder.intern.dev.nav.no"
-  webproxy: false
   leaderElection: true
   kafka:
     pool: nav-dev
