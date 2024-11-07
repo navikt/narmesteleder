@@ -1,12 +1,12 @@
 package no.nav.syfo.forskuttering
 
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.*
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.testutils.TestDB
@@ -41,12 +41,13 @@ internal class ForskutteringApiTest {
 
     @Test
     internal fun `Forskutteringsapi returnerer gyldig svar for gyldig request returnerer JA hvis arbeidsgiver forskutterer`() {
-        with(TestApplicationEngine()) {
+        testApplication {
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing {
-                authenticate("servicebruker") { registrerForskutteringApi(testDb) }
+            application {
+                routing { authenticate("servicebruker") { registrerForskutteringApi(testDb) } }
             }
+
             testDb.connection.lagreNarmesteleder(
                 orgnummer,
                 fnr,
@@ -65,37 +66,34 @@ internal class ForskutteringApiTest {
                 brukerNavn = "sykmeldt",
                 narmestelederNavn = "narmesteleder",
             )
-            with(
-                handleRequest(
-                    HttpMethod.Get,
-                    "/arbeidsgiver/forskutterer?orgnummer=$orgnummer",
-                ) {
-                    addHeader("Sykmeldt-Fnr", fnr)
-                    addHeader(
+
+            val response =
+                client.get("/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
+                    header("Sykmeldt-Fnr", fnr)
+                    header(
                         HttpHeaders.Authorization,
                         "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer,
-                            )
-                        }",
+                    generateJWT(
+                        "syfosmaltinn",
+                        "narmesteleder",
+                        subject = "123",
+                        issuer = env.jwtIssuer,
                     )
-                },
-            ) {
-                response.content?.shouldBeEqualTo("{\"forskuttering\":\"JA\"}")
-            }
+                }"
+                    )
+                }
+
+            response.bodyAsText().shouldBeEqualTo("{\"forskuttering\":\"JA\"}")
         }
     }
 
     @Test
     internal fun `Forskutteringsapi returnerer gyldig svar for gyldig request returnerer NEI hvis arbeidsgiver ikke forskutterer`() {
-        with(TestApplicationEngine()) {
+        testApplication {
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing {
-                authenticate("servicebruker") { registrerForskutteringApi(testDb) }
+            application {
+                routing { authenticate("servicebruker") { registrerForskutteringApi(testDb) } }
             }
             testDb.connection.lagreNarmesteleder(
                 orgnummer,
@@ -105,37 +103,34 @@ internal class ForskutteringApiTest {
                 brukerNavn = "sykmeldt",
                 narmestelederNavn = "narmesteleder",
             )
-            with(
-                handleRequest(
-                    HttpMethod.Get,
-                    "/arbeidsgiver/forskutterer?orgnummer=$orgnummer",
-                ) {
-                    addHeader("Sykmeldt-Fnr", fnr)
-                    addHeader(
+
+            val response =
+                client.get("/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
+                    header("Sykmeldt-Fnr", fnr)
+                    header(
                         HttpHeaders.Authorization,
                         "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer,
-                            )
-                        }",
+                        generateJWT(
+                            "syfosmaltinn",
+                            "narmesteleder",
+                            subject = "123",
+                            issuer = env.jwtIssuer,
+                        )
+                    }"
                     )
-                },
-            ) {
-                response.content?.shouldBeEqualTo("{\"forskuttering\":\"NEI\"}")
-            }
+                }
+
+            response.bodyAsText().shouldBeEqualTo("{\"forskuttering\":\"NEI\"}")
         }
     }
 
     @Test
     internal fun `Forskutteringsapi returnerer gyldig svar for gyldig request returnerer UKJENT hvis vi ikke vet om arbeidsgiver forskutterer`() {
-        with(TestApplicationEngine()) {
+        testApplication {
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing {
-                authenticate("servicebruker") { registrerForskutteringApi(testDb) }
+            application {
+                routing { authenticate("servicebruker") { registrerForskutteringApi(testDb) } }
             }
             testDb.connection.lagreNarmesteleder(
                 orgnummer,
@@ -145,69 +140,63 @@ internal class ForskutteringApiTest {
                 brukerNavn = "sykmeldt",
                 narmestelederNavn = "narmesteleder",
             )
-            with(
-                handleRequest(
-                    HttpMethod.Get,
-                    "/arbeidsgiver/forskutterer?orgnummer=$orgnummer",
-                ) {
-                    addHeader("Sykmeldt-Fnr", fnr)
-                    addHeader(
+
+            val response =
+                client.get("/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
+                    header("Sykmeldt-Fnr", fnr)
+                    header(
                         HttpHeaders.Authorization,
                         "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer,
-                            )
-                        }",
+                        generateJWT(
+                            "syfosmaltinn",
+                            "narmesteleder",
+                            subject = "123",
+                            issuer = env.jwtIssuer,
+                        )
+                    }"
                     )
-                },
-            ) {
-                response.content?.shouldBeEqualTo("{\"forskuttering\":\"UKJENT\"}")
-            }
+                }
+
+            response.bodyAsText().shouldBeEqualTo("{\"forskuttering\":\"UKJENT\"}")
         }
     }
 
     @Test
     internal fun `Forskutteringsapi returnerer gyldig svar for gyldig request returnerer UKJENT hvis bruker ikke har noen naermeste leder`() {
-        with(TestApplicationEngine()) {
+        testApplication {
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing {
-                authenticate("servicebruker") { registrerForskutteringApi(testDb) }
+            application {
+                routing { authenticate("servicebruker") { registrerForskutteringApi(testDb) } }
             }
-            with(
-                handleRequest(
-                    HttpMethod.Get,
-                    "/arbeidsgiver/forskutterer?orgnummer=$orgnummer",
-                ) {
-                    addHeader("Sykmeldt-Fnr", fnr)
-                    addHeader(
+
+            val response =
+                client.get("/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
+                    header("Sykmeldt-Fnr", fnr)
+                    header(
                         HttpHeaders.Authorization,
                         "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer,
-                            )
-                        }",
+                        generateJWT(
+                            "syfosmaltinn",
+                            "narmesteleder",
+                            subject = "123",
+                            issuer = env.jwtIssuer,
+                        )
+                    }"
                     )
-                },
-            ) {
-                response.content?.shouldBeEqualTo("{\"forskuttering\":\"UKJENT\"}")
-            }
+                }
+
+            response.bodyAsText().shouldBeEqualTo("{\"forskuttering\":\"UKJENT\"}")
         }
     }
 
     @Test
     internal fun `Forskutteringsapi returnerer gyldig svar for gyldig request returnerer forskutteringsstatus for siste naermeste leder i samme orgnummer hvis naermeste leder ikke er aktiv`() {
-        with(TestApplicationEngine()) {
+        testApplication {
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing {
-                authenticate("servicebruker") { registrerForskutteringApi(testDb) }
+            application {
+                routing { authenticate("servicebruker") { registrerForskutteringApi(testDb) } }
             }
             testDb.connection.lagreNarmesteleder(
                 orgnummer,
@@ -229,27 +218,24 @@ internal class ForskutteringApiTest {
                 brukerNavn = "sykmeldt",
                 narmestelederNavn = "narmesteleder",
             )
-            with(
-                handleRequest(
-                    HttpMethod.Get,
-                    "/arbeidsgiver/forskutterer?orgnummer=$orgnummer",
-                ) {
-                    addHeader("Sykmeldt-Fnr", fnr)
-                    addHeader(
+
+            val response =
+                client.get("/arbeidsgiver/forskutterer?orgnummer=$orgnummer") {
+                    header("Sykmeldt-Fnr", fnr)
+                    header(
                         HttpHeaders.Authorization,
                         "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer,
-                            )
-                        }",
+                        generateJWT(
+                            "syfosmaltinn",
+                            "narmesteleder",
+                            subject = "123",
+                            issuer = env.jwtIssuer,
+                        )
+                    }"
                     )
-                },
-            ) {
-                response.content?.shouldBeEqualTo("{\"forskuttering\":\"JA\"}")
-            }
+                }
+
+            response.bodyAsText().shouldBeEqualTo("{\"forskuttering\":\"JA\"}")
         }
     }
 
@@ -263,30 +249,30 @@ internal class ForskutteringApiTest {
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )
-        with(TestApplicationEngine()) {
+        testApplication {
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing {
-                authenticate("servicebruker") { registrerForskutteringApi(testDb) }
+            application {
+                routing { authenticate("servicebruker") { registrerForskutteringApi(testDb) } }
             }
-            with(
-                handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=333") {
-                    addHeader(
+
+            val response =
+                client.get("/arbeidsgiver/forskutterer?orgnummer=333") {
+                    header(
                         HttpHeaders.Authorization,
                         "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer,
-                            )
-                        }",
+                        generateJWT(
+                            "syfosmaltinn",
+                            "narmesteleder",
+                            subject = "123",
+                            issuer = env.jwtIssuer,
+                        )
+                    }"
                     )
-                },
-            ) {
-                response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                response.content shouldNotBeEqualTo null
-            }
+                }
+
+            response.status shouldBeEqualTo HttpStatusCode.BadRequest
+            response.bodyAsText() shouldNotBeEqualTo null
         }
     }
 
@@ -300,31 +286,31 @@ internal class ForskutteringApiTest {
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )
-        with(TestApplicationEngine()) {
+        testApplication {
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing {
-                authenticate("servicebruker") { registrerForskutteringApi(testDb) }
+            application {
+                routing { authenticate("servicebruker") { registrerForskutteringApi(testDb) } }
             }
-            with(
-                handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer") {
-                    addHeader("Sykmeldt-Fnr", fnr)
-                    addHeader(
+
+            val response =
+                client.get("/arbeidsgiver/forskutterer") {
+                    header("Sykmeldt-Fnr", fnr)
+                    header(
                         HttpHeaders.Authorization,
                         "Bearer ${
-                            generateJWT(
-                                "syfosmaltinn",
-                                "narmesteleder",
-                                subject = "123",
-                                issuer = env.jwtIssuer,
-                            )
-                        }",
+                        generateJWT(
+                            "syfosmaltinn",
+                            "narmesteleder",
+                            subject = "123",
+                            issuer = env.jwtIssuer,
+                        )
+                    }"
                     )
-                },
-            ) {
-                response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                response.content shouldNotBeEqualTo null
-            }
+                }
+
+            response.status shouldBeEqualTo HttpStatusCode.BadRequest
+            response.bodyAsText() shouldNotBeEqualTo null
         }
     }
 
@@ -338,16 +324,17 @@ internal class ForskutteringApiTest {
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )
-        with(TestApplicationEngine()) {
+        testApplication {
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing {
-                authenticate("servicebruker") { registrerForskutteringApi(testDb) }
+            application {
+                routing { authenticate("servicebruker") { registrerForskutteringApi(testDb) } }
             }
-            with(
-                handleRequest(HttpMethod.Get, "/arbeidsgiver/forskutterer?orgnummer=333") {
-                    addHeader("Sykmeldt-Fnr", fnr)
-                    addHeader(
+
+            val response =
+                client.get("/arbeidsgiver/forskutterer?orgnummer=333") {
+                    header("Sykmeldt-Fnr", fnr)
+                    header(
                         HttpHeaders.Authorization,
                         "Bearer ${
                             generateJWT(
@@ -356,12 +343,11 @@ internal class ForskutteringApiTest {
                                 subject = "123",
                                 issuer = env.jwtIssuer,
                             )
-                        }",
+                        }"
                     )
-                },
-            ) {
-                response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-            }
+                }
+
+            response.status shouldBeEqualTo HttpStatusCode.Unauthorized
         }
     }
 }
