@@ -21,7 +21,7 @@ spec:
           enabled: true
         tier: db-custom-2-5120
   replicas:
-    min: 3
+    min: 2
     max: 6
     cpuThresholdPercentage: 90
   port: 8080
@@ -51,7 +51,7 @@ spec:
     limits:
       memory: 3Gi
     requests:
-      cpu: 100m
+      cpu: 50m
       memory: 900Mi
   ingresses:
     - "https://narmesteleder.intern.nav.no"
