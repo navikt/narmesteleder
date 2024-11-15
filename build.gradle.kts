@@ -5,6 +5,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 group = "no.nav.syfo"
 version = "1.0.0"
 
+val javaVersion = JvmTarget.JVM_21
+
+
 val coroutinesVersion = "1.9.0"
 val jacksonVersion = "2.18.0"
 val kluentVersion = "1.73"
@@ -22,13 +25,15 @@ val testContainerPostgresVersion = "1.20.2"
 val swaggerUiVersion = "5.17.14"
 val kotlinVersion = "2.0.20"
 val confluentVersion = "7.7.1"
-val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
-val snakeYamlVersion = "2.3"
 val avroVersion = "1.12.0"
 val junitJupiterVersion = "5.11.2"
 val kafkaVersion = "3.8.0"
-val javaVersion = JvmTarget.JVM_21
+
+
+//Due to vulnerabilities
+val nettyCommonVersion = "4.1.115.Final"
+val snakeYamlVersion = "2.3"
 
 plugins {
     id("application")
@@ -60,6 +65,11 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    constraints {
+        implementation("io.netty:netty-common:$nettyCommonVersion") {
+            because("override transient from io.ktor:ktor-server-netty")
+        }
+    }
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
     implementation("io.ktor:ktor-server-call-id:$ktorVersion")
@@ -71,12 +81,6 @@ dependencies {
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    constraints {
-        implementation("commons-codec:commons-codec:$commonsCodecVersion") {
-            because("override transient from io.ktor:ktor-client-apache")
-        }
-    }
-    implementation("commons-codec:commons-codec:$commonsCodecVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
@@ -93,7 +97,6 @@ dependencies {
         }
     }
 
-
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
@@ -101,7 +104,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-
     constraints {
         implementation("org.yaml:snakeyaml:$snakeYamlVersion") {
             because("due to https://github.com/advisories/GHSA-mjmj-j48q-9wg2")
