@@ -9,7 +9,7 @@ val javaVersion = JvmTarget.JVM_21
 
 
 val coroutinesVersion = "1.9.0"
-val jacksonVersion = "2.18.1"
+val jacksonVersion = "2.18.2"
 val kluentVersion = "1.73"
 val ktorVersion = "3.0.1"
 val logbackVersion = "1.5.12"
