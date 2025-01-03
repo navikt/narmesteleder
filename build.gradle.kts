@@ -8,31 +8,31 @@ version = "1.0.0"
 val javaVersion = JvmTarget.JVM_21
 
 
-val coroutinesVersion = "1.9.0"
+val coroutinesVersion = "1.10.1"
 val jacksonVersion = "2.18.2"
 val kluentVersion = "1.73"
-val ktorVersion = "3.0.1"
-val logbackVersion = "1.5.12"
+val ktorVersion = "3.0.3"
+val logbackVersion = "1.5.15"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
-val mockkVersion = "1.13.13"
-val nimbusdsVersion = "9.47"
+val mockkVersion = "1.13.14"
+val nimbusdsVersion = "10.0"
 val testContainerKafkaVersion = "1.20.4"
 val postgresVersion = "42.7.4"
-val flywayVersion = "11.0.0"
+val flywayVersion = "11.1.0"
 val hikariVersion = "6.2.1"
 val testContainerPostgresVersion = "1.20.4"
 val swaggerUiVersion = "5.18.2"
 val kotlinVersion = "2.1.0"
-val confluentVersion = "7.7.2"
+val confluentVersion = "7.8.0"
 val ktfmtVersion = "0.44"
 val avroVersion = "1.12.0"
-val junitJupiterVersion = "5.11.3"
+val junitJupiterVersion = "5.11.4"
 val kafkaVersion = "3.9.0"
 
 
 //Due to vulnerabilities
-val nettyCommonVersion = "4.1.115.Final"
+val nettyCommonVersion = "4.1.116.Final"
 val snakeYamlVersion = "2.3"
 
 plugins {
