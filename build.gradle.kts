@@ -18,8 +18,8 @@ val prometheusVersion = "0.16.0"
 val mockkVersion = "1.13.16"
 val nimbusdsVersion = "10.0.1"
 val testContainerKafkaVersion = "1.20.4"
-val postgresVersion = "42.7.4"
-val flywayVersion = "11.1.1"
+val postgresVersion = "42.7.5"
+val flywayVersion = "11.2.0"
 val hikariVersion = "6.2.1"
 val testContainerPostgresVersion = "1.20.4"
 val swaggerUiVersion = "5.18.2"
@@ -37,7 +37,7 @@ val snakeYamlVersion = "2.3"
 
 plugins {
     id("application")
-    id("com.diffplug.spotless") version "7.0.1"
+    id("com.diffplug.spotless") version "7.0.2"
     kotlin("jvm") version "2.1.0"
     id("com.gradleup.shadow") version "8.3.5"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
