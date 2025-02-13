@@ -11,7 +11,7 @@ val javaVersion = JvmTarget.JVM_21
 val coroutinesVersion = "1.10.1"
 val jacksonVersion = "2.18.2"
 val kluentVersion = "1.73"
-val ktorVersion = "3.0.3"
+val ktorVersion = "3.1.0"
 val logbackVersion = "1.5.16"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
@@ -32,7 +32,7 @@ val kafkaVersion = "3.9.0"
 
 
 //Due to vulnerabilities
-val nettyCommonVersion = "4.1.117.Final"
+val nettyCommonVersion = "4.1.118.Final"
 val snakeYamlVersion = "2.3"
 
 plugins {
