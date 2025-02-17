@@ -33,7 +33,7 @@ val kafkaVersion = "3.9.0"
 
 //Due to vulnerabilities
 val nettyCommonVersion = "4.1.118.Final"
-val snakeYamlVersion = "2.3"
+val snakeYamlVersion = "2.4"
 
 plugins {
     id("application")
