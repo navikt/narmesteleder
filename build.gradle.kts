@@ -17,14 +17,14 @@ val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
 val mockkVersion = "1.13.16"
 val nimbusdsVersion = "10.0.1"
-val testContainerKafkaVersion = "1.20.4"
+val testContainerKafkaVersion = "1.20.5"
 val postgresVersion = "42.7.5"
-val flywayVersion = "11.3.2"
+val flywayVersion = "11.3.3"
 val hikariVersion = "6.2.1"
-val testContainerPostgresVersion = "1.20.4"
+val testContainerPostgresVersion = "1.20.5"
 val swaggerUiVersion = "5.18.3"
 val kotlinVersion = "2.1.10"
-val confluentVersion = "7.8.1"
+val confluentVersion = "7.9.0"
 val ktfmtVersion = "0.44"
 val avroVersion = "1.12.0"
 val junitJupiterVersion = "5.11.4"
@@ -33,7 +33,7 @@ val kafkaVersion = "3.9.0"
 
 //Due to vulnerabilities
 val nettyCommonVersion = "4.1.118.Final"
-val snakeYamlVersion = "2.3"
+val snakeYamlVersion = "2.4"
 
 plugins {
     id("application")
