@@ -10,7 +10,7 @@ spec:
   gcp:
     sqlInstances:
       - name: narmesteleder-db-instance
-        type: POSTGRES_12
+        type: POSTGRES_15
         diskSize: 10
         databases:
           - name: narmesteleder
