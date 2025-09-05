@@ -23,7 +23,9 @@ spec:
   replicas:
     min: 2
     max: 6
-    cpuThresholdPercentage: 90
+    scalingStrategy:
+      cpu:
+        thresholdPercentage: 90
   port: 8080
   liveness:
     path: /internal/is_alive
@@ -51,7 +53,7 @@ spec:
     limits:
       memory: 3Gi
     requests:
-      cpu: 30m
+      cpu: 50m
       memory: 800Mi
   ingresses:
     - "https://narmesteleder.intern.nav.no"
