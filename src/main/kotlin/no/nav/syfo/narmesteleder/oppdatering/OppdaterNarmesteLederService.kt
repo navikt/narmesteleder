@@ -306,6 +306,7 @@ class OppdaterNarmesteLederService(
             "syfonlaltinn" -> DEAKTIVERT_NY_LEDER
             "PDL" -> IDENTENDRING
             "user" -> null
+            "esyo-narmesteleder.lps" -> null
             "esyo-narmesteleder.personalleder" -> null
             "esyo-narmesteleder.arbeidstager" -> DEAKTIVERT_ARBEIDSTAKER
             "esyo-narmesteleder.leder" -> DEAKTIVERT_LEDER
