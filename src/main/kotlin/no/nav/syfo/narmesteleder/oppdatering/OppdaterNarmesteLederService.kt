@@ -306,6 +306,9 @@ class OppdaterNarmesteLederService(
             "syfonlaltinn" -> DEAKTIVERT_NY_LEDER
             "PDL" -> IDENTENDRING
             "user" -> null
+            "esyo-narmesteleder.personalleder" -> null
+            "esyo-narmesteleder.arbeidstager" -> DEAKTIVERT_ARBEIDSTAKER
+            "esyo-narmesteleder.leder" -> DEAKTIVERT_LEDER
             else -> {
                 log.warn("Invalid source $source")
                 null
