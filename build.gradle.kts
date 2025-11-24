@@ -26,7 +26,7 @@ val swaggerUiVersion = "5.30.2"
 val kotlinVersion = "2.2.21"
 val confluentVersion = "8.1.0"
 val ktfmtVersion = "0.44"
-val avroVersion = "1.12.1"
+val avroVersion = "1.12.0"
 val junitJupiterVersion = "6.0.1"
 val kafkaVersion = "3.9.1"
 
