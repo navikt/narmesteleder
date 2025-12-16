@@ -9,37 +9,37 @@ val javaVersion = JvmTarget.JVM_21
 
 
 val coroutinesVersion = "1.10.2"
-val jacksonVersion = "2.19.2"
+val jacksonVersion = "2.20.1"
 val kluentVersion = "1.73"
-val ktorVersion = "3.2.2"
-val logbackVersion = "1.5.18"
-val logstashEncoderVersion = "8.1"
+val ktorVersion = "3.3.3"
+val logbackVersion = "1.5.22"
+val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
-val mockkVersion = "1.14.5"
-val nimbusdsVersion = "10.4"
-val testContainerKafkaVersion = "1.21.3"
-val postgresVersion = "42.7.7"
-val flywayVersion = "11.10.3"
-val hikariVersion = "6.3.1"
-val testContainerPostgresVersion = "1.21.3"
-val swaggerUiVersion = "5.26.2"
-val kotlinVersion = "2.2.0"
-val confluentVersion = "8.0.0"
+val mockkVersion = "1.14.7"
+val nimbusdsVersion = "10.6"
+val testContainerKafkaVersion = "1.21.4"
+val postgresVersion = "42.7.8"
+val flywayVersion = "11.19.0"
+val hikariVersion = "7.0.2"
+val testContainerPostgresVersion = "1.21.4"
+val swaggerUiVersion = "5.30.3"
+val kotlinVersion = "2.3.0"
+val confluentVersion = "8.1.1"
 val ktfmtVersion = "0.44"
-val avroVersion = "1.12.0"
-val junitJupiterVersion = "5.13.4"
+val avroVersion = "1.12.1"
+val junitJupiterVersion = "6.0.1"
 val kafkaVersion = "3.9.1"
 
 
 //Due to vulnerabilities
-val nettyCommonVersion = "4.2.3.Final"
-val snakeYamlVersion = "2.4"
+val nettyCommonVersion = "4.2.9.Final"
+val snakeYamlVersion = "2.5"
 
 plugins {
     id("application")
-    id("com.diffplug.spotless") version "7.2.1"
-    kotlin("jvm") version "2.2.0"
-    id("com.gradleup.shadow") version "8.3.8"
+    id("com.diffplug.spotless") version "8.1.0"
+    kotlin("jvm") version "2.3.0"
+    id("com.gradleup.shadow") version "9.3.0"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
 
@@ -131,8 +131,8 @@ dependencies {
 
 buildscript {
     dependencies {
-        classpath("org.apache.avro:avro-tools:1.12.0")
-        classpath("org.apache.avro:avro:1.12.0")
+        classpath("org.apache.avro:avro-tools:1.12.1")
+        classpath("org.apache.avro:avro:1.12.1")
     }
 }
 
