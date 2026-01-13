@@ -90,12 +90,13 @@ spec:
           namespace: flex
           cluster: prod-gcp
     outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
       external:
         - host: pdl-api.prod-fss-pub.nais.io
         - host: kafka-schema-registry.nais.adeo.no
         - host: aareg-services.prod-fss-pub.nais.io
-  secureLogs:
-    enabled: true
   env:
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.prod-fss-pub.nais.io/graphql
