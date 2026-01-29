@@ -53,6 +53,9 @@ class NarmesteLederResponseConsumerService(
         while (applicationState.ready) {
             kafkaConsumer.poll(Duration.ofSeconds(POLL_DURATION_SECONDS)).forEach {
                 try {
+                    if(it.partition() == 1 && it.offset() == 5783451L) {
+                        return@forEach
+                    }
                     oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                         it.value(),
                         it.partition(),
