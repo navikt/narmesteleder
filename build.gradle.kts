@@ -12,16 +12,15 @@ val coroutinesVersion = "1.10.2"
 val jacksonVersion = "2.20.2"
 val kluentVersion = "1.73"
 val ktorVersion = "3.4.0"
-val logbackVersion = "1.5.18"
+val logbackVersion = "1.5.26"
 val logstashEncoderVersion = "8.1"
 val prometheusVersion = "0.16.0"
 val mockkVersion = "1.14.5"
 val nimbusdsVersion = "10.4"
-val testContainerKafkaVersion = "1.21.3"
 val postgresVersion = "42.7.7"
 val flywayVersion = "11.10.3"
 val hikariVersion = "6.3.1"
-val testContainerPostgresVersion = "1.21.3"
+val testcontainerVersion = "2.0.1"
 val swaggerUiVersion = "5.26.2"
 val kotlinVersion = "2.2.0"
 val confluentVersion = "8.1.1"
@@ -82,7 +81,7 @@ dependencies {
     compileOnly("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
-    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
 
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     constraints {
@@ -114,8 +113,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
-    testImplementation("org.testcontainers:kafka:$testContainerKafkaVersion")
-    testImplementation("org.testcontainers:postgresql:$testContainerPostgresVersion")
+    testImplementation("org.testcontainers:testcontainers-kafka:$testcontainerVersion")
+    testImplementation("org.testcontainers:testcontainers-postgresql:$testcontainerVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
