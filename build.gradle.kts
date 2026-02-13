@@ -25,7 +25,7 @@ val swaggerUiVersion = "5.26.2"
 val kotlinVersion = "2.2.0"
 val confluentVersion = "8.1.1"
 val ktfmtVersion = "0.44"
-val avroVersion = "1.12.0"
+val avroVersion = "1.12.1"
 val junitJupiterVersion = "5.13.4"
 val kafkaVersion = "3.9.1"
 
@@ -124,8 +124,8 @@ dependencies {
 
 buildscript {
     dependencies {
-        classpath("org.apache.avro:avro-tools:1.12.0")
-        classpath("org.apache.avro:avro:1.12.0")
+        classpath("org.apache.avro:avro-tools:1.12.1")
+        classpath("org.apache.avro:avro:1.12.1")
     }
 }
 
