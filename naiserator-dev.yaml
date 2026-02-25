@@ -108,3 +108,5 @@ spec:
       value: tjenester-q1.nav.no,www-gcp.dev.nav.no,narmesteleder.dev.nav.no
     - name: PDL_SCOPE
       value: api://dev-fss.pdl.pdl-api/.default
+    - name: OFFSET_RESET_POLICY
+      value: latest

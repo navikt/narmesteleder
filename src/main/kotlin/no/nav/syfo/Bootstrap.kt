@@ -161,7 +161,7 @@ fun main() {
     val kafkaConsumer =
         KafkaConsumer(
             KafkaUtils.getAivenKafkaConfig("nl-response-consumer")
-                .also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }
+                .also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = env.offsetResetPolicy }
                 .toConsumerConfig("narmesteleder-v2", JacksonKafkaDeserializer::class),
             StringDeserializer(),
             JacksonKafkaDeserializer(NlResponseKafkaMessage::class),
@@ -239,7 +239,7 @@ fun main() {
         )
 
     val personhendelseConsumer =
-        getKafkaConsumerAivenPdl<Personhendelse>("pdl-leesah-consumer", env, "earliest")
+        getKafkaConsumerAivenPdl<Personhendelse>("pdl-leesah-consumer", env)
     val pdlLeesahConsumer =
         PdlLeesahConsumer(
             personhendelseConsumer,
@@ -260,7 +260,6 @@ fun main() {
 fun <T : SpecificRecord> getKafkaConsumerAivenPdl(
     clientId: String,
     environment: Environment,
-    offsetResetPolicy: String = "none"
 ): KafkaConsumer<String, T> {
     val consumerProperties =
         KafkaUtils.getAivenKafkaConfig(clientId)
@@ -281,7 +280,7 @@ fun <T : SpecificRecord> getKafkaConsumerAivenPdl(
                 keyDeserializer = KafkaAvroDeserializer::class,
             )
             .also {
-                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = offsetResetPolicy
+                it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = environment.offsetResetPolicy
                 it["specific.avro.reader"] = true
                 it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "10"
             }
