@@ -74,8 +74,6 @@ class IdentendringService(
                                 ),
                             nlAvbrutt = null,
                         ),
-                    partition = 0,
-                    offset = 0,
                 )
             }
             log.info(
@@ -96,8 +94,6 @@ class IdentendringService(
                                     aktivTom = OffsetDateTime.now(ZoneOffset.UTC),
                                 ),
                         ),
-                    partition = 0,
-                    offset = 0,
                 )
                 oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                     nlResponseKafkaMessage =
@@ -126,8 +122,6 @@ class IdentendringService(
                                 ),
                             nlAvbrutt = null,
                         ),
-                    partition = 0,
-                    offset = 0,
                 )
             }
             log.info(

@@ -103,8 +103,6 @@ internal class OppdaterNarmesteLederServiceTest {
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                 nlResponseKafkaMessage,
-                0,
-                0
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -149,8 +147,6 @@ internal class OppdaterNarmesteLederServiceTest {
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                 nlResponseKafkaMessage,
-                0,
-                0
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -196,8 +192,6 @@ internal class OppdaterNarmesteLederServiceTest {
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                 nlResponseKafkaMessage,
-                0,
-                0
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -255,8 +249,6 @@ internal class OppdaterNarmesteLederServiceTest {
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                 nlResponseKafkaMessage,
-                0,
-                0
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -298,8 +290,6 @@ internal class OppdaterNarmesteLederServiceTest {
             runBlocking {
                 oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                     nlResponseKafkaMessage,
-                    0,
-                    0
                 )
             }
         }
@@ -329,8 +319,6 @@ internal class OppdaterNarmesteLederServiceTest {
             runBlocking {
                 oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                     nlResponseKafkaMessage,
-                    0,
-                    0
                 )
             }
         }
@@ -365,8 +353,6 @@ internal class OppdaterNarmesteLederServiceTest {
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                 nlResponseKafkaMessage,
-                0,
-                0
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -418,8 +404,6 @@ internal class OppdaterNarmesteLederServiceTest {
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                 nlResponseKafkaMessage,
-                0,
-                0
             )
 
             coVerify(exactly = 1) {
@@ -465,8 +449,6 @@ internal class OppdaterNarmesteLederServiceTest {
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                 nlResponseKafkaMessage,
-                0,
-                0
             )
 
             coVerify(exactly = 1) {
@@ -512,8 +494,6 @@ internal class OppdaterNarmesteLederServiceTest {
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                 nlResponseKafkaMessage,
-                0,
-                0
             )
 
             coVerify(exactly = 1) {
@@ -553,8 +533,6 @@ internal class OppdaterNarmesteLederServiceTest {
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                 nlResponseKafkaMessage,
-                0,
-                0
             )
 
             coVerify(exactly = 1) {
@@ -590,8 +568,6 @@ internal class OppdaterNarmesteLederServiceTest {
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                 nlResponseKafkaMessage,
-                0,
-                0
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)

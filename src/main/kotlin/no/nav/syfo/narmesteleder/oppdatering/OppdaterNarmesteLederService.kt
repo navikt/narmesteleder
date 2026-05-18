@@ -45,8 +45,6 @@ class OppdaterNarmesteLederService(
 
     suspend fun handterMottattNarmesteLederOppdatering(
         nlResponseKafkaMessage: NlResponseKafkaMessage,
-        partition: Int,
-        offset: Long,
     ) {
         val callId = UUID.randomUUID().toString()
         when {
@@ -62,14 +60,14 @@ class OppdaterNarmesteLederService(
                         "Mottatt NL-skjema for ansatt som ikke finnes i PDL callId $callId, " +
                             "sykmeldtFnr: $sykmeldtFnr nlFnr: $nlFnr orgnummer: $orgnummer",
                     )
-                    "Mottatt NL-skjema for ansatt som ikke finnes i PDL callId $callId partition: $partition, offset: $offset"
+                    "Mottatt NL-skjema for ansatt som ikke finnes i PDL callId $callId"
                 }
                 requireNotNull(nl) {
                     securelog.info(
-                        "Mottatt NL-skjema for leder som ikke finnes i PDL callId $callId, " +
+                        "Mottatt NL-skjema for leder som ikke finnes i PDL callId $callId " +
                             "nlFnr: $nlFnr orgnummer: $orgnummer",
                     )
-                    "Mottatt NL-skjema for leder som ikke finnes i PDL callId $callId partition: $partition, offset: $offset"
+                    "Mottatt NL-skjema for leder som ikke finnes i PDL callId $callId partition"
                 }
 
                 val narmesteLedere =

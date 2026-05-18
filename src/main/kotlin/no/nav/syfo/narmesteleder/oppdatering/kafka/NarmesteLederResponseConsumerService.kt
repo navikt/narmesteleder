@@ -55,8 +55,6 @@ class NarmesteLederResponseConsumerService(
                 try {
                     oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                         it.value(),
-                        it.partition(),
-                        it.offset(),
                     )
                 } catch (e: Exception) {
                     if (cluster == "dev-gcp") {
