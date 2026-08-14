@@ -12,7 +12,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiverinfo
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
-import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_ARBEIDSTAKER
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_ARBEIDSTAKER_INNSENDT_SYKMELDING
@@ -43,7 +42,6 @@ import org.junit.jupiter.api.TestInstance
 internal class OppdaterNarmesteLederServiceTest {
     val pdlPersonService = mockk<PdlPersonService>()
     val narmesteLederLeesahProducer = mockk<NarmesteLederLeesahProducer>(relaxed = true)
-    val nlRequestProducer = mockk<NLRequestProducer>(relaxed = true)
     val arbeidsgiverService = mockk<ArbeidsgiverService>()
     val testDb = TestDB()
     val oppdaterNarmesteLederService =
@@ -52,7 +50,6 @@ internal class OppdaterNarmesteLederServiceTest {
             arbeidsgiverService,
             testDb,
             narmesteLederLeesahProducer,
-            nlRequestProducer
         )
     val sykmeldtFnr = "6969"
     val fnrLeder = "123"
@@ -65,7 +62,6 @@ internal class OppdaterNarmesteLederServiceTest {
             pdlPersonService,
             narmesteLederLeesahProducer,
             arbeidsgiverService,
-            nlRequestProducer
         )
         coEvery { pdlPersonService.getPersoner(any(), any()) } returns
             mapOf(
@@ -364,15 +360,6 @@ internal class OppdaterNarmesteLederServiceTest {
                     match { it.status == DEAKTIVERT_ARBEIDSTAKER_INNSENDT_SYKMELDING }
                 )
             }
-            coVerify(exactly = 1) {
-                nlRequestProducer.send(
-                    match {
-                        it.nlRequest.fnr == sykmeldtFnr &&
-                            it.nlRequest.orgnr == "orgnummer" &&
-                            it.metadata.source == "syfosmaltinn"
-                    }
-                )
-            }
         }
     }
 
@@ -408,15 +395,6 @@ internal class OppdaterNarmesteLederServiceTest {
 
             coVerify(exactly = 1) {
                 narmesteLederLeesahProducer.send(match { it.status == DEAKTIVERT_LEDER })
-            }
-            coVerify(exactly = 1) {
-                nlRequestProducer.send(
-                    match {
-                        it.nlRequest.fnr == sykmeldtFnr &&
-                            it.nlRequest.orgnr == "orgnummer" &&
-                            it.metadata.source == "leder"
-                    }
-                )
             }
         }
     }
@@ -454,15 +432,6 @@ internal class OppdaterNarmesteLederServiceTest {
             coVerify(exactly = 1) {
                 narmesteLederLeesahProducer.send(match { it.status == DEAKTIVERT_ARBEIDSTAKER })
             }
-            coVerify(exactly = 1) {
-                nlRequestProducer.send(
-                    match {
-                        it.nlRequest.fnr == sykmeldtFnr &&
-                            it.nlRequest.orgnr == "orgnummer" &&
-                            it.metadata.source == "arbeidstaker"
-                    }
-                )
-            }
         }
     }
 
@@ -499,7 +468,6 @@ internal class OppdaterNarmesteLederServiceTest {
             coVerify(exactly = 1) {
                 narmesteLederLeesahProducer.send(match { it.status == DEAKTIVERT_ARBEIDSTAKER })
             }
-            coVerify(exactly = 0) { nlRequestProducer.send(any()) }
         }
     }
 
@@ -538,7 +506,6 @@ internal class OppdaterNarmesteLederServiceTest {
             coVerify(exactly = 1) {
                 narmesteLederLeesahProducer.send(match { it.status == DEAKTIVERT_ARBEIDSTAKER })
             }
-            coVerify(exactly = 0) { nlRequestProducer.send(any()) }
         }
     }
 

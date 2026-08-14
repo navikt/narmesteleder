@@ -33,7 +33,6 @@ This the high level flow of the application
       A([pdl.aktor-v2]) --> narmesteleder
       narmesteleder <--> aareg
       B([teamsykmelding.syfo-narmesteleder]) --> narmesteleder
-      narmesteleder --> C([teamsykmelding.syfo-nl-request])
       narmesteleder --> D([teamsykmelding.syfo-narmesteleder-leesah])
 ```
 

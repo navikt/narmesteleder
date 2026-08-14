@@ -12,7 +12,6 @@ import no.nav.syfo.db.finnAktiveNarmestelederkoblinger
 import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
-import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
 import no.nav.syfo.pdl.identendring.IdentendringService
 import no.nav.syfo.pdl.identendring.model.Ident
@@ -35,7 +34,6 @@ import org.junit.jupiter.api.TestInstance
 internal class IdentendringServiceTest {
     val pdlPersonService = mockk<PdlPersonService>(relaxed = true)
     val narmesteLederLeesahProducer = mockk<NarmesteLederLeesahProducer>(relaxed = true)
-    val nlRequestProducer = mockk<NLRequestProducer>(relaxed = true)
     val arbeidsgiverService = mockk<ArbeidsgiverService>(relaxed = true)
     val testDb = TestDB()
     val oppdaterNarmesteLederService =
@@ -44,7 +42,6 @@ internal class IdentendringServiceTest {
             arbeidsgiverService,
             testDb,
             narmesteLederLeesahProducer,
-            nlRequestProducer,
         )
     val identendringService =
         IdentendringService(testDb, oppdaterNarmesteLederService, pdlPersonService)
@@ -59,7 +56,6 @@ internal class IdentendringServiceTest {
             pdlPersonService,
             arbeidsgiverService,
             narmesteLederLeesahProducer,
-            nlRequestProducer,
         )
         coEvery { pdlPersonService.getPersoner(any(), any()) } returns
             mapOf(
