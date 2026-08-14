@@ -12,7 +12,6 @@ import no.nav.syfo.db.oppdaterNarmesteLeder
 import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.NarmesteLederRelasjon
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
-import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_ARBEIDSFORHOLD
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_ARBEIDSTAKER
@@ -40,7 +39,6 @@ class OppdaterNarmesteLederService(
     private val arbeidsgiverService: ArbeidsgiverService,
     private val database: DatabaseInterface,
     private val narmesteLederLeesahProducer: NarmesteLederLeesahProducer,
-    private val nlRequestProducer: NLRequestProducer,
 ) {
 
     suspend fun handterMottattNarmesteLederOppdatering(
@@ -262,38 +260,6 @@ class OppdaterNarmesteLederService(
                         status = getStatusFromSource(source),
                     ),
                 )
-                if (aktivtArbeidsforhold != null) {
-                    log.info("Ber om ny nærmeste leder siden arbeidsforhold er aktivt, $callId")
-                    securelog.info(
-                        "Ber om ny nærmeste leder siden arbeidsforhold er aktivt, callid: $callId, source: $source, orgnummer: ${it.orgnummer} for fnrs: ${objectMapper.writeValueAsString(it.fnr)}"
-                    )
-
-                    val navn =
-                        pdlPersonService
-                            .getPersoner(fnrs = listOf(it.fnr), callId = callId)[it.fnr]
-                            ?.navn
-
-                    nlRequestProducer.send(
-                        NlRequestKafkaMessage(
-                            nlRequest =
-                                NlRequest(
-                                    requestId = UUID.fromString(callId),
-                                    sykmeldingId = null,
-                                    fnr = it.fnr,
-                                    orgnr = it.orgnummer,
-                                    name = navn?.toFormattedNameString()
-                                            ?: throw RuntimeException(
-                                                "Fant ikke navn på ansatt i PDL $callId"
-                                            ),
-                                ),
-                            metadata =
-                                NlKafkaMetadata(
-                                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                                    source = source,
-                                ),
-                        ),
-                    )
-                }
             }
     }
 

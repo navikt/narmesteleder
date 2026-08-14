@@ -42,7 +42,6 @@ import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.oppdatering.OppdaterNarmesteLederService
-import no.nav.syfo.narmesteleder.oppdatering.kafka.NLRequestProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NLResponseProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederLeesahProducer
 import no.nav.syfo.narmesteleder.oppdatering.kafka.NarmesteLederResponseConsumerService
@@ -185,7 +184,6 @@ fun main() {
                     StringSerializer::class
                 ),
         )
-    val nlRequestProducer = NLRequestProducer(kafkaProducerNlRequest, env.nlRequestTopic)
     val kafkaProducerNarmesteLederLeesah =
         KafkaProducer<String, NarmesteLederLeesah>(
             KafkaUtils.getAivenKafkaConfig("nl-leesah-producer")
@@ -215,7 +213,6 @@ fun main() {
             arbeidsgiverService,
             database,
             narmesteLederLeesahProducer,
-            nlRequestProducer
         )
     val narmesteLederResponseConsumerService =
         NarmesteLederResponseConsumerService(

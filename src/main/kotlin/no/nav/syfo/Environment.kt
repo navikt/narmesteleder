@@ -18,7 +18,6 @@ data class Environment(
     val dbName: String = getEnvVar("NAIS_DATABASE_DATABASE"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val nlResponseTopic: String = "teamsykmelding.syfo-narmesteleder",
-    val nlRequestTopic: String = "teamsykmelding.syfo-nl-request",
     val narmesteLederLeesahTopic: String = "teamsykmelding.syfo-narmesteleder-leesah",
     val aaregUrl: String = getEnvVar("AAREG_URL"),
     val aaregScope: String = getEnvVar("AAREG_SCOPE"),
