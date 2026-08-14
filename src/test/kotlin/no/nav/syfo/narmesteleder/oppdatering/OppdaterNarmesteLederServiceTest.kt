@@ -85,7 +85,7 @@ internal class OppdaterNarmesteLederServiceTest {
     internal fun `Oppretter ny nærmeste leder hvis ingen finnes fra før`() {
         val nlResponseKafkaMessage =
             NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "esyo-narmesteleder.personalleder"),
                 nlResponse =
                     NlResponse(
                         "orgnummer",
@@ -129,7 +129,7 @@ internal class OppdaterNarmesteLederServiceTest {
         )
         val nlResponseKafkaMessage =
             NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "esyo-narmesteleder.personalleder"),
                 nlResponse =
                     NlResponse(
                         "orgnummer",
@@ -174,7 +174,7 @@ internal class OppdaterNarmesteLederServiceTest {
         )
         val nlResponseKafkaMessage =
             NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "esyo-narmesteleder.personalleder"),
                 nlResponse =
                     NlResponse(
                         "orgnummer",
@@ -231,7 +231,7 @@ internal class OppdaterNarmesteLederServiceTest {
         )
         val nlResponseKafkaMessage =
             NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "esyo-narmesteleder.personalleder"),
                 nlResponse =
                     NlResponse(
                         "orgnummer2",
@@ -271,7 +271,7 @@ internal class OppdaterNarmesteLederServiceTest {
             )
         val nlResponseKafkaMessage =
             NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "esyo-narmesteleder.personalleder"),
                 nlResponse =
                     NlResponse(
                         "orgnummer",
@@ -300,7 +300,7 @@ internal class OppdaterNarmesteLederServiceTest {
             )
         val nlResponseKafkaMessage =
             NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "syfonlaltinn"),
+                kafkaMetadata = KafkaMetadata(timestamp, "esyo-narmesteleder.personalleder"),
                 nlResponse =
                     NlResponse(
                         "orgnummer",
@@ -336,7 +336,11 @@ internal class OppdaterNarmesteLederServiceTest {
         val aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
         val nlResponseKafkaMessage =
             NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "syfosmaltinn"),
+                kafkaMetadata =
+                    KafkaMetadata(
+                        timestamp,
+                        "esyo-narmesteleder.arbeidstager.sykmelding.deaktivert"
+                    ),
                 nlResponse = null,
                 nlAvbrutt =
                     NlAvbrutt(
@@ -523,7 +527,11 @@ internal class OppdaterNarmesteLederServiceTest {
         val aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
         val nlResponseKafkaMessage =
             NlResponseKafkaMessage(
-                kafkaMetadata = KafkaMetadata(timestamp, "syfosmaltinn"),
+                kafkaMetadata =
+                    KafkaMetadata(
+                        timestamp,
+                        "esyo-narmesteleder.arbeidstager.sykmelding.deaktivert"
+                    ),
                 nlResponse = null,
                 nlAvbrutt =
                     NlAvbrutt(

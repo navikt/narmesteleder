@@ -23,13 +23,8 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.DEAKTIVERT_PERSONALLEDE
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.IDENTENDRING
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NY_LEDER
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NarmesteLederLeesah
-import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlKafkaMetadata
-import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequest
-import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlRequestKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
-import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.PdlPerson
-import no.nav.syfo.pdl.model.toFormattedNameString
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.securelog
 
@@ -268,8 +263,6 @@ class OppdaterNarmesteLederService(
             "arbeidstaker" -> DEAKTIVERT_ARBEIDSTAKER
             "leder" -> DEAKTIVERT_LEDER
             "narmesteleder-arbeidsforhold" -> DEAKTIVERT_ARBEIDSFORHOLD
-            "syfosmaltinn" -> DEAKTIVERT_ARBEIDSTAKER_INNSENDT_SYKMELDING
-            "syfonlaltinn" -> DEAKTIVERT_NY_LEDER
             "PDL" -> IDENTENDRING
             "user" -> null
             "esyo-narmesteleder.lps" -> DEAKTIVERT_NY_LEDER
@@ -278,6 +271,8 @@ class OppdaterNarmesteLederService(
             "esyo-narmesteleder.leder.deaktivert" -> DEAKTIVERT_LEDER
             "esyo-narmesteleder.lps.deaktivert" -> DEAKTIVERT_LPS
             "esyo-narmesteleder.personalleder.deaktivert" -> DEAKTIVERT_PERSONALLEDER
+            "esyo-narmesteleder.arbeidstager.sykmelding.deaktivert" ->
+                DEAKTIVERT_ARBEIDSTAKER_INNSENDT_SYKMELDING
             else -> {
                 log.warn("Invalid source $source")
                 null
