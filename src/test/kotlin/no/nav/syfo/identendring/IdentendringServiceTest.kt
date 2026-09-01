@@ -52,22 +52,12 @@ internal class IdentendringServiceTest {
 
     @BeforeEach
     fun beforeEach() {
-        clearMocks(
-            pdlPersonService,
-            arbeidsgiverService,
-            narmesteLederLeesahProducer,
-        )
+        clearMocks(pdlPersonService, arbeidsgiverService, narmesteLederLeesahProducer)
         coEvery { pdlPersonService.getPersoner(any(), any()) } returns
             mapOf(
                 Pair(fnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
-                Pair(
-                    nyttFnrLeder,
-                    PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid"),
-                ),
-                Pair(
-                    sykmeldtFnr,
-                    PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2"),
-                ),
+                Pair(nyttFnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
+                Pair(sykmeldtFnr, PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2")),
                 Pair(
                     nyttFnrSykmeldt,
                     PdlPerson(Navn("Syk", null, "Sykesen"), sykmeldtFnr, "aktorid2"),
@@ -90,11 +80,7 @@ internal class IdentendringServiceTest {
     internal fun `Endrer ingenting hvis det ikke er endring i fnr`() {
         val identListeUtenEndringIFnr =
             listOf(
-                Ident(
-                    idnummer = "1234",
-                    gjeldende = true,
-                    type = IdentType.FOLKEREGISTERIDENT,
-                ),
+                Ident(idnummer = "1234", gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),
                 Ident(idnummer = "1111", gjeldende = true, type = IdentType.AKTORID),
                 Ident(idnummer = "2222", gjeldende = false, type = IdentType.AKTORID),
             )
@@ -111,17 +97,9 @@ internal class IdentendringServiceTest {
     internal fun `Endrer ingenting hvis det ikke finnes NL-koblinger paa gammelt fnr`() {
         val identListeUtenEndringIFnr =
             listOf(
-                Ident(
-                    idnummer = "1234",
-                    gjeldende = true,
-                    type = IdentType.FOLKEREGISTERIDENT,
-                ),
+                Ident(idnummer = "1234", gjeldende = true, type = IdentType.FOLKEREGISTERIDENT),
                 Ident(idnummer = "1111", gjeldende = true, type = IdentType.AKTORID),
-                Ident(
-                    idnummer = "2222",
-                    gjeldende = false,
-                    type = IdentType.FOLKEREGISTERIDENT,
-                ),
+                Ident(idnummer = "2222", gjeldende = false, type = IdentType.FOLKEREGISTERIDENT),
             )
 
         runBlocking {
@@ -139,11 +117,7 @@ internal class IdentendringServiceTest {
             fnr = sykmeldtFnr,
             fnrNl = fnrLeder,
             arbeidsgiverForskutterer = true,
-            aktivFom =
-                OffsetDateTime.now(
-                        ZoneOffset.UTC,
-                    )
-                    .minusYears(1),
+            aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )
@@ -152,16 +126,8 @@ internal class IdentendringServiceTest {
             fnr = "123456",
             fnrNl = fnrLeder,
             arbeidsgiverForskutterer = true,
-            aktivFom =
-                OffsetDateTime.now(
-                        ZoneOffset.UTC,
-                    )
-                    .minusYears(2),
-            aktivTom =
-                OffsetDateTime.now(
-                        ZoneOffset.UTC,
-                    )
-                    .minusYears(1),
+            aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2),
+            aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )
@@ -175,11 +141,7 @@ internal class IdentendringServiceTest {
                     type = IdentType.FOLKEREGISTERIDENT,
                 ),
                 Ident(idnummer = aktorId, gjeldende = true, type = IdentType.AKTORID),
-                Ident(
-                    idnummer = fnrLeder,
-                    gjeldende = false,
-                    type = IdentType.FOLKEREGISTERIDENT,
-                ),
+                Ident(idnummer = fnrLeder, gjeldende = false, type = IdentType.FOLKEREGISTERIDENT),
             )
         coEvery { pdlPersonService.erIdentAktiv(any()) } returns true
 
@@ -222,11 +184,7 @@ internal class IdentendringServiceTest {
             fnr = sykmeldtFnr,
             fnrNl = fnrLeder,
             arbeidsgiverForskutterer = true,
-            aktivFom =
-                OffsetDateTime.now(
-                        ZoneOffset.UTC,
-                    )
-                    .minusYears(1),
+            aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )
@@ -235,16 +193,8 @@ internal class IdentendringServiceTest {
             fnr = sykmeldtFnr,
             fnrNl = "123456",
             arbeidsgiverForskutterer = true,
-            aktivFom =
-                OffsetDateTime.now(
-                        ZoneOffset.UTC,
-                    )
-                    .minusYears(2),
-            aktivTom =
-                OffsetDateTime.now(
-                        ZoneOffset.UTC,
-                    )
-                    .minusYears(1),
+            aktivFom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2),
+            aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
             brukerNavn = "sykmeldt",
             narmestelederNavn = "narmesteleder",
         )

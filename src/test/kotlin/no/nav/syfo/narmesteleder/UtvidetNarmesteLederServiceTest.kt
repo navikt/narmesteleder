@@ -48,11 +48,7 @@ internal class UtvidetNarmesteLederServiceTest {
             fnr = fnr,
             fnrNl = fnrLeder2,
             arbeidsgiverForskutterer = true,
-            aktivTom =
-                OffsetDateTime.now(
-                        ZoneOffset.UTC,
-                    )
-                    .minusDays(2),
+            aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(2),
             brukerNavn = "sykmeldt",
             narmestelederNavn = "Fornavn2 Mellomnavn Bindestrek-Etternavn",
         )

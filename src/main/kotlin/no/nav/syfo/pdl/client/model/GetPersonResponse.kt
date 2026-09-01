@@ -1,36 +1,19 @@
 package no.nav.syfo.pdl.client.model
 
-data class GetPersonResponse(
-    val data: ResponseData,
-    val errors: List<ResponseError>?,
-)
+data class GetPersonResponse(val data: ResponseData, val errors: List<ResponseError>?)
 
 data class ResponseData(
     val hentPersonBolk: List<HentPersonBolk>?,
     val hentIdenterBolk: List<HentIdenterBolk>?,
 )
 
-data class HentPersonBolk(
-    val ident: String,
-    val person: Person?,
-    val code: String,
-)
+data class HentPersonBolk(val ident: String, val person: Person?, val code: String)
 
-data class Person(
-    val navn: List<Navn>?,
-)
+data class Person(val navn: List<Navn>?)
 
-data class Navn(
-    val fornavn: String,
-    val mellomnavn: String?,
-    val etternavn: String,
-)
+data class Navn(val fornavn: String, val mellomnavn: String?, val etternavn: String)
 
-data class HentIdenterBolk(
-    val ident: String,
-    val identer: List<PdlIdent>?,
-    val code: String,
-)
+data class HentIdenterBolk(val ident: String, val identer: List<PdlIdent>?, val code: String)
 
 data class PdlIdent(val ident: String, val gruppe: String)
 
@@ -41,10 +24,7 @@ data class ResponseError(
     val extensions: ErrorExtension?,
 )
 
-data class ErrorLocation(
-    val line: String?,
-    val column: String?,
-)
+data class ErrorLocation(val line: String?, val column: String?)
 
 data class ErrorExtension(
     val code: String?,

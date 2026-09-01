@@ -33,8 +33,7 @@ class IdentendringService(
             val nyttFnr =
                 identListe
                     .find { it.type == IdentType.FOLKEREGISTERIDENT && it.gjeldende }
-                    ?.idnummer
-                    ?: throw IllegalStateException("Mangler gyldig fnr!")
+                    ?.idnummer ?: throw IllegalStateException("Mangler gyldig fnr!")
             val tidligereFnr =
                 identListe.filter { it.type == IdentType.FOLKEREGISTERIDENT && !it.gjeldende }
             val erLederForNlKoblinger =
@@ -64,16 +63,12 @@ class IdentendringService(
                                             fornavn = null,
                                             etternavn = null,
                                         ),
-                                    sykmeldt =
-                                        Sykmeldt(
-                                            fnr = it.fnr,
-                                            navn = null,
-                                        ),
+                                    sykmeldt = Sykmeldt(fnr = it.fnr, navn = null),
                                     aktivFom = it.aktivFom.atStartOfDay().atOffset(ZoneOffset.UTC),
                                     aktivTom = null,
                                 ),
                             nlAvbrutt = null,
-                        ),
+                        )
                 )
             }
             log.info(
@@ -93,7 +88,7 @@ class IdentendringService(
                                     sykmeldtFnr = it.fnr,
                                     aktivTom = OffsetDateTime.now(ZoneOffset.UTC),
                                 ),
-                        ),
+                        )
                 )
                 oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
                     nlResponseKafkaMessage =
@@ -112,16 +107,12 @@ class IdentendringService(
                                             fornavn = null,
                                             etternavn = null,
                                         ),
-                                    sykmeldt =
-                                        Sykmeldt(
-                                            fnr = nyttFnr,
-                                            navn = null,
-                                        ),
+                                    sykmeldt = Sykmeldt(fnr = nyttFnr, navn = null),
                                     aktivFom = it.aktivFom.atStartOfDay().atOffset(ZoneOffset.UTC),
                                     aktivTom = null,
                                 ),
                             nlAvbrutt = null,
-                        ),
+                        )
                 )
             }
             log.info(

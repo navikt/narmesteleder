@@ -1,13 +1,9 @@
 package no.nav.syfo.application
 
 import com.auth0.jwk.JwkProvider
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.install
@@ -57,7 +53,7 @@ fun createApplicationEngine(
             tokenXIssuer,
             database,
             nlResponseProducer,
-            applicationState
+            applicationState,
         )
     }
 
@@ -69,16 +65,9 @@ private fun Application.setUp(
     tokenXIssuer: String,
     database: Database,
     nlResponseProducer: NLResponseProducer,
-    applicationState: ApplicationState
+    applicationState: ApplicationState,
 ) {
-    install(ContentNegotiation) {
-        jackson {
-            registerKotlinModule()
-            registerModule(JavaTimeModule())
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        }
-    }
+    install(ContentNegotiation) { jackson {} }
     setupAuth(
         jwkProvider = jwkProvider,
         jwkProviderTokenX = jwkProviderTokenX,

@@ -6,9 +6,7 @@ import no.nav.syfo.db.finnAlleNarmesteledereForSykmeldt
 import no.nav.syfo.narmesteleder.user.model.NarmesteLeder
 
 @DelicateCoroutinesApi
-class NarmesteLederService(
-    private val database: DatabaseInterface,
-) {
+class NarmesteLederService(private val database: DatabaseInterface) {
     suspend fun hentNarmesteledereMedNavn(sykmeldtFnr: String): List<NarmesteLederRelasjon> {
         return database.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
     }

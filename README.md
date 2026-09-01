@@ -9,8 +9,8 @@ This project contains the application code and infrastructure for narmesteleder
 * Docker
 
 ### :scroll: Prerequisites
-* JDK 21
-Make sure you have the Java JDK 21 installed
+* JDK 25
+Make sure you have the Java JDK 25 installed
 You can check which version you have installed using this command:
 ``` shell
 java -version

@@ -58,11 +58,7 @@ internal class OppdaterNarmesteLederServiceTest {
 
     @BeforeEach
     fun beforeEach() {
-        clearMocks(
-            pdlPersonService,
-            narmesteLederLeesahProducer,
-            arbeidsgiverService,
-        )
+        clearMocks(pdlPersonService, narmesteLederLeesahProducer, arbeidsgiverService)
         coEvery { pdlPersonService.getPersoner(any(), any()) } returns
             mapOf(
                 Pair(fnrLeder, PdlPerson(Navn("Leder", null, "Ledersen"), fnrLeder, "aktorid")),
@@ -98,7 +94,7 @@ internal class OppdaterNarmesteLederServiceTest {
 
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                nlResponseKafkaMessage,
+                nlResponseKafkaMessage
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -142,7 +138,7 @@ internal class OppdaterNarmesteLederServiceTest {
 
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                nlResponseKafkaMessage,
+                nlResponseKafkaMessage
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -187,7 +183,7 @@ internal class OppdaterNarmesteLederServiceTest {
 
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                nlResponseKafkaMessage,
+                nlResponseKafkaMessage
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -244,7 +240,7 @@ internal class OppdaterNarmesteLederServiceTest {
 
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                nlResponseKafkaMessage,
+                nlResponseKafkaMessage
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -285,7 +281,7 @@ internal class OppdaterNarmesteLederServiceTest {
         assertFailsWith<IllegalArgumentException> {
             runBlocking {
                 oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                    nlResponseKafkaMessage,
+                    nlResponseKafkaMessage
                 )
             }
         }
@@ -314,7 +310,7 @@ internal class OppdaterNarmesteLederServiceTest {
         assertFailsWith<IllegalArgumentException> {
             runBlocking {
                 oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                    nlResponseKafkaMessage,
+                    nlResponseKafkaMessage
                 )
             }
         }
@@ -339,7 +335,7 @@ internal class OppdaterNarmesteLederServiceTest {
                 kafkaMetadata =
                     KafkaMetadata(
                         timestamp,
-                        "esyo-narmesteleder.arbeidstager.sykmelding.deaktivert"
+                        "esyo-narmesteleder.arbeidstager.sykmelding.deaktivert",
                     ),
                 nlResponse = null,
                 nlAvbrutt =
@@ -352,7 +348,7 @@ internal class OppdaterNarmesteLederServiceTest {
 
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                nlResponseKafkaMessage,
+                nlResponseKafkaMessage
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)
@@ -394,7 +390,7 @@ internal class OppdaterNarmesteLederServiceTest {
             )
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                nlResponseKafkaMessage,
+                nlResponseKafkaMessage
             )
 
             coVerify(exactly = 1) {
@@ -430,7 +426,7 @@ internal class OppdaterNarmesteLederServiceTest {
             )
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                nlResponseKafkaMessage,
+                nlResponseKafkaMessage
             )
 
             coVerify(exactly = 1) {
@@ -466,7 +462,7 @@ internal class OppdaterNarmesteLederServiceTest {
             )
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                nlResponseKafkaMessage,
+                nlResponseKafkaMessage
             )
 
             coVerify(exactly = 1) {
@@ -504,7 +500,7 @@ internal class OppdaterNarmesteLederServiceTest {
             )
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                nlResponseKafkaMessage,
+                nlResponseKafkaMessage
             )
 
             coVerify(exactly = 1) {
@@ -530,7 +526,7 @@ internal class OppdaterNarmesteLederServiceTest {
                 kafkaMetadata =
                     KafkaMetadata(
                         timestamp,
-                        "esyo-narmesteleder.arbeidstager.sykmelding.deaktivert"
+                        "esyo-narmesteleder.arbeidstager.sykmelding.deaktivert",
                     ),
                 nlResponse = null,
                 nlAvbrutt =
@@ -542,7 +538,7 @@ internal class OppdaterNarmesteLederServiceTest {
             )
         runBlocking {
             oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                nlResponseKafkaMessage,
+                nlResponseKafkaMessage
             )
 
             val nlListe = testDb.finnAlleNarmesteledereForSykmeldt(sykmeldtFnr)

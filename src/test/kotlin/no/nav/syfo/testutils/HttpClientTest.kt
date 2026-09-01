@@ -1,9 +1,5 @@
 package no.nav.syfo.testutils
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -11,13 +7,13 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.Headers
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import io.ktor.serialization.jackson.jackson
-import no.nav.syfo.objectMapper
+import io.ktor.serialization.jackson3.jackson
+import no.nav.syfo.jsonMapper
 
 data class ResponseData(
     val httpStatusCode: HttpStatusCode,
     val content: String,
-    val headers: Headers = headersOf("Content-Type", listOf("application/json"))
+    val headers: Headers = headersOf("Content-Type", listOf("application/json")),
 )
 
 class HttpClientTest {
@@ -29,7 +25,7 @@ class HttpClientTest {
     }
 
     fun respond(data: Any) {
-        responseData = ResponseData(HttpStatusCode.OK, objectMapper.writeValueAsString(data))
+        responseData = ResponseData(HttpStatusCode.OK, jsonMapper.writeValueAsString(data))
     }
 
     fun respond(data: String) {
@@ -38,20 +34,13 @@ class HttpClientTest {
 
     val httpClient =
         HttpClient(MockEngine) {
-            install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                }
-            }
+            install(ContentNegotiation) { jackson {} }
             engine {
                 addHandler { _ ->
                     respond(
                         responseData!!.content,
                         responseData!!.httpStatusCode,
-                        responseData!!.headers
+                        responseData!!.headers,
                     )
                 }
             }

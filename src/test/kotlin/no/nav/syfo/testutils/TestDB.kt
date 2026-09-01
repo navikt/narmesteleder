@@ -11,15 +11,15 @@ import no.nav.syfo.Environment
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.log
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 
-class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
+class PsqlContainer : PostgreSQLContainer("postgres:12")
 
 class TestDB : DatabaseInterface {
 
     companion object {
         private var database: DatabaseInterface
-        private val psqlContainer: PsqlContainer =
+        private val psqlContainer: PostgreSQLContainer =
             PsqlContainer()
                 .withExposedPorts(5432)
                 .withUsername("username")
@@ -88,7 +88,7 @@ fun Connection.lagreNarmesteleder(
                     bruker_navn,
                     narmesteleder_navn)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                 """,
+                 """
             )
             .use {
                 it.setString(1, orgnummer)

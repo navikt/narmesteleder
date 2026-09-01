@@ -5,5 +5,5 @@ class ForskutteringRespons(val forskuttering: Forskuttering)
 enum class Forskuttering {
     JA,
     NEI,
-    UKJENT
+    UKJENT,
 }

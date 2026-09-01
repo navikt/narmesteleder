@@ -67,7 +67,7 @@ fun DatabaseInterface.finnAktiveNarmestelederkoblinger(
             .prepareStatement(
                 """
            SELECT * from narmeste_leder where narmeste_leder_fnr = ? and aktiv_tom is null;
-        """,
+        """
             )
             .use {
                 it.setString(1, narmesteLederFnr)
@@ -78,14 +78,14 @@ fun DatabaseInterface.finnAktiveNarmestelederkoblinger(
 
 fun DatabaseInterface.finnNarmestelederForSykmeldt(
     fnr: String,
-    orgnummer: String
+    orgnummer: String,
 ): NarmesteLederRelasjon? {
     return connection.use { connection ->
         connection
             .prepareStatement(
                 """
            SELECT * from narmeste_leder where bruker_fnr = ? and orgnummer = ? and aktiv_tom is null;
-        """,
+        """
             )
             .use {
                 it.setString(1, fnr)
@@ -104,7 +104,7 @@ suspend fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(
                 .prepareStatement(
                     """
            SELECT * from narmeste_leder where bruker_fnr = ?;
-        """,
+        """
                 )
                 .use {
                     it.setString(1, fnr)
@@ -121,7 +121,7 @@ fun DatabaseInterface.finnAktiveNarmesteledereForSykmeldt(
             .prepareStatement(
                 """
            SELECT * from narmeste_leder where bruker_fnr = ? and aktiv_tom is null;
-        """,
+        """
             )
             .use {
                 it.setString(1, fnr)
@@ -136,7 +136,7 @@ fun DatabaseInterface.getAnsatte(fnr: String): List<NarmesteLederRelasjon> {
             .prepareStatement(
                 """
            SELECT * from narmeste_leder where narmeste_leder_fnr = ? and aktiv_tom is null;
-        """,
+        """
             )
             .use {
                 it.setString(1, fnr)
@@ -147,14 +147,14 @@ fun DatabaseInterface.getAnsatte(fnr: String): List<NarmesteLederRelasjon> {
 
 fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(
     fnr: String,
-    orgnummer: String
+    orgnummer: String,
 ): List<NarmesteLederRelasjon> {
     return connection.use { connection ->
         connection
             .prepareStatement(
                 """
            SELECT * from narmeste_leder where bruker_fnr = ? and orgnummer = ?;
-        """,
+        """
             )
             .use {
                 it.setString(1, fnr)
@@ -166,7 +166,7 @@ fun DatabaseInterface.finnAlleNarmesteledereForSykmeldt(
 
 fun DatabaseInterface.deaktiverNarmesteLeder(
     narmesteLederId: UUID,
-    aktivTom: OffsetDateTime? = null
+    aktivTom: OffsetDateTime? = null,
 ) {
     connection.use { connection ->
         connection.deaktiverNarmesteLeder(narmesteLederId, aktivTom)
@@ -191,7 +191,7 @@ fun DatabaseInterface.lagreNarmesteLeder(
     nlResponse: NlResponse,
     kafkaTimestamp: OffsetDateTime,
     sykmeldt: PdlPerson,
-    leder: PdlPerson
+    leder: PdlPerson,
 ) {
     connection.use { connection ->
         connection.lagreNarmesteleder(narmesteLederId, nlResponse, kafkaTimestamp, sykmeldt, leder)
@@ -205,7 +205,7 @@ fun DatabaseInterface.finnForskuttering(fnr: String, orgnummer: String): Forskut
             .prepareStatement(
                 """
            SELECT arbeidsgiver_forskutterer from narmeste_leder where bruker_fnr = ? and orgnummer = ? ORDER BY aktiv_tom DESC NULLS FIRST;
-        """,
+        """
             )
             .use {
                 it.setString(1, fnr)
@@ -238,7 +238,7 @@ private fun Connection.lagreNarmesteleder(
                     bruker_navn,
                     narmesteleder_navn)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-                 """,
+                 """
         )
         .use {
             it.setObject(1, narmesteLederId)
@@ -251,9 +251,7 @@ private fun Connection.lagreNarmesteleder(
             it.setTimestamp(
                 8,
                 nlResponse.aktivFom?.let { Timestamp.from(nlResponse.aktivFom.toInstant()) }
-                    ?: Timestamp.from(
-                        kafkaTimestamp.toInstant(),
-                    ),
+                    ?: Timestamp.from(kafkaTimestamp.toInstant()),
             )
             it.setObject(
                 9,
@@ -268,22 +266,20 @@ private fun Connection.lagreNarmesteleder(
 
 private fun Connection.deaktiverNarmesteLeder(
     narmesteLederId: UUID,
-    aktivTom: OffsetDateTime? = null
+    aktivTom: OffsetDateTime? = null,
 ) =
     this.prepareStatement(
             """
             UPDATE narmeste_leder 
                 SET aktiv_tom = ?, timestamp = ?
                 WHERE narmeste_leder_id = ?;
-            """,
+            """
         )
         .use {
             it.setTimestamp(
                 1,
                 aktivTom?.let { Timestamp.from(aktivTom.toInstant()) }
-                    ?: Timestamp.from(
-                        OffsetDateTime.now(ZoneOffset.UTC).toInstant(),
-                    ),
+                    ?: Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()),
             )
             it.setTimestamp(2, Timestamp.from(OffsetDateTime.now(ZoneOffset.UTC).toInstant()))
             it.setObject(3, narmesteLederId)
@@ -294,7 +290,7 @@ private fun Connection.oppdaterNarmesteLeder(
     narmesteLederId: UUID,
     nlResponse: NlResponse,
     sykmeldt: PdlPerson,
-    leder: PdlPerson
+    leder: PdlPerson,
 ) =
     this.prepareStatement(
             """
@@ -307,7 +303,7 @@ private fun Connection.oppdaterNarmesteLeder(
                 bruker_navn = ?,
                 narmesteleder_navn = ?
                 WHERE narmeste_leder_id = ?;
-            """,
+            """
         )
         .use {
             it.setString(1, nlResponse.leder.mobil)
@@ -332,7 +328,7 @@ private fun ResultSet.toNarmesteLederRelasjon(): NarmesteLederRelasjon =
         aktivTom = getTimestamp("aktiv_tom")?.toInstant()?.atOffset(ZoneOffset.UTC)?.toLocalDate(),
         arbeidsgiverForskutterer = getObject("arbeidsgiver_forskutterer")?.toString()?.toBoolean(),
         timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-        navn = getString("narmesteleder_navn")
+        navn = getString("narmesteleder_navn"),
     )
 
 private fun ResultSet.toForskutteringRespons(): ForskutteringRespons {

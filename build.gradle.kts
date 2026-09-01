@@ -5,15 +5,15 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val javaVersion = JvmTarget.JVM_21
+val javaVersion = JvmTarget.JVM_25
 
 
 val coroutinesVersion = "1.10.2"
-val jacksonVersion = "2.20.2"
+val jacksonVersion = "3.2.2"
 val kluentVersion = "1.73"
-val ktorVersion = "3.4.0"
-val logbackVersion = "1.5.26"
-val logstashEncoderVersion = "8.1"
+val ktorVersion = "3.5.2"
+val logbackVersion = "1.6.3"
+val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
 val mockkVersion = "1.14.5"
 val nimbusdsVersion = "10.4"
@@ -22,21 +22,18 @@ val flywayVersion = "11.10.3"
 val hikariVersion = "6.3.1"
 val testcontainerVersion = "2.0.3"
 val swaggerUiVersion = "5.26.2"
-val kotlinVersion = "2.2.0"
+val kotlinVersion = "2.4.10"
 val confluentVersion = "8.1.1"
-val ktfmtVersion = "0.44"
+val ktfmtVersion = "0.56"
 val avroVersion = "1.12.0"
-val junitJupiterVersion = "5.13.4"
-val kafkaVersion = "3.9.1"
+val junitJupiterVersion = "6.1.3"
+val kafkaVersion = "4.3.1"
 
-
-//Due to vulnerabilities
-val snakeYamlVersion = "2.4"
 
 plugins {
     id("application")
-    id("com.diffplug.spotless") version "7.2.1"
-    kotlin("jvm") version "2.2.0"
+    id("com.diffplug.spotless") version "8.10.1"
+    kotlin("jvm") version "2.4.10"
     id("com.gradleup.shadow") version "8.3.8"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
@@ -55,8 +52,6 @@ repositories {
 
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
@@ -69,11 +64,11 @@ dependencies {
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("io.ktor:ktor-client-apache5:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
@@ -93,15 +88,9 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    constraints {
-        implementation("org.yaml:snakeyaml:$snakeYamlVersion") {
-            because("due to https://github.com/advisories/GHSA-mjmj-j48q-9wg2")
-        }
-    }
+    implementation("tools.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    implementation("tools.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+    implementation("tools.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
 
     swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 

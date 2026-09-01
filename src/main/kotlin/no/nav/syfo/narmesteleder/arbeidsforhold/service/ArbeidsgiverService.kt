@@ -15,7 +15,7 @@ class ArbeidsgiverService(
     suspend fun getArbeidsgivere(
         fnr: String,
         token: String?,
-        forespurtAvAnsatt: Boolean
+        forespurtAvAnsatt: Boolean,
     ): List<Arbeidsgiverinfo> {
         if (forespurtAvAnsatt && token == null) {
             log.error("Mangler token for henting av arbeidsgivere")
@@ -39,16 +39,12 @@ class ArbeidsgiverService(
         }
         return arbeidsgivere
             .filter { it.arbeidsgiver.type == "Organisasjon" }
-            .sortedWith(
-                compareByDescending(nullsLast()) { it.ansettelsesperiode.periode.tom },
-            )
+            .sortedWith(compareByDescending(nullsLast()) { it.ansettelsesperiode.periode.tom })
             .distinctBy { it.arbeidsgiver.organisasjonsnummer }
             .map { toArbeidsgiverInfo(it) }
     }
 
-    private fun toArbeidsgiverInfo(
-        arbeidsforhold: Arbeidsforhold,
-    ): Arbeidsgiverinfo {
+    private fun toArbeidsgiverInfo(arbeidsforhold: Arbeidsforhold): Arbeidsgiverinfo {
         return Arbeidsgiverinfo(
             orgnummer = arbeidsforhold.arbeidsgiver.organisasjonsnummer!!,
             juridiskOrgnummer = arbeidsforhold.opplysningspliktig.organisasjonsnummer!!,

@@ -35,7 +35,7 @@ class LeadershipHandling(
                         else -> {
                             logger.error(
                                 "Error occurred in leadership handling loop delaying for 10 seconds",
-                                ex
+                                ex,
                             )
                             delay(10.seconds)
                         }

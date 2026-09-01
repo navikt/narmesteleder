@@ -38,7 +38,7 @@ class NarmesteLederResponseConsumerService(
                 } catch (ex: Exception) {
                     log.error(
                         "Error running kafka consumer, unsubscribing and waiting $DELAY_ON_ERROR_SECONDS seconds for retry",
-                        ex
+                        ex,
                     )
                     kafkaConsumer.unsubscribe()
                     delay(DELAY_ON_ERROR_SECONDS.seconds)
@@ -53,9 +53,7 @@ class NarmesteLederResponseConsumerService(
         while (applicationState.ready) {
             kafkaConsumer.poll(Duration.ofSeconds(POLL_DURATION_SECONDS)).forEach {
                 try {
-                    oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(
-                        it.value(),
-                    )
+                    oppdaterNarmesteLederService.handterMottattNarmesteLederOppdatering(it.value())
                 } catch (e: Exception) {
                     if (cluster == "dev-gcp") {
                         log.error(

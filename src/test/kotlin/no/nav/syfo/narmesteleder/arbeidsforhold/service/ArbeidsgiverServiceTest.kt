@@ -74,11 +74,8 @@ internal class ArbeidsgiverServiceTest {
         coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns
             getArbeidsgiverforhold(
                 Ansettelsesperiode(
-                    Periode(
-                        fom = LocalDate.now().minusYears(1),
-                        tom = LocalDate.now().minusDays(1),
-                    ),
-                ),
+                    Periode(fom = LocalDate.now().minusYears(1), tom = LocalDate.now().minusDays(1))
+                )
             )
 
         runBlocking {
@@ -98,11 +95,8 @@ internal class ArbeidsgiverServiceTest {
         coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns
             getArbeidsgiverforhold(
                 Ansettelsesperiode(
-                    Periode(
-                        fom = LocalDate.now().minusYears(1),
-                        tom = LocalDate.now().plusDays(10),
-                    ),
-                ),
+                    Periode(fom = LocalDate.now().minusYears(1), tom = LocalDate.now().plusDays(10))
+                )
             )
 
         runBlocking {
@@ -124,23 +118,17 @@ internal class ArbeidsgiverServiceTest {
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
-                    Ansettelsesperiode(
-                        Periode(fom = LocalDate.of(2020, 6, 1), tom = null),
-                    ),
+                    Ansettelsesperiode(Periode(fom = LocalDate.of(2020, 6, 1), tom = null)),
                 ),
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
-                    Ansettelsesperiode(
-                        Periode(fom = LocalDate.of(2020, 6, 1), tom = null),
-                    ),
+                    Ansettelsesperiode(Periode(fom = LocalDate.of(2020, 6, 1), tom = null)),
                 ),
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "234567891"),
                     Opplysningspliktig("Organisasjon", "987654321"),
-                    Ansettelsesperiode(
-                        Periode(fom = LocalDate.of(2020, 6, 1), tom = null),
-                    ),
+                    Ansettelsesperiode(Periode(fom = LocalDate.of(2020, 6, 1), tom = null)),
                 ),
             )
 
@@ -164,18 +152,13 @@ internal class ArbeidsgiverServiceTest {
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
                     Ansettelsesperiode(
-                        Periode(
-                            fom = LocalDate.of(2020, 5, 1),
-                            tom = LocalDate.of(2020, 6, 1),
-                        ),
+                        Periode(fom = LocalDate.of(2020, 5, 1), tom = LocalDate.of(2020, 6, 1))
                     ),
                 ),
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
-                    Ansettelsesperiode(
-                        Periode(fom = LocalDate.of(2020, 1, 1), tom = null),
-                    ),
+                    Ansettelsesperiode(Periode(fom = LocalDate.of(2020, 1, 1), tom = null)),
                 ),
             )
         runBlocking {
@@ -201,7 +184,7 @@ internal class ArbeidsgiverServiceTest {
                         Periode(
                             fom = LocalDate.now().minusYears(1),
                             tom = LocalDate.now().minusWeeks(40),
-                        ),
+                        )
                     ),
                 ),
                 Arbeidsforhold(
@@ -211,7 +194,7 @@ internal class ArbeidsgiverServiceTest {
                         Periode(
                             fom = LocalDate.now().minusWeeks(40),
                             tom = LocalDate.now().plusDays(10),
-                        ),
+                        )
                     ),
                 ),
             )
