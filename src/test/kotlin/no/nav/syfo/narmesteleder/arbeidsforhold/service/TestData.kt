@@ -9,15 +9,13 @@ import no.nav.syfo.narmesteleder.arbeidsforhold.model.Periode
 
 fun getArbeidsgiverforhold(
     ansettelsesperiode: Ansettelsesperiode =
-        Ansettelsesperiode(
-            Periode(fom = LocalDate.of(2020, 6, 1), tom = null),
-        ),
+        Ansettelsesperiode(Periode(fom = LocalDate.of(2020, 6, 1), tom = null))
 ): List<Arbeidsforhold> {
     return listOf(
         Arbeidsforhold(
             Arbeidsgiver("Organisasjon", "123456789"),
             Opplysningspliktig("Organisasjon", "987654321"),
             ansettelsesperiode,
-        ),
+        )
     )
 }

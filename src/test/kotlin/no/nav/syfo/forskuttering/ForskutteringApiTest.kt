@@ -79,7 +79,7 @@ internal class ForskutteringApiTest {
                         subject = "123",
                         issuer = env.jwtIssuer,
                     )
-                }"
+                }",
                     )
                 }
 
@@ -116,7 +116,7 @@ internal class ForskutteringApiTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
@@ -153,7 +153,7 @@ internal class ForskutteringApiTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
@@ -182,7 +182,7 @@ internal class ForskutteringApiTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
@@ -231,7 +231,7 @@ internal class ForskutteringApiTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
@@ -267,7 +267,7 @@ internal class ForskutteringApiTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
@@ -305,7 +305,7 @@ internal class ForskutteringApiTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
@@ -343,7 +343,7 @@ internal class ForskutteringApiTest {
                                 subject = "123",
                                 issuer = env.jwtIssuer,
                             )
-                        }"
+                        }",
                     )
                 }
 

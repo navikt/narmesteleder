@@ -56,8 +56,8 @@ internal class PdlPersonServiceTest {
                                             "fornavn",
                                             null,
                                             "etternavn",
-                                        ),
-                                    ),
+                                        )
+                                    )
                                 ),
                                 "ok",
                             ),
@@ -69,8 +69,8 @@ internal class PdlPersonServiceTest {
                                             "fornavn2",
                                             "mellomnavn",
                                             "etternavn2",
-                                        ),
-                                    ),
+                                        )
+                                    )
                                 ),
                                 "ok",
                             ),
@@ -103,11 +103,7 @@ internal class PdlPersonServiceTest {
             personer[fnrLeder1] shouldBeEqualTo
                 PdlPerson(Navn("fornavn", null, "etternavn"), fnrLeder1, aktorIdLeder1)
             personer[fnrLeder2] shouldBeEqualTo
-                PdlPerson(
-                    Navn("fornavn2", "mellomnavn", "etternavn2"),
-                    fnrLeder2,
-                    aktorIdLeder2,
-                )
+                PdlPerson(Navn("fornavn2", "mellomnavn", "etternavn2"), fnrLeder2, aktorIdLeder2)
         }
     }
 
@@ -127,8 +123,8 @@ internal class PdlPersonServiceTest {
                                             "fornavn",
                                             null,
                                             "etternavn",
-                                        ),
-                                    ),
+                                        )
+                                    )
                                 ),
                                 "ok",
                             ),
@@ -191,8 +187,8 @@ internal class PdlPersonServiceTest {
                                                         "Fornavn",
                                                         "Mellomnanv",
                                                         "Etternavn",
-                                                    ),
-                                                ),
+                                                    )
+                                                )
                                         ),
                                         code = "ok",
                                     )
@@ -253,11 +249,11 @@ internal class PdlPersonServiceTest {
                                                     "Fornavn",
                                                     "Mellomnanv",
                                                     "Etternavn",
-                                                ),
-                                            ),
+                                                )
+                                            )
                                     ),
                                     code = "ok",
-                                ),
+                                )
                             ),
                         hentIdenterBolk =
                             listOf(
@@ -268,7 +264,7 @@ internal class PdlPersonServiceTest {
                                         PdlIdent("234", PdlPersonService.AKTORID),
                                     ),
                                     code = "ok",
-                                ),
+                                )
                             ),
                     ),
                 emptyList(),

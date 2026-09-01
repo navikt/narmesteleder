@@ -8,10 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.log
 
-class LeaderElection(
-    private val httpClient: HttpClient,
-    private val electorPath: String,
-) {
+class LeaderElection(private val httpClient: HttpClient, private val electorPath: String) {
     suspend fun isLeader(): Boolean {
         val hostname: String = withContext(Dispatchers.IO) { InetAddress.getLocalHost() }.hostName
 

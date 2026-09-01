@@ -37,7 +37,7 @@ class OppdaterNarmesteLederService(
 ) {
 
     suspend fun handterMottattNarmesteLederOppdatering(
-        nlResponseKafkaMessage: NlResponseKafkaMessage,
+        nlResponseKafkaMessage: NlResponseKafkaMessage
     ) {
         val callId = UUID.randomUUID().toString()
         when {
@@ -51,14 +51,14 @@ class OppdaterNarmesteLederService(
                 requireNotNull(sykmeldt) {
                     securelog.info(
                         "Mottatt NL-skjema for ansatt som ikke finnes i PDL callId $callId, " +
-                            "sykmeldtFnr: $sykmeldtFnr nlFnr: $nlFnr orgnummer: $orgnummer",
+                            "sykmeldtFnr: $sykmeldtFnr nlFnr: $nlFnr orgnummer: $orgnummer"
                     )
                     "Mottatt NL-skjema for ansatt som ikke finnes i PDL callId $callId"
                 }
                 requireNotNull(nl) {
                     securelog.info(
                         "Mottatt NL-skjema for leder som ikke finnes i PDL callId $callId " +
-                            "nlFnr: $nlFnr orgnummer: $orgnummer",
+                            "nlFnr: $nlFnr orgnummer: $orgnummer"
                     )
                     "Mottatt NL-skjema for leder som ikke finnes i PDL callId $callId partition"
                 }
@@ -66,27 +66,27 @@ class OppdaterNarmesteLederService(
                 val narmesteLedere =
                     database.finnAlleNarmesteledereForSykmeldt(
                         fnr = sykmeldtFnr,
-                        orgnummer = orgnummer
+                        orgnummer = orgnummer,
                     )
                 createOrUpdateNL(
                     ledere = narmesteLedere,
                     nlResponseKafkaMessage = nlResponseKafkaMessage,
                     callId = callId,
                     sykmeldt = sykmeldt,
-                    leder = nl
+                    leder = nl,
                 )
             }
             nlResponseKafkaMessage.nlAvbrutt != null -> {
                 val narmesteLedere =
                     database.finnAlleNarmesteledereForSykmeldt(
                         fnr = nlResponseKafkaMessage.nlAvbrutt.sykmeldtFnr,
-                        orgnummer = nlResponseKafkaMessage.nlAvbrutt.orgnummer
+                        orgnummer = nlResponseKafkaMessage.nlAvbrutt.orgnummer,
                     )
                 deaktiverTidligereLedereVedAvbryting(
                     narmesteLedere,
                     nlResponseKafkaMessage.nlAvbrutt.aktivTom,
                     callId,
-                    nlResponseKafkaMessage.kafkaMetadata.source
+                    nlResponseKafkaMessage.kafkaMetadata.source,
                 )
             }
             else -> {
@@ -112,7 +112,7 @@ class OppdaterNarmesteLederService(
                     ledere,
                     OffsetDateTime.now(ZoneOffset.UTC),
                     callId,
-                    nlResponseKafkaMessage.kafkaMetadata.source
+                    nlResponseKafkaMessage.kafkaMetadata.source,
                 )
                 val narmesteLederId = UUID.randomUUID()
                 database.lagreNarmesteLeder(
@@ -120,7 +120,7 @@ class OppdaterNarmesteLederService(
                     nlResponseKafkaMessage.nlResponse,
                     nlResponseKafkaMessage.kafkaMetadata.timestamp,
                     sykmeldt,
-                    leder
+                    leder,
                 )
                 narmesteLederLeesahProducer.send(
                     NarmesteLederLeesah(
@@ -133,18 +133,17 @@ class OppdaterNarmesteLederService(
                         aktivFom =
                             nlResponseKafkaMessage.nlResponse.aktivFom?.let {
                                 nlResponseKafkaMessage.nlResponse.aktivFom.toLocalDate()
-                            }
-                                ?: nlResponseKafkaMessage.kafkaMetadata.timestamp.toLocalDate(),
+                            } ?: nlResponseKafkaMessage.kafkaMetadata.timestamp.toLocalDate(),
                         aktivTom = null,
                         arbeidsgiverForskutterer = nlResponseKafkaMessage.nlResponse.utbetalesLonn,
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                         status = NY_LEDER,
-                    ),
+                    )
                 )
                 securelog.info(
                     "Created new NL for bruker_fnr ${nlResponseKafkaMessage.nlResponse.sykmeldt.fnr}, " +
                         "for narmeste_leder_fnr: ${ nlResponseKafkaMessage.nlResponse.leder.fnr}, " +
-                        "narmesteLederId $narmesteLederId",
+                        "narmesteLederId $narmesteLederId"
                 )
                 log.info("Created new NL for callId $callId")
             }
@@ -154,7 +153,7 @@ class OppdaterNarmesteLederService(
                     ledereSomSkalDeaktiveres,
                     OffsetDateTime.now(ZoneOffset.UTC),
                     callId,
-                    nlResponseKafkaMessage.kafkaMetadata.source
+                    nlResponseKafkaMessage.kafkaMetadata.source,
                 )
                 database.oppdaterNarmesteLeder(
                     narmesteLederId = eksisterendeLeder.narmesteLederId,
@@ -175,7 +174,7 @@ class OppdaterNarmesteLederService(
                         arbeidsgiverForskutterer = nlResponseKafkaMessage.nlResponse.utbetalesLonn,
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                         status = NY_LEDER,
-                    ),
+                    )
                 )
                 log.info(
                     "Updating existing NL with id ${eksisterendeLeder.narmesteLederId}, $callId"
@@ -188,7 +187,7 @@ class OppdaterNarmesteLederService(
         narmesteLedere: List<NarmesteLederRelasjon>,
         aktivTom: OffsetDateTime,
         callId: String,
-        source: String
+        source: String,
     ) {
         log.info("Deaktiverer ${narmesteLedere.size} nærmeste ledere $callId")
         narmesteLedere
@@ -196,7 +195,7 @@ class OppdaterNarmesteLederService(
             .forEach {
                 database.deaktiverNarmesteLeder(
                     narmesteLederId = it.narmesteLederId,
-                    aktivTom = aktivTom
+                    aktivTom = aktivTom,
                 )
                 narmesteLederLeesahProducer.send(
                     NarmesteLederLeesah(
@@ -211,7 +210,7 @@ class OppdaterNarmesteLederService(
                         arbeidsgiverForskutterer = it.arbeidsgiverForskutterer,
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                         status = getStatusFromSource(source),
-                    ),
+                    )
                 )
             }
     }
@@ -220,7 +219,7 @@ class OppdaterNarmesteLederService(
         narmesteLedere: List<NarmesteLederRelasjon>,
         aktivTom: OffsetDateTime,
         callId: String,
-        source: String
+        source: String,
     ) {
         log.info(
             "Deaktiverer ${narmesteLedere.size} nærmeste ledere som følge av avbryting $callId"
@@ -238,7 +237,7 @@ class OppdaterNarmesteLederService(
 
                 database.deaktiverNarmesteLeder(
                     narmesteLederId = it.narmesteLederId,
-                    aktivTom = aktivTom
+                    aktivTom = aktivTom,
                 )
                 narmesteLederLeesahProducer.send(
                     NarmesteLederLeesah(
@@ -253,7 +252,7 @@ class OppdaterNarmesteLederService(
                         arbeidsgiverForskutterer = it.arbeidsgiverForskutterer,
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                         status = getStatusFromSource(source),
-                    ),
+                    )
                 )
             }
     }

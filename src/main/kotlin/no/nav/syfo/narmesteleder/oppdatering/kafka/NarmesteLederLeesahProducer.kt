@@ -7,7 +7,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 class NarmesteLederLeesahProducer(
     private val kafkaProducer: KafkaProducer<String, NarmesteLederLeesah>,
-    private val topicName: String
+    private val topicName: String,
 ) {
     fun send(narmesteLederLeesah: NarmesteLederLeesah) {
         try {
@@ -16,14 +16,14 @@ class NarmesteLederLeesahProducer(
                     ProducerRecord(
                         topicName,
                         narmesteLederLeesah.narmesteLederId.toString(),
-                        narmesteLederLeesah
+                        narmesteLederLeesah,
                     )
                 )
                 .get()
         } catch (ex: Exception) {
             log.error(
                 "Noe gikk galt ved skriving av narmesteleder til leesah-topic for id ${narmesteLederLeesah.narmesteLederId}",
-                ex.message
+                ex.message,
             )
             throw ex
         }

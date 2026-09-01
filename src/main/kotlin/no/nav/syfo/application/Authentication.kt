@@ -36,7 +36,7 @@ fun Application.setupAuth(
                             APP_ID_PATH_COUNTER.labels(
                                     app.team,
                                     app.appName,
-                                    getLabel(this.request.path())
+                                    getLabel(this.request.path()),
                                 )
                                 .inc()
                         } else {
@@ -61,10 +61,7 @@ fun Application.setupAuth(
                     harNarmestelederAudience(credentials, env.narmestelederTokenXClientId) &&
                         erNiva4(credentials) -> {
                         val principal = JWTPrincipal(credentials.payload)
-                        BrukerPrincipal(
-                            fnr = finnFnrFraToken(principal),
-                            principal = principal,
-                        )
+                        BrukerPrincipal(fnr = finnFnrFraToken(principal), principal = principal)
                     }
                     else -> unauthorized(credentials)
                 }
@@ -116,7 +113,4 @@ fun erNiva4(credentials: JWTCredential): Boolean {
     return "Level4" == credentials.payload.getClaim("acr").asString()
 }
 
-data class BrukerPrincipal(
-    val fnr: String,
-    val principal: JWTPrincipal,
-)
+data class BrukerPrincipal(val fnr: String, val principal: JWTPrincipal)

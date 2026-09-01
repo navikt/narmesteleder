@@ -2,25 +2,20 @@ package no.nav.syfo
 
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.engine.apache5.Apache5
+import io.ktor.client.engine.apache5.Apache5EngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.network.sockets.SocketTimeoutException
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.prometheus.client.hotspot.DefaultExports
 import java.net.URI
 import java.time.Duration
@@ -63,18 +58,14 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.narmesteleder")
 
 val securelog = LoggerFactory.getLogger("securelog")
 
-val objectMapper: ObjectMapper =
-    ObjectMapper().apply {
-        registerKotlinModule()
-        registerModule(JavaTimeModule())
-        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-    }
+val jsonMapper: JsonMapper = jacksonMapperBuilder().build()
 
 @DelicateCoroutinesApi
 @ExperimentalTime
@@ -89,15 +80,8 @@ fun main() {
     val applicationState = ApplicationState()
     val database = Database(env)
 
-    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
+    val config: HttpClientConfig<Apache5EngineConfig>.() -> Unit = {
+        install(ContentNegotiation) { jackson {} }
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
@@ -129,7 +113,7 @@ fun main() {
             requestTimeoutMillis = 40_000
         }
     }
-    val httpClient = HttpClient(Apache, config)
+    val httpClient = HttpClient(Apache5, config)
 
     val accessTokenClientV2 =
         AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClient)
@@ -171,8 +155,8 @@ fun main() {
                 .toProducerConfig(
                     "${env.applicationName}-producer",
                     JacksonKafkaSerializer::class,
-                    StringSerializer::class
-                ),
+                    StringSerializer::class,
+                )
         )
     val nlResponseProducer = NLResponseProducer(kafkaProducerNlResponse, env.nlResponseTopic)
     val kafkaProducerNlRequest =
@@ -181,8 +165,8 @@ fun main() {
                 .toProducerConfig(
                     "${env.applicationName}-producer",
                     JacksonKafkaSerializer::class,
-                    StringSerializer::class
-                ),
+                    StringSerializer::class,
+                )
         )
     val kafkaProducerNarmesteLederLeesah =
         KafkaProducer<String, NarmesteLederLeesah>(
@@ -190,8 +174,8 @@ fun main() {
                 .toProducerConfig(
                     "${env.applicationName}-producer",
                     JacksonKafkaSerializer::class,
-                    StringSerializer::class
-                ),
+                    StringSerializer::class,
+                )
         )
     val narmesteLederLeesahProducer =
         NarmesteLederLeesahProducer(kafkaProducerNarmesteLederLeesah, env.narmesteLederLeesahTopic)
@@ -232,7 +216,7 @@ fun main() {
             applicationState,
             env.pdlAktorV2Topic,
             leaderElection,
-            identendringService
+            identendringService,
         )
 
     val personhendelseConsumer =
@@ -242,7 +226,7 @@ fun main() {
             personhendelseConsumer,
             applicationState,
             env.pdlLeesahTopic,
-            identendringService
+            identendringService,
         )
     pdlLeesahConsumer.start()
 
@@ -263,11 +247,11 @@ fun <T : SpecificRecord> getKafkaConsumerAivenPdl(
             .apply {
                 setProperty(
                     KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
-                    environment.schemaRegistryUrl
+                    environment.schemaRegistryUrl,
                 )
                 setProperty(
                     KafkaAvroSerializerConfig.USER_INFO_CONFIG,
-                    "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}"
+                    "${environment.kafkaSchemaRegistryUsername}:${environment.kafkaSchemaRegistryPassword}",
                 )
                 setProperty(KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO")
             }
@@ -290,8 +274,4 @@ fun getWellKnownTokenX(httpClient: HttpClient, wellKnownUrl: String) = runBlocki
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class WellKnownTokenX(
-    val token_endpoint: String,
-    val jwks_uri: String,
-    val issuer: String,
-)
+data class WellKnownTokenX(val token_endpoint: String, val jwks_uri: String, val issuer: String)

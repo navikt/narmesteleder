@@ -3,10 +3,7 @@ package no.nav.syfo.narmesteleder.oppdatering.kafka.model
 import java.time.OffsetDateTime
 import java.util.UUID
 
-data class NlRequestKafkaMessage(
-    val nlRequest: NlRequest,
-    val metadata: NlKafkaMetadata,
-)
+data class NlRequestKafkaMessage(val nlRequest: NlRequest, val metadata: NlKafkaMetadata)
 
 data class NlRequest(
     val requestId: UUID,
@@ -16,7 +13,4 @@ data class NlRequest(
     val name: String,
 )
 
-data class NlKafkaMetadata(
-    val timestamp: OffsetDateTime,
-    val source: String,
-)
+data class NlKafkaMetadata(val timestamp: OffsetDateTime, val source: String)

@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.HttpHeaders
@@ -13,7 +12,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import kotlinx.coroutines.DelicateCoroutinesApi
-import no.nav.syfo.objectMapper
+import no.nav.syfo.jsonMapper
 import no.nav.syfo.testutils.TestDB
 import no.nav.syfo.testutils.dropData
 import no.nav.syfo.testutils.generateJWT
@@ -26,6 +25,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import tools.jackson.module.kotlin.readValue
 
 const val sykmeldtFnr = "fnr"
 const val fnrLeder = "123"
@@ -45,7 +45,7 @@ internal class NarmesteLederApiKtTest {
             fnrNl = fnrLeder,
             arbeidsgiverForskutterer = true,
             brukerNavn = "sykmeldt",
-            narmestelederNavn = "narmesteleder"
+            narmestelederNavn = "narmesteleder",
         )
     }
 
@@ -79,13 +79,13 @@ internal class NarmesteLederApiKtTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
             response.status shouldBeEqualTo HttpStatusCode.OK
             val narmesteLedere =
-                objectMapper.readValue<List<NarmesteLederRelasjon>>(response.bodyAsText())
+                jsonMapper.readValue<List<NarmesteLederRelasjon>>(response.bodyAsText())
             narmesteLedere.size shouldBeEqualTo 1
             val narmesteLeder = narmesteLedere[0]
             erLike(narmesteLeder, forventetNarmesteLeder("narmesteleder")) shouldBeEqualTo true
@@ -109,11 +109,7 @@ internal class NarmesteLederApiKtTest {
                 fnr = sykmeldtFnr,
                 fnrNl = "fnrLeder2",
                 arbeidsgiverForskutterer = true,
-                aktivTom =
-                    OffsetDateTime.now(
-                            ZoneOffset.UTC,
-                        )
-                        .minusDays(2),
+                aktivTom = OffsetDateTime.now(ZoneOffset.UTC).minusDays(2),
                 brukerNavn = "sykmeldt",
                 narmestelederNavn = "narmesteleder",
             )
@@ -130,13 +126,13 @@ internal class NarmesteLederApiKtTest {
                                 subject = "123",
                                 issuer = env.jwtIssuer,
                             )
-                        }"
+                        }",
                     )
                 }
 
             response.status shouldBeEqualTo HttpStatusCode.OK
             val narmesteLedere =
-                objectMapper.readValue<List<NarmesteLederRelasjon>>(response.bodyAsText())
+                jsonMapper.readValue<List<NarmesteLederRelasjon>>(response.bodyAsText())
             narmesteLedere.size shouldBeEqualTo 2
         }
     }
@@ -166,13 +162,13 @@ internal class NarmesteLederApiKtTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
             response.status shouldBeEqualTo HttpStatusCode.OK
             val narmesteLedere =
-                objectMapper.readValue<List<NarmesteLederRelasjon>>(response.bodyAsText())
+                jsonMapper.readValue<List<NarmesteLederRelasjon>>(response.bodyAsText())
             narmesteLedere.size shouldBeEqualTo 0
         }
     }
@@ -202,13 +198,13 @@ internal class NarmesteLederApiKtTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
             response.status shouldBeEqualTo HttpStatusCode.OK
             val narmesteLedere =
-                objectMapper.readValue<List<NarmesteLederRelasjon>>(response.bodyAsText())
+                jsonMapper.readValue<List<NarmesteLederRelasjon>>(response.bodyAsText())
             narmesteLedere.size shouldBeEqualTo 1
             val narmesteLeder = narmesteLedere[0]
             erLike(narmesteLeder, forventetNarmesteLeder(navn = "narmesteleder")) shouldBeEqualTo
@@ -240,7 +236,7 @@ internal class NarmesteLederApiKtTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
@@ -273,7 +269,7 @@ internal class NarmesteLederApiKtTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
 
@@ -307,7 +303,7 @@ internal class NarmesteLederApiKtTest {
                             subject = "123",
                             issuer = env.jwtIssuer,
                         )
-                    }"
+                    }",
                     )
                 }
             response.status shouldBeEqualTo HttpStatusCode.Unauthorized
@@ -317,12 +313,12 @@ internal class NarmesteLederApiKtTest {
 
 private fun erLike(
     narmesteLederRelasjon1: NarmesteLederRelasjon,
-    narmesteLederRelasjon2: NarmesteLederRelasjon
+    narmesteLederRelasjon2: NarmesteLederRelasjon,
 ): Boolean {
     val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
     return narmesteLederRelasjon1.copy(
         narmesteLederId = narmesteLederRelasjon2.narmesteLederId,
-        timestamp = timestamp
+        timestamp = timestamp,
     ) == narmesteLederRelasjon2.copy(timestamp = timestamp)
 }
 
@@ -343,7 +339,7 @@ private fun forventetNarmesteLeder(navn: String? = null): NarmesteLederRelasjon 
                 Tilgang.SYKMELDING,
                 Tilgang.SYKEPENGESOKNAD,
                 Tilgang.MOTE,
-                Tilgang.OPPFOLGINGSPLAN
+                Tilgang.OPPFOLGINGSPLAN,
             ),
         navn = navn,
         timestamp = OffsetDateTime.now(ZoneOffset.UTC),

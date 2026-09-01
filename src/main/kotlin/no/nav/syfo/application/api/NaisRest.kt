@@ -33,7 +33,7 @@ fun Routing.registerNaisApi(
             } else {
                 call.respondText(
                     "Please wait! I'm not ready :(",
-                    status = HttpStatusCode.InternalServerError
+                    status = HttpStatusCode.InternalServerError,
                 )
             }
         }

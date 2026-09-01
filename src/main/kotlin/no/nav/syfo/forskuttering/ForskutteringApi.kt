@@ -27,7 +27,7 @@ fun Route.registrerForskutteringApi(database: DatabaseInterface) {
             log.info(
                 "Mottatt forespørsel om forskuttering for fnr for orgnummer {}, {}",
                 orgnummer,
-                callId
+                callId,
             )
             val arbeidsgiverForskutterer = database.finnForskuttering(fnr, orgnummer)
             call.respond(arbeidsgiverForskutterer)

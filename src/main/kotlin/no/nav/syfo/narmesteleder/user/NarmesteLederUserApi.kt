@@ -42,8 +42,6 @@ fun Route.registrerNarmesteLederUserApi(
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
 
-        call.respond(
-            utvidetNarmesteLederService.hentNarmesteLedereForAnsatt(sykmeldtFnr = fnr),
-        )
+        call.respond(utvidetNarmesteLederService.hentNarmesteLedereForAnsatt(sykmeldtFnr = fnr))
     }
 }

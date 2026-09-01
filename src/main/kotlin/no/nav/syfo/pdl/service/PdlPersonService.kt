@@ -19,7 +19,7 @@ import no.nav.syfo.pdl.model.PdlPerson
 class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,
-    private val pdlScope: String
+    private val pdlScope: String,
 ) {
 
     companion object {
@@ -54,7 +54,7 @@ class PdlPersonService(
             if (it.code != "ok") {
                 log.warn(
                     "Mottok feilkode ${it.code} fra PDL for en eller flere personer, {}",
-                    callId
+                    callId,
                 )
             }
         }
@@ -62,7 +62,7 @@ class PdlPersonService(
             if (it.code != "ok") {
                 log.warn(
                     "Mottok feilkode ${it.code} fra PDL for en eller flere identer, {}",
-                    callId
+                    callId,
                 )
             }
         }
@@ -107,10 +107,7 @@ class PdlPersonService(
         val errors = responses.mapNotNull { it.errors }.flatten()
 
         return GetPersonResponse(
-            ResponseData(
-                hentPersonBolk = personBolk,
-                hentIdenterBolk = identer,
-            ),
+            ResponseData(hentPersonBolk = personBolk, hentIdenterBolk = identer),
             errors = errors,
         )
     }

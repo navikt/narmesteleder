@@ -18,7 +18,7 @@ class ArbeidsforholdClient(private val httpClient: HttpClient, private val url: 
     suspend fun getArbeidsforhold(
         fnr: String,
         ansettelsesperiodeFom: LocalDate,
-        token: String
+        token: String,
     ): List<Arbeidsforhold> {
         val iMorgen = LocalDate.now().plusDays(1).toString()
         return httpClient
@@ -26,7 +26,7 @@ class ArbeidsforholdClient(private val httpClient: HttpClient, private val url: 
                 "$arbeidsforholdPath?" +
                     "$ansettelsesperiodeFomQueryParam=$ansettelsesperiodeFom&" +
                     "$ansettelsesperiodeTomQueryParam=$iMorgen&" +
-                    "$sporingsinformasjon=false",
+                    "$sporingsinformasjon=false"
             ) {
                 header(navPersonident, fnr)
                 header(HttpHeaders.Authorization, token)

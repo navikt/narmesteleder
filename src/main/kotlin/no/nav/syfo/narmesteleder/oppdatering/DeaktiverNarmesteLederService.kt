@@ -7,13 +7,11 @@ import no.nav.syfo.narmesteleder.oppdatering.kafka.model.KafkaMetadata
 import no.nav.syfo.narmesteleder.oppdatering.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.oppdatering.model.NlAvbrutt
 
-class DeaktiverNarmesteLederService(
-    private val nlResponseProducer: NLResponseProducer,
-) {
+class DeaktiverNarmesteLederService(private val nlResponseProducer: NLResponseProducer) {
     fun deaktiverNarmesteLeder(
         orgnummer: String,
         fnrSykmeldt: String,
-        forespurtAvAnsatt: Boolean = true
+        forespurtAvAnsatt: Boolean = true,
     ) {
         nlResponseProducer.send(
             NlResponseKafkaMessage(
@@ -29,7 +27,7 @@ class DeaktiverNarmesteLederService(
                         aktivTom = OffsetDateTime.now(ZoneOffset.UTC),
                     ),
                 nlResponse = null,
-            ),
+            )
         )
     }
 
