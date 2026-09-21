@@ -105,7 +105,7 @@ spec:
     - name: AAREG_SCOPE
       value: api://dev-fss.arbeidsforhold.aareg-services-nais/.default
     - name: ALLOWED_ORIGIN
-      value: tjenester-q1.nav.no,www-gcp.dev.nav.no,narmesteleder.dev.nav.no
+      value: www.ekstern.dev.nav.no,www-ekstern.dev.nav.no,tjenester-q2.nav,tjenester-q1.nav.no,www-gcp.dev.nav.no,narmesteleder.dev.nav.no
     - name: PDL_SCOPE
       value: api://dev-fss.pdl.pdl-api/.default
     - name: OFFSET_RESET_POLICY

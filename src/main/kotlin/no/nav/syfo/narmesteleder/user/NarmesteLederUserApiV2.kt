@@ -40,6 +40,8 @@ fun Route.registrerNarmesteLederUserApiV2(
     }
 
     get("/user/v2/sykmeldt/narmesteledere") {
+        log.info("Made it to narmesteledere")
+
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
 

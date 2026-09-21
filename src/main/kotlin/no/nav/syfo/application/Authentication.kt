@@ -61,7 +61,10 @@ fun Application.setupAuth(
                 when {
                     harNarmestelederAudience(credentials, env.narmestelederTokenXClientId) &&
                         erNiva4(credentials) -> {
+                        log.info("made it here")
                         val principal = JWTPrincipal(credentials.payload)
+                        log.info("principal is: $principal")
+
                         BrukerPrincipal(fnr = finnFnrFraToken(principal), principal = principal)
                     }
                     else -> unauthorized(credentials)
@@ -83,17 +86,17 @@ fun finnFnrFraToken(principal: JWTPrincipal): String {
         principal.payload.getClaim("pid") != null &&
             !principal.payload.getClaim("pid").asString().isNullOrEmpty()
     ) {
-        log.debug("Bruker fnr fra pid-claim")
+        log.info("Bruker fnr fra pid-claim")
         principal.payload.getClaim("pid").asString()
     } else {
-        log.debug("Bruker fnr fra subject")
+        log.info("Bruker fnr fra subject")
         principal.payload.subject
     }
 }
 
 fun harTilgang(credentials: JWTCredential, clientId: String): Boolean {
     val appid: String = credentials.payload.getClaim("azp").asString()
-    log.debug("authorization attempt for $appid")
+    log.info("authorization attempt for $appid")
     return credentials.payload.audience.contains(clientId)
 }
 
