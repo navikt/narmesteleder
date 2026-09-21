@@ -21,6 +21,7 @@ fun Route.registrerNarmesteLederUserApiV2(
     utvidetNarmesteLederService: NarmesteLederService,
 ) {
     post("/v2/{orgnummer}/avkreft") {
+        log.info("Made it to avkreft")
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
         val orgnummer =

@@ -51,6 +51,7 @@ fun Application.setupAuth(
         jwt(name = "tokenx") {
             authHeader {
                 if (it.getToken() == null) {
+                    log.warn("Token is missing")
                     return@authHeader null
                 }
                 return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
@@ -106,10 +107,14 @@ fun unauthorized(credentials: JWTCredential): Unit? {
 }
 
 fun harNarmestelederAudience(credentials: JWTCredential, clientId: String): Boolean {
+    log.info("Checking for audience for $clientId")
+    log.info("audiences is: ${credentials.payload.audience.joinToString(" ")}")
+
     return credentials.payload.audience.contains(clientId)
 }
 
 fun erNiva4(credentials: JWTCredential): Boolean {
+    log.info("acr is ${credentials.payload.getClaim("acr").asString()}")
     return "Level4" == credentials.payload.getClaim("acr").asString()
 }
 
