@@ -80,7 +80,7 @@ private fun Application.setUp(
         generate { UUID.randomUUID().toString() }
     }
     install(CallLogging) {
-        level = Level.TRACE
+        level = Level.INFO
         mdc("Nav-Callid") { it.callId }
         mdc("Nav-Consumer-Id") { call ->
             call.request.queryParameters["Nav-Consumer-Id"] ?: "narmesteleder"
