@@ -54,9 +54,6 @@ spec:
     requests:
       cpu: 150m
       memory: 1300Mi
-  ingresses:
-    - "https://narmesteleder.intern.nav.no"
-    - "https://narmesteleder.nav.no"
   leaderElection: true
   kafka:
     pool: nav-prod

@@ -52,8 +52,6 @@ spec:
     requests:
       cpu: 50m
       memory: 700Mi
-  ingresses:
-    - "https://narmesteleder.intern.dev.nav.no"
   leaderElection: true
   kafka:
     pool: nav-dev
