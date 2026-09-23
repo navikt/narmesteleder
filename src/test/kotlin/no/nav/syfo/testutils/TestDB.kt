@@ -13,7 +13,7 @@ import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.log
 import org.testcontainers.postgresql.PostgreSQLContainer
 
-class PsqlContainer : PostgreSQLContainer("postgres:12")
+class PsqlContainer : PostgreSQLContainer("postgres:16")
 
 class TestDB : DatabaseInterface {
 
